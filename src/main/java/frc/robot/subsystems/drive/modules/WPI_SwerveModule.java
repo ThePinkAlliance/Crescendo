@@ -62,9 +62,9 @@ public class WPI_SwerveModule implements SwerveModule {
    */
   @Override
   public double getDrivePosition() {
-    double position = driveMotor.getPosition().asSupplier().get();
+    double position = driveMotor.getPosition().getValueAsDouble();
 
-    return ((position / 2048.0) * Constants.ModuleConstants.kDriveMotorGearRatio)
+    return (position * Constants.ModuleConstants.kDriveMotorGearRatio)
         * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
   }
 
@@ -145,8 +145,8 @@ public class WPI_SwerveModule implements SwerveModule {
   @Override
   public void setDesiredState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getState().angle);
-    driveMotor.set(
-        state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
+    driveMotor
+        .setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
     steerMotor.set(output);

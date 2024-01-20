@@ -209,6 +209,11 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Back Right Position", (backRightModule.getRawAbsoluteAngularPosition()));
     SmartDashboard.putNumber("Front Left Position", (frontLeftModule.getRawAbsoluteAngularPosition()));
 
+    SmartDashboard.putNumber("Front Right Position", (frontRightModule.getDrivePosition()));
+    SmartDashboard.putNumber("Back Left Position", (backLeftModule.getDrivePosition()));
+    SmartDashboard.putNumber("Back Right Position", (backRightModule.getDrivePosition()));
+    SmartDashboard.putNumber("Front Left Position", (frontLeftModule.getDrivePosition()));
+
     if (lastEpoch != 0) {
       double currentAngularPos = gyro.getAngle();
       SmartDashboard.putNumber("Angular Vel Rad/s",

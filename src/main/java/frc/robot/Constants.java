@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.choreo.lib.ChoreoControlFunction;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -36,9 +35,9 @@ public class Constants {
   }
 
   public static final class DriveConstants {
-    public static final double kTrackWidth = Units.inchesToMeters(23.75);
+    public static final double kTrackWidth = Units.inchesToMeters(22.75);
     // Distance between right and left wheels
-    public static final double kWheelBase = Units.inchesToMeters(23.75);
+    public static final double kWheelBase = Units.inchesToMeters(23.25);
 
     public static final double kBaseRadius = Math.sqrt((kTrackWidth * kTrackWidth) + (kWheelBase * kWheelBase));
 
@@ -48,18 +47,6 @@ public class Constants {
         new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, -kTrackWidth / 2));
-
-    /**
-     * HolonomicPathFollowerConfig gives pathplanner information about the
-     * drivetrain and
-     * specifies PID controllers in x & y axies.
-     */
-    // public static HolonomicPathFollowerConfig kPathFollowerConfig = new
-    // HolonomicPathFollowerConfig(
-    // translation_constants, // 0.006 // kp: 4.5, kD .35
-    // rotation_constants,
-    // DriveConstants.kPhysicalMaxSpeedMetersPerSecond, DriveConstants.kBaseRadius,
-    // new ReplanningConfig(), 0.02);
 
     public static final int kFrontLeftDriveMotorPort = 13;
     public static final int kBackLeftDriveMotorPort = 17;
