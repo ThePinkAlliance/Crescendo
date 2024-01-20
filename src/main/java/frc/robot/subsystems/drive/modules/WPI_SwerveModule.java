@@ -102,9 +102,7 @@ public class WPI_SwerveModule implements SwerveModule {
    */
   @Override
   public double getSteerVelocity() {
-    double velocity = canCoder.getVelocity().getValueAsDouble();
-
-    return Math.toRadians(velocity);
+    return canCoder.getVelocity().getValueAsDouble() * 2 * Math.PI;
   }
 
   @Override

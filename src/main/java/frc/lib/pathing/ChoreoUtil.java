@@ -60,6 +60,7 @@ public class ChoreoUtil {
                     // Does optional slow down robot loops?
                     Optional<ChoreoEvent> event = handler.compute(poseSupplier.get());
 
+                    // This might benefit from using a parallel command.
                     if (event.isPresent()) {
                         event.get().schedule();
                     }
@@ -78,33 +79,4 @@ public class ChoreoUtil {
                 () -> timer.hasElapsed(trajectory.getTotalTime() + 1),
                 requirements);
     }
-
-    public static ChoreoControlFunction swerveController(
-            PIDController xController, PIDController yController, PIDController rotationController) {
-        rotationController.enableContinuousInput(-Math.PI, Math.PI);
-        return (pose, referenceState) -> {
-            double xFF = referenceState.velocityX;
-            double yFF = referenceState.velocityY;
-            double rotationFF = referenceState.angularVelocity;
-
-            double xFeedback = xController.calculate(pose.getX(), referenceState.x);
-            double yFeedback = yController.calculate(pose.getY(), referenceState.y);
-            double rotationFeedback = rotationController.calculate(pose.getRotation().getRadians(),
-                    referenceState.heading);
-
-            SmartDashboard.putNumber("xReference", referenceState.x);
-            SmartDashboard.putNumber("yReference", referenceState.y);
-
-            SmartDashboard.putNumber("xFeedback", pose.getX());
-            SmartDashboard.putNumber("yFeedback", pose.getY());
-
-            SmartDashboard.putNumber("rotationFeedback", rotationFeedback);
-            SmartDashboard.putNumber("rotationFF", rotationFF);
-            SmartDashboard.putNumber("rotation", pose.getRotation().getRadians());
-
-            return ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback, pose.getRotation());
-        };
-    }
-
 }
