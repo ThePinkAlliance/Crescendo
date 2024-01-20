@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.Gains;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
@@ -147,6 +148,7 @@ public class WPI_SwerveModule implements SwerveModule {
         .setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
+    SmartDashboard.putNumber("steer: " + this.steerMotor.getDeviceID(), output);
     steerMotor.set(output);
   }
 

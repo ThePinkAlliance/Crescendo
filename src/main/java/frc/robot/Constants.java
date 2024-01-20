@@ -22,11 +22,10 @@ public class Constants {
     public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
     public static final double kPTurning = 0.47;
 
-    public static final Gains kBackLeftSteerGains = new Gains(.45, 0.01, 0);
-    public static final Gains kBackRightSteerGains = new Gains(.45, 0.01, 0);
-
-    public static final Gains kFrontRightSteerGains = new Gains(.45, 0.01, 0);
-    public static final Gains kFrontLeftSteerGains = new Gains(.45, 0.01, 0);
+    public static final Gains kBackLeftSteerGains = new Gains(.35, 0.00, 0);
+    public static final Gains kBackRightSteerGains = new Gains(.35, 0.0, 0);
+    public static final Gains kFrontRightSteerGains = new Gains(.35, 0.0, 0);
+    public static final Gains kFrontLeftSteerGains = new Gains(.35, 0.0, 0);
 
   }
 
@@ -87,7 +86,7 @@ public class Constants {
     public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 0.182;
     public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -2.519;
 
-    public static final double kPhysicalMaxSpeedMetersPerSecond = 4.86;// 2.91;
+    public static final double kPhysicalMaxSpeedMetersPerSecond = 4.437;// 2.91;
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 18; // 18 rad/sec
 
     public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1; // 0.96

@@ -156,6 +156,8 @@ public class SwerveSubsystem extends SubsystemBase {
     // Looper is how far into the future are we looking
     double looper = .01;
 
+    speeds.omegaRadiansPerSecond = speeds.omegaRadiansPerSecond * -1;
+
     /*
      * Check the angular drift with this solution & if I doesn't work explore the
      * possiblity of steer error in swerve pods.

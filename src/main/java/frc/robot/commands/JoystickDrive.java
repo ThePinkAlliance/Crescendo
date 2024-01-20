@@ -58,6 +58,7 @@ public class JoystickDrive extends Command {
     // Square the controller input while preserving the sign.
     x = Math.copySign(x * x, x) * -1;
     y = Math.copySign(y * y, y) * -1;
+    r = r * -1;
 
     // Limit the max acceleration and convert to meters.
     x = (xLimiter.calculate(throttleLimiter(x)) * Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);

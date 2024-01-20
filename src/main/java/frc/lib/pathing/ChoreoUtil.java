@@ -40,7 +40,7 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + 1),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .1),
                 requirements);
     }
 
@@ -76,7 +76,7 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + 1),
+                () -> timer.hasElapsed(trajectory.getTotalTime()),
                 requirements);
     }
 }
