@@ -34,7 +34,7 @@ public class EventsTest {
         this.swerveSubsystem.resetPose(new Pose2d(0, 1, new Rotation2d()));
         Optional<ChoreoEvent> event = this.handler.compute(this.swerveSubsystem.getCurrentPose());
 
-        assertEquals(event.isPresent(), true);
+        assertEquals(true, event.isPresent());
     }
 
     @Test
@@ -42,6 +42,6 @@ public class EventsTest {
         this.swerveSubsystem.resetPose(new Pose2d(0, 2, new Rotation2d()));
         Optional<ChoreoEvent> event = this.handler.compute(this.swerveSubsystem.getCurrentPose());
 
-        assertEquals(event.isPresent(), false);
+        assertEquals(false, event.isPresent());
     }
 }
