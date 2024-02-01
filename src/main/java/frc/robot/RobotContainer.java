@@ -27,10 +27,19 @@ import frc.lib.PinkPIDConstants;
 import frc.lib.pathing.ChoreoUtil;
 import frc.lib.pathing.events.ChoreoEvent;
 import frc.lib.pathing.events.ChoreoEventHandler;
+import frc.robot.commands.IntakeAction;
+import frc.robot.commands.IntakeAction.IntakeActionType;
 import frc.robot.commands.JoystickDrive;
+import frc.robot.commands.LoadAction;
+import frc.robot.commands.ShootAction;
+import frc.robot.commands.TuneShootAction;
+import frc.robot.commands.LoadAction.LoadActionType;
+import frc.robot.subsystems.Angle;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Loader;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.SwerveSubsystem;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -48,6 +57,19 @@ public class RobotContainer {
 
     public ChoreoTrajectory selectedTrajectory;
     public SendableChooser<Command> chooser;
+
+    private Shooter m_shooter = new Shooter();
+    private Angle m_angle = new Angle();
+    private Loader m_loader = new Loader();
+    private Intake m_intake = new Intake();
+    BooleanSupplier load;
+    BooleanSupplier launch;
+    JoystickButton lBumper;
+    JoystickButton rBumper;
+    BooleanSupplier intake;
+    BooleanSupplier outtake;
+    JoystickButton yButton;
+    JoystickButton aButton;
 
     // i: 0.0045
     public PinkPIDConstants translation_y_constants = new PinkPIDConstants(0.12, 0.0, 0.0);
@@ -123,6 +145,28 @@ public class RobotContainer {
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
+
+        intake = () -> baseJoystick.getRawButton(4);
+        outtake = () -> baseJoystick.getRawButton(1);
+        load = () -> baseJoystick.getRawButton(6);
+        launch = () -> baseJoystick.getRawButton(5);
+
+        aButton = new JoystickButton(baseJoystick, 4);
+        yButton = new JoystickButton(baseJoystick, 1);
+
+        lBumper = new JoystickButton(baseJoystick, 6);
+        rBumper = new JoystickButton(baseJoystick, 5);
+
+        // For running the intake
+        aButton.whileTrue(new IntakeAction(intake, m_intake, IntakeActionType.INTAKE, 1));
+        yButton.whileTrue(new IntakeAction(outtake, m_intake, IntakeActionType.OUTAKE, 1));
+
+        // For activating loader
+        lBumper.whileTrue(new LoadAction(launch, m_loader, LoadActionType.LOAD, 3000));
+        rBumper.whileTrue(new LoadAction(load, m_loader, LoadActionType.LAUNCH, 3000));
+
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new ShootAction(4200, 30, m_shooter, m_angle));
     }
 
     /**
@@ -241,5 +285,21 @@ public class RobotContainer {
                     xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback,
                     pose.getRotation());
         };
+    }
+
+    public Joystick getJoystick() {
+        return baseJoystick;
+    }
+
+    public Shooter getShooter() {
+        return m_shooter;
+    }
+
+    public Angle getAngle() {
+        return m_angle;
+    }
+
+    public Intake getIntake() {
+        return m_intake;
     }
 }
