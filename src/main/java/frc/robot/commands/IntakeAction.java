@@ -4,8 +4,6 @@
 
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Intake;
 
@@ -20,15 +18,13 @@ public class IntakeAction extends Command {
     IntakeActionType m_type;
     Intake m_intake;
     double m_rpm;
-    BooleanSupplier m_execute;
 
     /** Creates a new IntakeAction. */
-    public IntakeAction(BooleanSupplier execute, Intake intake, IntakeActionType type, double rpm) {
+    public IntakeAction(Intake intake, IntakeActionType type, double rpm) {
         // Use addRequirements() here to declare subsystem dependencies.
         m_intake = intake;
         m_type = type;
         m_rpm = rpm;
-        m_execute = execute;
         addRequirements(m_intake);
     }
 
@@ -58,6 +54,6 @@ public class IntakeAction extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return false; // m_execute.getAsBoolean();
+        return false;
     }
 }
