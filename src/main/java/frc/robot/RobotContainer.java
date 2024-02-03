@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
 import frc.lib.pathing.ChoreoUtil;
+import frc.robot.commands.AdjustAngle;
 import frc.robot.commands.IntakeAction;
 import frc.robot.commands.IntakeAction.IntakeActionType;
 import frc.robot.commands.JoystickDrive;
@@ -128,6 +129,7 @@ public class RobotContainer {
                                 () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
                                 () -> baseJoystick
                                         .getRawAxis(JoystickMap.RIGHT_X_AXIS)));
+        m_angle.setDefaultCommand(new AdjustAngle(m_angle));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
