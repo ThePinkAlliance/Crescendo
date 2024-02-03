@@ -4,13 +4,26 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
+
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionManager {
-    PhotonCamera camera;
+    private final PhotonCamera camera;
+    private final double TARGET_HEIGHT_INCHES = 26.1875;
 
     public VisionManager() {
         this.camera = new PhotonCamera("photon");
+    }
+
+    public double getBestTargetDistance() {
+        PhotonTrackedTarget target = camera.getLatestResult().getBestTarget();
+
+        return Math.sin(target.getPitch() * (Math.PI / 180)) * TARGET_HEIGHT_INCHES;
+    }
+
+    public List<PhotonTrackedTarget> getTargets() {
+        return camera.getLatestResult().getTargets();
     }
 }

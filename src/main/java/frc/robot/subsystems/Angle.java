@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -13,12 +13,17 @@ import com.revrobotics.SparkLimitSwitch;
 public class Angle extends SubsystemBase {
 
     private CANSparkMax m_motor;
+    private CANcoder cancoder;
     private RelativeEncoder m_relEncoder;
 
     private double currentTargetRotations;
+    private double CANCODER_ANGLE_OFFSET = 0;
+    private double DEG_TO_ROT = 1;
 
     public Angle() {
         this.m_motor = new CANSparkMax(41, MotorType.kBrushless);
+
+        this.cancoder = new CANcoder(20);
 
         this.m_motor.restoreFactoryDefaults();
         this.m_relEncoder = m_motor.getEncoder();
@@ -49,6 +54,12 @@ public class Angle extends SubsystemBase {
 
         SmartDashboard.putNumber("Angle Error", angleError);
         SmartDashboard.putBoolean("Foward Switch", fowardSwitch.isPressed());
+        SmartDashboard.putNumber("angleDeg", cancoder.getAbsolutePosition().getValueAsDouble());
+        SmartDashboard.putNumber("anglePos", m_motor.getEncoder().getPosition());
+    }
+
+    public void stop() {
+        this.m_motor.getPIDController().setReference(0, ControlType.kVoltage);
     }
 
     public void setAnglePID() {
@@ -58,6 +69,9 @@ public class Angle extends SubsystemBase {
     }
 
     public void setAngle(double angle) {
+
+        // double f = (cancoder.getAbsolutePosition().getValueAsDouble() -
+        // this.CANCODER_ANGLE_OFFSET) * this.DEG_TO_ROT;
         double targetRotations = angle * (57.2 / (58.2 + 2));
 
         this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
