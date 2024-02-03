@@ -34,8 +34,7 @@ public class TestShootAction extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        this.m_shooter.setVelocity(desiredVel);
-        this.m_angle.setAngle(desiredAngle);
+
         this.m_timer.reset();
         this.m_timer.start();
     }
@@ -43,19 +42,22 @@ public class TestShootAction extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
+        this.m_shooter.setVelocity(desiredVel);
+        this.m_angle.setAngle(desiredAngle);
+
         if (this.m_shooter.isAtLeastRpm(desiredVel)) {
             if (desiredVel > 0)
                 m_loader.launch(1000);
             else
                 m_loader.load(1000);
-                
+
         }
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        m_shooter.setVelocity(0,0);
+        m_shooter.setVelocity(0, 0);
     }
 
     // Returns true when the command should end.
