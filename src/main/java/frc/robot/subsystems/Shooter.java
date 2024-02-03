@@ -134,6 +134,25 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    public boolean isAtLeastRpm(double target) {
+        boolean result = false;
+        StatusSignal<Double> m_greyFXTickVelocity = m_greyTalon.getRotorVelocity();
+        StatusSignal<Double> m_greenFXTickVelocity = m_greenTalon.getRotorVelocity();
+        double m_greyFXToRPM = m_greyFXTickVelocity.getValueAsDouble() * 60;
+        double m_greenFXToRPM = m_greenFXTickVelocity.getValueAsDouble() * 60;
+
+        double t = Math.abs(target);
+        double rpm1 = Math.abs(m_greyFXToRPM);
+        double rpm2 = Math.abs(m_greenFXToRPM);
+        double error = 0.05;
+        t = t - (t * error);
+        if (rpm1 >= t && rpm2 >= t) {
+            result = true;
+        }
+        return result;
+
+    }
+
     @Override
     public void periodic() {
 

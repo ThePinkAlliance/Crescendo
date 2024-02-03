@@ -64,6 +64,14 @@ public class Loader extends SubsystemBase {
         m_pidController.setReference(rpms, CANSparkMax.ControlType.kVelocity);
     }
 
+    public void launch(double rpms) {
+        move(-rpms);
+    }
+
+    public void load(double rpms) {
+        move(rpms);
+    }
+
     public void stop() {
         m_pidController.setReference(0, CANSparkMax.ControlType.kVelocity);
     }

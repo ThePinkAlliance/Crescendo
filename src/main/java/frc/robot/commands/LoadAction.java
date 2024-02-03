@@ -40,9 +40,9 @@ public class LoadAction extends Command {
     @Override
     public void execute() {
         if (m_type == LoadActionType.LAUNCH) {
-            m_loader.move(-m_rpm);
+            m_loader.launch(m_rpm);
         } else if (m_type == LoadActionType.LOAD) {
-            m_loader.move(m_rpm);
+            m_loader.load(m_rpm);
         } else {
             m_loader.stop();
         }
