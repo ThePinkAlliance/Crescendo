@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
@@ -24,6 +25,7 @@ public class Intake extends SubsystemBase {
     SparkPIDController m_pidControllerAngle;
     private RelativeEncoder m_encoderAngle;
     public double akP, akI, akD, akIz, akFF, akMaxOutput, akMinOutput, amaxRPM;
+    private double currentTargetRotations;
 
     /** Creates a new Loader. */
     public Intake() {
@@ -130,26 +132,17 @@ public class Intake extends SubsystemBase {
 
     public void setAnglePID() {
 
-        double relativeEncoderPosition = m_encoderAngle.getPosition();
-        SmartDashboard.putNumber("aRelative Angle", relativeEncoderPosition);
-
-        var m_pid = m_angle.getPIDController();
-
-        double akP = 0.1;
-        double akI = 1e-5;
-
-        m_pid.setP(akP);
-        m_pid.setI(akI);
-
         double targetRotation = SmartDashboard.getNumber("aAngle Target", 0);
-        double calculatedRotations = targetRotation * (57.2 / (58.2 + 2));
 
-        m_pid.setReference(calculatedRotations, CANSparkMax.ControlType.kPosition);
+        this.setAngle(targetRotation);
 
-        double pointErr = relativeEncoderPosition - targetRotation;
+    }
 
-        SmartDashboard.putNumber("aPoint error", pointErr);
+    public void setAngle(double angle) {
+        double targetRotations = angle * (57.2 / (58.2 + 2));
 
+        this.m_angle.getPIDController().setReference(targetRotations, ControlType.kPosition);
+        this.currentTargetRotations = targetRotations;
     }
 
     @Override
