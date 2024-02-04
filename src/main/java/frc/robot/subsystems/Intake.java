@@ -110,7 +110,7 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("aSpark Max Output", akMaxOutput);
         SmartDashboard.putNumber("aSpark Min Output", akMinOutput);
         SmartDashboard.putNumber("aRealative Angle", 0);
-        SmartDashboard.putNumber("aAngle Target", 0);
+        SmartDashboard.putNumber("aAT", 0);
         SmartDashboard.putNumber("aPoint error", 0);
     }
 
@@ -122,25 +122,12 @@ public class Intake extends SubsystemBase {
         m_intake.set(0);
     }
 
-    public void moveAngle(double rpms) {
-        m_pidControllerAngle.setReference(rpms, CANSparkMax.ControlType.kVelocity);
-    }
-
     public void stopAngle() {
-        m_pidControllerAngle.setReference(0, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void setAnglePID() {
-
-        double targetRotation = SmartDashboard.getNumber("aAngle Target", 0);
-
-        this.setAngle(targetRotation);
-
+        m_angle.set(0);
     }
 
     public void setAngle(double angle) {
         double targetRotations = angle * (57.2 / (58.2 + 2));
-
         this.m_angle.getPIDController().setReference(targetRotations, ControlType.kPosition);
         this.currentTargetRotations = targetRotations;
     }

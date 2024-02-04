@@ -29,6 +29,7 @@ import frc.robot.commands.IntakeAction.IntakeActionType;
 import frc.robot.commands.JoystickDrive;
 import frc.robot.commands.LoadAction;
 import frc.robot.commands.ShootAction;
+import frc.robot.commands.TestShootAction;
 import frc.robot.commands.TuneShootAction;
 import frc.robot.commands.LoadAction.LoadActionType;
 import frc.robot.subsystems.Angle;
@@ -131,22 +132,27 @@ public class RobotContainer {
                                 () -> baseJoystick
                                         .getRawAxis(JoystickMap.RIGHT_X_AXIS)));
         m_angle.setDefaultCommand(new AdjustAngle(m_angle));
-        m_intake.setDefaultCommand(new AdjustIntakeAngle(m_intake));
+        //m_intake.setDefaultCommand(new AdjustIntakeAngle(m_intake));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         // For running the intake
-        new JoystickButton(baseJoystick, 4).whileTrue(new IntakeAction(m_intake, IntakeActionType.INTAKE, 1));
-        new JoystickButton(baseJoystick, 1).whileTrue(new IntakeAction(m_intake, IntakeActionType.OUTAKE, 1));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).whileTrue(new IntakeAction(m_intake, IntakeActionType.INTAKE, 1));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).whileTrue(new IntakeAction(m_intake, IntakeActionType.OUTAKE, 1));
 
         // For activating loader
-        new JoystickButton(baseJoystick, 6).whileTrue(new LoadAction(m_loader, LoadActionType.LOAD, 3000));
-        new JoystickButton(baseJoystick, 6).whileTrue(new LoadAction(m_loader, LoadActionType.LAUNCH, 3000));
+        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(new LoadAction(m_loader, LoadActionType.LOAD, 3000));
+        //new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(new LoadAction(m_loader, LoadActionType.LAUNCH, 3000));
+        //new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(new AdjustIntakeAngle(m_intake));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new ShootAction(4200, 30, m_shooter, m_angle));
-    }
+        //new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
+        //new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new ShootAction(4200, 30, m_shooter, m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new TestShootAction(Shooter.ShooterMove.SHOOT, 420, 0, m_shooter, m_angle, m_loader));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TestShootAction(Shooter.ShooterMove.LOAD, 400, 0, m_shooter, m_angle, m_loader));
+    
+        
+}
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

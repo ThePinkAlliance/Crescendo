@@ -28,14 +28,16 @@ public class AdjustIntakeAngle extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        double angle = SmartDashboard.getNumber("aAngle Target", 0);
+        double angle = SmartDashboard.getNumber("aAT", 0);
 
         m_intake.setAngle(angle);
+        System.out.println("AdjustIntakeAngle: " + angle);
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
+        m_intake.stopAngle();
     }
 
     // Returns true when the command should end.
