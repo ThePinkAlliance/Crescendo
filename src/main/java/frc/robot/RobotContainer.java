@@ -152,7 +152,7 @@ public class RobotContainer {
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TestShootAction(Shooter.ShooterMove.LOAD, 400, 0, m_shooter, m_angle, m_loader));
     
         
-}
+   }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

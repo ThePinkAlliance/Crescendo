@@ -42,6 +42,7 @@ public class TestShootAction extends Command {
         //this.m_shooter.setVelocity(desiredVel);
         this.timer.reset();
         this.timer.start();     
+
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -65,8 +66,9 @@ public class TestShootAction extends Command {
         this.m_shooter.shoot(goToRpm, m_sm);
         
         if (this.m_sm == Shooter.ShooterMove.SHOOT){
-            if (this.m_shooter.isAtLeastRpm(goToRpm) && this.timer.hasElapsed(3))
+            if (this.m_shooter.isAtLeastRpm(goToRpm) && this.timer.hasElapsed(3)) {
                 m_loader.launch(2000); 
+            }
         } else {
             this.m_angle.setAngle(500);
             this.m_angle.resetAngle();
