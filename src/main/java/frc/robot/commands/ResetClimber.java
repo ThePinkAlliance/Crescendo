@@ -8,16 +8,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Climber.ClimberSide;
 
-public class SetClimber extends Command {
+public class ResetClimber extends Command {
   /** Creates a new ResetClimber. */
-  private int m_lposition;
-  private int m_rposition;
   private Climber m_climber;
   private Climber.ClimberSide m_side;
-  public SetClimber(Climber climber, int lposition,int rposition) {
+  public ResetClimber(Climber climber, Climber.ClimberSide side) {
     // Use addRequirements() here to declare subsystem dependencies.
-    m_lposition = lposition;
-    m_rposition = rposition;
+    m_side = side;
     m_climber = climber;
     addRequirements(m_climber);
   }
@@ -29,12 +26,13 @@ public class SetClimber extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    
-    m_climber.setLeftTargetPosition2(m_lposition);
-    System.out.println("left set position " + m_lposition);
-  
-    m_climber.setRightTargetPosition2(m_rposition);
-    System.out.println("right set position " + m_rposition);
+    if (m_side == Climber.ClimberSide.LEFT) {
+      m_climber.leftReset();
+      System.out.println("left set position 0 ");
+    } else if (m_side == Climber.ClimberSide.RIGHT) {
+      m_climber.rightReset();
+      System.out.println("right set position 0 ");
+    }
   }
 
   // Called once the command ends or is interrupted.

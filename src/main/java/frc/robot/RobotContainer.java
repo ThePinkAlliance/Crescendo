@@ -11,6 +11,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
@@ -28,15 +31,19 @@ import frc.robot.commands.IntakeAction;
 import frc.robot.commands.IntakeAction.IntakeActionType;
 import frc.robot.commands.JoystickDrive;
 import frc.robot.commands.LoadAction;
+import frc.robot.commands.ResetClimber;
+import frc.robot.commands.SetClimber;
 import frc.robot.commands.ShootAction;
 import frc.robot.commands.TestShootAction;
 import frc.robot.commands.TuneShootAction;
 import frc.robot.commands.LoadAction.LoadActionType;
 import frc.robot.subsystems.Angle;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.Climber.ClimberSide;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -51,7 +58,7 @@ public class RobotContainer {
 
     public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
-
+    
     public ChoreoTrajectory selectedTrajectory;
     public SendableChooser<Command> chooser;
 
@@ -59,6 +66,7 @@ public class RobotContainer {
     private Angle m_angle = new Angle();
     private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
+    private Climber m_climber = new Climber();
 
     // i: 0.0045
     public PinkPIDConstants translation_y_constants = new PinkPIDConstants(0.12, 0.0, 0.0);
@@ -142,7 +150,7 @@ public class RobotContainer {
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).whileTrue(new IntakeAction(m_intake, IntakeActionType.OUTAKE, 1));
 
         // For activating loader
-        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(new LoadAction(m_loader, LoadActionType.LOAD, 3000));
+        // new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(new LoadAction(m_loader, LoadActionType.LOAD, 3000));
         //new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(new LoadAction(m_loader, LoadActionType.LAUNCH, 3000));
         //new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(new AdjustIntakeAngle(m_intake));
 
@@ -150,8 +158,14 @@ public class RobotContainer {
         //new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new ShootAction(4200, 30, m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new TestShootAction(Shooter.ShooterMove.SHOOT, 420, 0, m_shooter, m_angle, m_loader));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TestShootAction(Shooter.ShooterMove.LOAD, 400, 0, m_shooter, m_angle, m_loader));
-    
         
+        new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new SetClimber(m_climber, 69, -64));
+        new POVButton(baseJoystick, JoystickMap.POV_DOWN).whileTrue(new SetClimber(m_climber, 0, 0));
+
+        new POVButton(baseJoystick, JoystickMap.POV_LEFT).whileTrue(new ResetClimber(m_climber, Climber.ClimberSide.LEFT));
+        new POVButton(baseJoystick, JoystickMap.POV_RIGHT).whileTrue(new ResetClimber(m_climber, Climber.ClimberSide.RIGHT));
+        
+
    }
 
     /**
