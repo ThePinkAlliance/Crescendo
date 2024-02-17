@@ -22,7 +22,7 @@ public class Angle extends SubsystemBase {
 
         this.m_motor.restoreFactoryDefaults();
         this.m_relEncoder = m_motor.getEncoder();
-        this.m_relEncoder.setPosition(0);
+        //this.m_relEncoder.setPosition(0);
         this.m_motor.setIdleMode(IdleMode.kCoast);
 
         var m_pidController = m_motor.getPIDController();
@@ -66,6 +66,10 @@ public class Angle extends SubsystemBase {
 
         this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
         this.currentTargetRotations = targetRotations;
+    }
+
+    public void resetAngle() {
+        this.m_relEncoder.setPosition(0);
     }
 
 }

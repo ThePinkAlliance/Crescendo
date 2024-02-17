@@ -156,6 +156,8 @@ public class SwerveSubsystem extends SubsystemBase {
         double looper = .01;
 
         speeds.omegaRadiansPerSecond = speeds.omegaRadiansPerSecond * -1;
+        speeds.vxMetersPerSecond = speeds.vxMetersPerSecond * -1;
+        speeds.vyMetersPerSecond = speeds.vyMetersPerSecond * -1;
 
         /*
          * Check the angular drift with this solution & if I doesn't work explore the
@@ -209,11 +211,6 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Back Left Position", (backLeftModule.getRawAbsoluteAngularPosition()));
         SmartDashboard.putNumber("Back Right Position", (backRightModule.getRawAbsoluteAngularPosition()));
         SmartDashboard.putNumber("Front Left Position", (frontLeftModule.getRawAbsoluteAngularPosition()));
-
-        SmartDashboard.putNumber("Front Right Position", (frontRightModule.getDrivePosition()));
-        SmartDashboard.putNumber("Back Left Position", (backLeftModule.getDrivePosition()));
-        SmartDashboard.putNumber("Back Right Position", (backRightModule.getDrivePosition()));
-        SmartDashboard.putNumber("Front Left Position", (frontLeftModule.getDrivePosition()));
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();

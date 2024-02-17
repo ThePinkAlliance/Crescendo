@@ -63,10 +63,25 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> this.anglePIDController.setReference(desiredAngle, ControlType.kPosition));
     }
 
+<<<<<<< HEAD
     public Command setCollectorSpeed(double desiredVelocity) {
         SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
 
         return runOnce(() -> this.collectPIDController.setReference(desiredVelocity, ControlType.kVelocity));
+=======
+    private void setupAngleDashboard() {
+        // display PID coefficients on SmartDashboard
+        SmartDashboard.putNumber("aSpark P Gain", akP);
+        SmartDashboard.putNumber("aSpark I Gain", akI);
+        SmartDashboard.putNumber("aSpark D Gain", akD);
+        SmartDashboard.putNumber("aSpark I Zone", akIz);
+        SmartDashboard.putNumber("aSpark Feed Forward", akFF);
+        SmartDashboard.putNumber("aSpark Max Output", akMaxOutput);
+        SmartDashboard.putNumber("aSpark Min Output", akMinOutput);
+        SmartDashboard.putNumber("aRealative Angle", 0);
+        SmartDashboard.putNumber("aAT", 0);
+        SmartDashboard.putNumber("aPoint error", 0);
+>>>>>>> d9c68f0f931ac1b5203f06f392081207682fb1aa
     }
 
 <<<<<<< Updated upstream
@@ -78,25 +93,12 @@ public class Intake extends SubsystemBase {
         m_intake.set(0);
     }
 
-    public void moveAngle(double rpms) {
-        m_pidControllerAngle.setReference(rpms, CANSparkMax.ControlType.kVelocity);
-    }
-
     public void stopAngle() {
-        m_pidControllerAngle.setReference(0, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void setAnglePID() {
-
-        double targetRotation = SmartDashboard.getNumber("aAngle Target", 0);
-
-        this.setAngle(targetRotation);
-
+        m_angle.set(0);
     }
 
     public void setAngle(double angle) {
         double targetRotations = angle * (57.2 / (58.2 + 2));
-
         this.m_angle.getPIDController().setReference(targetRotations, ControlType.kPosition);
         this.currentTargetRotations = targetRotations;
 =======

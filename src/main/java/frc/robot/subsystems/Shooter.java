@@ -15,6 +15,11 @@ public class Shooter extends SubsystemBase {
     TalonFX m_greenTalon;
     TalonFX m_greyTalon;
 
+    public enum ShooterMove {
+        LOAD,
+        SHOOT
+    }
+
     public Shooter() {
         this.m_greenTalon = new TalonFX(42, "rio");
         this.m_greyTalon = new TalonFX(43, "rio");
@@ -31,6 +36,7 @@ public class Shooter extends SubsystemBase {
 
         m_greenTalon.getConfigurator().apply(slot0Configs);
         m_greyTalon.getConfigurator().apply(slot0Configs);
+        SmartDashboard.putNumber("RpmsShooter", 0.0);
 
     }
 
@@ -49,7 +55,8 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putBoolean("Grey isInverted", false);
 
         SmartDashboard.putBoolean("individual", false);
-        SmartDashboard.putNumber("both Target", 0);
+        SmartDashboard.putNumber("RpmsShooter", 0.0);
+
     }
 
     public void setInvertedMotors() {
@@ -147,13 +154,14 @@ public class Shooter extends SubsystemBase {
         StatusSignal<Double> m_greenFXTickVelocity = m_greenTalon.getRotorVelocity();
         double m_greyFXToRPM = m_greyFXTickVelocity.getValueAsDouble() * 60;
         double m_greenFXToRPM = m_greenFXTickVelocity.getValueAsDouble() * 60;
-
+        double minimumRpm = 100;
         double t = Math.abs(target);
         double rpm1 = Math.abs(m_greyFXToRPM);
         double rpm2 = Math.abs(m_greenFXToRPM);
         double error = 0.05;
         t = t - (t * error);
-        if (rpm1 >= t && rpm2 >= t) {
+        System.out.println("Values: " + rpm1 + ":" + rpm2 + ":" + t);
+        if (rpm1 >= t && rpm2 >= t && t > minimumRpm) {
             result = true;
         }
         return result;
