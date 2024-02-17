@@ -180,10 +180,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
-        frontRightModule.setDesiredState(states[1]);
-        frontLeftModule.setDesiredState(states[0]);
-        backRightModule.setDesiredState(states[3]);
-        backLeftModule.setDesiredState(states[2]);
+        frontRightModule.setDesiredState(states[3]);
+        frontLeftModule.setDesiredState(states[2]);
+        backRightModule.setDesiredState(states[1]);
+        backLeftModule.setDesiredState(states[0]);
 
         field2d.setRobotPose(getCurrentPose());
     }

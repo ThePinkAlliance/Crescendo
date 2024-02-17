@@ -33,6 +33,8 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
+import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.subsystems.SwerveSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -45,7 +47,7 @@ import frc.robot.subsystems.Shooter;
  */
 public class RobotContainer {
 
-    // public SwerveSubsystem swerveSubsystem;
+    public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
 
     public ChoreoTrajectory selectedTrajectory;
@@ -68,8 +70,8 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
-        // swerveSubsystem = new
-        // SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
+        swerveSubsystem = new
+        SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
@@ -123,18 +125,15 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        // swerveSubsystem
-        // .setDefaultCommand(
-        // new JoystickDrive(swerveSubsystem,
-        // () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
-        // () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
-        // () -> baseJoystick
-        // .getRawAxis(JoystickMap.RIGHT_X_AXIS)));
-        m_angle.setDefaultCommand(new AdjustAngle(m_angle));
-        // m_intake.setDefaultCommand(new AdjustIntakeAngle(m_intake));
+        swerveSubsystem
+        .setDefaultCommand(
+        new JoystickDrive(swerveSubsystem,
+        () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
+        () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
+        () -> baseJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
 
-        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
-        // .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
+        .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         // For running the intake
         new JoystickButton(baseJoystick, 4).whileTrue(
@@ -143,7 +142,7 @@ public class RobotContainer {
 
         new JoystickButton(baseJoystick, 1).whileTrue(m_intake.setCollectorPower(.85));
 
-        m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
+        //m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
