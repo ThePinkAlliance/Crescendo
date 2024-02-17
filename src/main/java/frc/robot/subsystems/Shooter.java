@@ -19,6 +19,8 @@ public class Shooter extends SubsystemBase {
         this.m_greenTalon = new TalonFX(42, "rio");
         this.m_greyTalon = new TalonFX(43, "rio");
 
+        this.m_greyTalon.setInverted(true);
+
         // set slot 0 gains
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
@@ -78,6 +80,11 @@ public class Shooter extends SubsystemBase {
         } else {
             DriverStation.reportWarning("!cannot determine motor control! (shooter.java, 95)", true);
         }
+    }
+
+    public void setSpeed(double speed) {
+        this.m_greenTalon.set(speed);
+        this.m_greyTalon.set(speed);
     }
 
     public void setVelocity(double vel) {

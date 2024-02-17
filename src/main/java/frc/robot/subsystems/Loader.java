@@ -61,7 +61,8 @@ public class Loader extends SubsystemBase {
     }
 
     public void move(double rpms) {
-        m_pidController.setReference(rpms, CANSparkMax.ControlType.kVelocity);
+        this.m_motor.set(rpms);
+        // m_pidController.setReference(rpms, CANSparkMax.ControlType.kVelocity);
     }
 
     public void launch(double rpms) {

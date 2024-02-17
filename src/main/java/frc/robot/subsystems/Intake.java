@@ -6,114 +6,70 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
 
-    CANSparkMax m_intake;
-    SparkPIDController m_pidControllerIntake;
-    private RelativeEncoder m_encoderIntake;
-    public double ikP, ikI, ikD, ikIz, ikFF, ikMaxOutput, ikMinOutput, imaxRPM;
+    private final CANSparkMax angleSparkMax;
+    private final CANSparkMax collectSparkMax;
 
+<<<<<<< Updated upstream
     CANSparkMax m_angle;
     SparkPIDController m_pidControllerAngle;
     private RelativeEncoder m_encoderAngle;
     public double akP, akI, akD, akIz, akFF, akMaxOutput, akMinOutput, amaxRPM;
     private double currentTargetRotations;
+=======
+    private final SparkPIDController anglePIDController;
+    private final SparkPIDController collectPIDController;
 
-    /** Creates a new Loader. */
+    private final RelativeEncoder angleEncoder;
+    private final RelativeEncoder collectEncoder;
+>>>>>>> Stashed changes
+
     public Intake() {
-        /**
-         * Configure Intake Spark MAX.
-         */
+        this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
+        this.collectSparkMax = new CANSparkMax(21, MotorType.kBrushless);
 
-        m_intake = new CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushless);
-        m_intake.restoreFactoryDefaults();
-        m_intake.setIdleMode(IdleMode.kCoast);
-        m_pidControllerIntake = m_intake.getPIDController();
-        m_encoderIntake = m_intake.getEncoder();
-        ikP = 6e-5;
-        ikI = 0;
-        ikD = 0;
-        ikIz = 0;
-        ikFF = 0.000015;
-        ikMaxOutput = 1;
-        ikMinOutput = -1;
-        imaxRPM = 5700;
+        this.collectEncoder = collectSparkMax.getEncoder();
+        this.angleEncoder = angleSparkMax.getEncoder();
 
-        // set PID coefficients
-        m_pidControllerIntake.setP(ikP);
-        m_pidControllerIntake.setI(ikI);
-        m_pidControllerIntake.setD(ikD);
-        m_pidControllerIntake.setIZone(ikIz);
-        m_pidControllerIntake.setFF(ikFF);
-        m_pidControllerIntake.setOutputRange(ikMinOutput, ikMaxOutput);
+        this.collectSparkMax.setIdleMode(IdleMode.kBrake);
+        this.angleSparkMax.setIdleMode(IdleMode.kCoast);
 
-        /**
-         * Configure Intake Angle Spark MAX.
-         */
+        this.anglePIDController = angleSparkMax.getPIDController();
+        this.anglePIDController.setP(.1);
+        this.anglePIDController.setOutputRange(-.2, .2);
 
-        m_angle = new CANSparkMax(22, CANSparkLowLevel.MotorType.kBrushless);
-        m_angle.restoreFactoryDefaults();
-        m_angle.setIdleMode(IdleMode.kCoast);
-        m_pidControllerAngle = m_angle.getPIDController();
-        m_encoderAngle = m_angle.getEncoder();
-        akP = 6e-5;
-        akI = 0;
-        akD = 0;
-        akIz = 0;
-        akFF = 0.000015;
-        akMaxOutput = 1;
-        akMinOutput = -1;
-        amaxRPM = 5700;
+        this.collectPIDController = collectSparkMax.getPIDController();
+        this.collectPIDController.setP(.1);
+        this.collectPIDController.setFF(0);
 
-        // set PID coefficients
-        m_pidControllerAngle.setP(akP);
-        m_pidControllerAngle.setI(akI);
-        m_pidControllerAngle.setD(akD);
-        m_pidControllerAngle.setIZone(akIz);
-        m_pidControllerAngle.setFF(akFF);
-        m_pidControllerAngle.setOutputRange(akMinOutput, akMaxOutput);
-        m_encoderAngle = m_angle.getEncoder();
-        m_encoderAngle.setPosition(0);
-        m_angle.setIdleMode(IdleMode.kCoast);
-
-        setupAngleDashboard();
-        setupIntakeDashboard();
+        this.angleEncoder.setPosition(0);
     }
 
-    private void setupIntakeDashboard() {
+    public Command setCollectorAngle(double desiredAngle) {
+        SmartDashboard.putNumber("collect_angle_setpoint", desiredAngle);
 
-        // display PID coefficients on SmartDashboard
-        SmartDashboard.putNumber("iSpark P Gain", ikP);
-        SmartDashboard.putNumber("iSpark I Gain", ikI);
-        SmartDashboard.putNumber("iSpark D Gain", ikD);
-        SmartDashboard.putNumber("iSpark I Zone", ikIz);
-        SmartDashboard.putNumber("iSpark Feed Forward", ikFF);
-        SmartDashboard.putNumber("iSpark Max Output", ikMaxOutput);
-        SmartDashboard.putNumber("iSpark Min Output", ikMinOutput);
+        return runOnce(() -> this.anglePIDController.setReference(desiredAngle, ControlType.kPosition));
     }
 
-    private void setupAngleDashboard() {
-        // display PID coefficients on SmartDashboard
-        SmartDashboard.putNumber("aSpark P Gain", akP);
-        SmartDashboard.putNumber("aSpark I Gain", akI);
-        SmartDashboard.putNumber("aSpark D Gain", akD);
-        SmartDashboard.putNumber("aSpark I Zone", akIz);
-        SmartDashboard.putNumber("aSpark Feed Forward", akFF);
-        SmartDashboard.putNumber("aSpark Max Output", akMaxOutput);
-        SmartDashboard.putNumber("aSpark Min Output", akMinOutput);
-        SmartDashboard.putNumber("aRealative Angle", 0);
-        SmartDashboard.putNumber("aAngle Target", 0);
-        SmartDashboard.putNumber("aPoint error", 0);
+    public Command setCollectorSpeed(double desiredVelocity) {
+        SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
+
+        return runOnce(() -> this.collectPIDController.setReference(desiredVelocity, ControlType.kVelocity));
     }
 
+<<<<<<< Updated upstream
     public void moveIntake(double speed) {
         m_intake.set(speed);
     }
@@ -143,10 +99,21 @@ public class Intake extends SubsystemBase {
 
         this.m_angle.getPIDController().setReference(targetRotations, ControlType.kPosition);
         this.currentTargetRotations = targetRotations;
+=======
+    public Command setCollectorSpeedP(double speed) {
+        // SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
+
+        return runOnce(() -> this.collectSparkMax.set(speed));
+>>>>>>> Stashed changes
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+
+        SmartDashboard.putNumber("collector_angle", this.angleEncoder.getPosition());
+        SmartDashboard.putNumber("collect_velocity", this.collectEncoder.getVelocity());
+        SmartDashboard.putNumber("collector_angle_absolute",
+                this.angleSparkMax.getAbsoluteEncoder(Type.kDutyCycle).getPosition());
     }
 }

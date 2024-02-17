@@ -8,35 +8,25 @@ import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
-import frc.lib.pathing.ChoreoUtil;
-import frc.robot.commands.AdjustAngle;
 import frc.robot.commands.AdjustIntakeAngle;
-import frc.robot.commands.IntakeAction;
-import frc.robot.commands.IntakeAction.IntakeActionType;
-import frc.robot.commands.JoystickDrive;
-import frc.robot.commands.LoadAction;
-import frc.robot.commands.ShootAction;
-import frc.robot.commands.TestShootAction;
-import frc.robot.commands.TuneShootAction;
-import frc.robot.commands.LoadAction.LoadActionType;
+import frc.robot.commands.shooter.AdjustAngle;
+import frc.robot.commands.shooter.ShootAction;
+import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.SwerveSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -49,7 +39,7 @@ import frc.robot.subsystems.SwerveSubsystem;
  */
 public class RobotContainer {
 
-    public SwerveSubsystem swerveSubsystem;
+    // public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
 
     public ChoreoTrajectory selectedTrajectory;
@@ -71,7 +61,8 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
-        swerveSubsystem = new SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
+        // swerveSubsystem = new
+        // SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
@@ -100,8 +91,9 @@ public class RobotContainer {
         // new Translation2d(
         // 2.22, 5.36)) }));
 
-        this.chooser.addOption("Chained Paths",
-                link_trajectory_commands(Choreo.getTrajectory("point_1"), Choreo.getTrajectory("point_2")));
+        // this.chooser.addOption("Chained Paths",
+        // link_trajectory_commands(Choreo.getTrajectory("point_1"),
+        // Choreo.getTrajectory("point_2")));
 
         SmartDashboard.putData(chooser);
 
@@ -124,38 +116,31 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        swerveSubsystem
-                .setDefaultCommand(
-                        new JoystickDrive(swerveSubsystem,
-                                () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
-                                () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
-                                () -> baseJoystick
-                                        .getRawAxis(JoystickMap.RIGHT_X_AXIS)));
+        // swerveSubsystem
+        // .setDefaultCommand(
+        // new JoystickDrive(swerveSubsystem,
+        // () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
+        // () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
+        // () -> baseJoystick
+        // .getRawAxis(JoystickMap.RIGHT_X_AXIS)));
         m_angle.setDefaultCommand(new AdjustAngle(m_angle));
         m_intake.setDefaultCommand(new AdjustIntakeAngle(m_intake));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
-                .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
+        // .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         // For running the intake
-        new JoystickButton(baseJoystick, 4).whileTrue(new IntakeAction(m_intake,
-                IntakeActionType.INTAKE, 1));
-        new JoystickButton(baseJoystick, 1).whileTrue(new IntakeAction(m_intake,
-                IntakeActionType.OUTAKE, 1));
+        new JoystickButton(baseJoystick, 4).whileTrue(
+                Commands.runOnce(() -> m_shooter.setSpeed(.3))
+                        .alongWith(Commands.runOnce(() -> m_loader.move(1))));
 
-        // For activating loader
-        // new JoystickButton(baseJoystick, 6).whileTrue(new LoadAction(m_loader,
-        // LoadActionType.LOAD, 3000));
-        // new JoystickButton(baseJoystick, 6).whileTrue(new LoadAction(m_loader,
-        // LoadActionType.LAUNCH, 3000));
+        new JoystickButton(baseJoystick, 1).whileTrue(m_intake.setCollectorSpeedP(.85));
+
+        m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-                .onTrue(new TestShootAction(4200, 30, m_shooter, m_angle, m_loader));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
-                .onTrue(new TestShootAction(-500, -30, m_shooter, m_angle, m_loader));
-        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(new
-        // ShootAction(4200, 30, m_shooter, m_angle));
+                .whileTrue(new ShootAction(4200, -30, m_shooter, m_angle));
     }
 
     /**
@@ -204,44 +189,46 @@ public class RobotContainer {
         // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
         // swerveSubsystem));
 
-        return link_trajectory_commands(Choreo.getTrajectory("point_1"), Choreo.getTrajectory("point_2"));
+        // return link_trajectory_commands(Choreo.getTrajectory("point_1"),
+        // Choreo.getTrajectory("point_2"));
 
+        return Commands.none();
     }
 
-    public Command link_trajectory_commands(ChoreoTrajectory... trajs) {
-        SequentialCommandGroup group = new SequentialCommandGroup();
+    // public Command link_trajectory_commands(ChoreoTrajectory... trajs) {
+    // SequentialCommandGroup group = new SequentialCommandGroup();
 
-        group.addCommands(Commands.runOnce(() -> {
-            Pose2d inital_pose = trajs[0].getInitialPose();
+    // group.addCommands(Commands.runOnce(() -> {
+    // Pose2d inital_pose = trajs[0].getInitialPose();
 
-            swerveSubsystem.resetPose(new Pose2d(inital_pose.getX(), inital_pose.getY(),
-                    inital_pose.getRotation()));
-        }));
+    // swerveSubsystem.resetPose(new Pose2d(inital_pose.getX(), inital_pose.getY(),
+    // inital_pose.getRotation()));
+    // }));
 
-        for (ChoreoTrajectory traj : trajs) {
-            Command cmd = ChoreoUtil.choreoSwerveCommand(traj,
-                    swerveSubsystem::getCurrentPose,
-                    swerveController(
-                            new PIDController(translation_x_constants.kP,
-                                    translation_x_constants.kI,
-                                    translation_x_constants.kD,
-                                    0.02),
-                            new PIDController(translation_y_constants.kP,
-                                    translation_y_constants.kI,
-                                    translation_y_constants.kD,
-                                    0.02),
-                            new PIDController(
-                                    rotation_constants.kP,
-                                    rotation_constants.kI,
-                                    rotation_constants.kD, 0.02)),
-                    swerveSubsystem::setStates, () -> false,
-                    swerveSubsystem);
+    // for (ChoreoTrajectory traj : trajs) {
+    // Command cmd = ChoreoUtil.choreoSwerveCommand(traj,
+    // swerveSubsystem::getCurrentPose,
+    // swerveController(
+    // new PIDController(translation_x_constants.kP,
+    // translation_x_constants.kI,
+    // translation_x_constants.kD,
+    // 0.02),
+    // new PIDController(translation_y_constants.kP,
+    // translation_y_constants.kI,
+    // translation_y_constants.kD,
+    // 0.02),
+    // new PIDController(
+    // rotation_constants.kP,
+    // rotation_constants.kI,
+    // rotation_constants.kD, 0.02)),
+    // swerveSubsystem::setStates, () -> false,
+    // swerveSubsystem);
 
-            group.addCommands(cmd);
-        }
+    // group.addCommands(cmd);
+    // }
 
-        return group;
-    }
+    // return group;
+    // }
 
     public static ChoreoControlFunction swerveController(
             PIDController xController, PIDController yController, PIDController rotationController) {

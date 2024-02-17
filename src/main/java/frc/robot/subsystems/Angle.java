@@ -51,6 +51,10 @@ public class Angle extends SubsystemBase {
         SmartDashboard.putBoolean("Foward Switch", fowardSwitch.isPressed());
     }
 
+    public void setPower(double power) {
+        this.m_motor.set(power);
+    }
+
     public void setAnglePID() {
         double targetRotation = SmartDashboard.getNumber("Angle Target", 0);
 
