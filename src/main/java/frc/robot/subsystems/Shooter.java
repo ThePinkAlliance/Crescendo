@@ -36,8 +36,8 @@ public class Shooter extends SubsystemBase {
 
         m_greenTalon.getConfigurator().apply(slot0Configs);
         m_greyTalon.getConfigurator().apply(slot0Configs);
-        SmartDashboard.putNumber("RpmsShooter", 0.0);
 
+        SmartDashboard.putNumber("RpmsShooter", 0.0);
     }
 
     public void setupDashboardInputs() {

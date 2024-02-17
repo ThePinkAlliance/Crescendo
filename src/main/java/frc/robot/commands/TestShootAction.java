@@ -22,7 +22,8 @@ public class TestShootAction extends Command {
     private Timer timer;
 
     /** Creates a new ShootAction. */
-    public TestShootAction(Shooter.ShooterMove sm, double desiredVel, double desiredAngle, Shooter shooter, Angle angle, Loader loader) {
+    public TestShootAction(Shooter.ShooterMove sm, double desiredVel, double desiredAngle, Shooter shooter, Angle angle,
+            Loader loader) {
         // Use addRequirements() here to declare subsystem dependencies.
 
         this.m_angle = angle;
@@ -39,17 +40,17 @@ public class TestShootAction extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        //this.m_shooter.setVelocity(desiredVel);
+        // this.m_shooter.setVelocity(desiredVel);
         this.timer.reset();
-        this.timer.start();     
+        this.timer.start();
 
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        //this.m_shooter.setVelocity(desiredVel);
-        //this.m_shooter.shoot(desiredVel, m_sm);
+        // this.m_shooter.setVelocity(desiredVel);
+        // this.m_shooter.shoot(desiredVel, m_sm);
         double overrideAngle = SmartDashboard.getNumber("Angle Target", 0);
         double overrideRpm = SmartDashboard.getNumber("RpmsShooter", 0);
         double goToAngle = 0.0;
@@ -59,28 +60,28 @@ public class TestShootAction extends Command {
             goToRpm = overrideRpm;
         } else {
             goToAngle = desiredAngle;
-            goToRpm = desiredVel;  
+            goToRpm = desiredVel;
         }
-        
+
         this.m_angle.setAngle(goToAngle);
-        this.m_shooter.shoot(goToRpm, m_sm);
-        
-        if (this.m_sm == Shooter.ShooterMove.SHOOT){
+        // this.m_shooter.shoot(goToRpm, m_sm);
+
+        if (this.m_sm == Shooter.ShooterMove.SHOOT) {
             if (this.m_shooter.isAtLeastRpm(goToRpm) && this.timer.hasElapsed(3)) {
-                m_loader.launch(2000); 
+                m_loader.launch(2000);
             }
         } else {
             this.m_angle.setAngle(500);
             this.m_angle.resetAngle();
             m_loader.load(1200);
         }
-                
+
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        m_shooter.setVelocity(0,0);
+        m_shooter.setVelocity(0, 0);
         m_loader.stop();
     }
 
@@ -89,7 +90,7 @@ public class TestShootAction extends Command {
     public boolean isFinished() {
         // boolean result = false;
         // if (m_timer.hasElapsed(4))
-        //     result = true;
+        // result = true;
         // return result;
         return false;
     }

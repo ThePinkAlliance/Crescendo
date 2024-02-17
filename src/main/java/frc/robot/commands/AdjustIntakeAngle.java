@@ -30,14 +30,14 @@ public class AdjustIntakeAngle extends Command {
     public void execute() {
         double angle = SmartDashboard.getNumber("aAT", 0);
 
-        m_intake.setAngle(angle);
+        // m_intake.setAngle(angle);
         System.out.println("AdjustIntakeAngle: " + angle);
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        m_intake.stopAngle();
+        // m_intake.stopAngle();
     }
 
     // Returns true when the command should end.

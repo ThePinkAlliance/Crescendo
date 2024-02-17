@@ -141,7 +141,7 @@ public class RobotContainer {
                 Commands.runOnce(() -> m_shooter.setSpeed(.3))
                         .alongWith(Commands.runOnce(() -> m_loader.move(1))));
 
-        new JoystickButton(baseJoystick, 1).whileTrue(m_intake.setCollectorSpeedP(.85));
+        new JoystickButton(baseJoystick, 1).whileTrue(m_intake.setCollectorPower(.85));
 
         m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
 

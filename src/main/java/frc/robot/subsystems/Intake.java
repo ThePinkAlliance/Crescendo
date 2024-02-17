@@ -49,19 +49,25 @@ public class Intake extends SubsystemBase {
         this.angleEncoder.setPosition(0);
     }
 
-    public Command setCollectorAngle(double desiredAngle) {
+    public void setCollectorAngle(double desiredAngle) {
         SmartDashboard.putNumber("collect_angle_setpoint", desiredAngle);
 
-        return runOnce(() -> this.anglePIDController.setReference(desiredAngle, ControlType.kPosition));
+        this.anglePIDController.setReference(desiredAngle, ControlType.kPosition);
     }
 
-    public Command setCollectorSpeed(double desiredVelocity) {
+    public Command setCollectorAngleCmd(double desiredAngle) {
+        return runOnce(() -> this.setCollectorAngle(desiredAngle));
+    }
+
+    public Command setCollectorSpeed(double desiredVelocity, double timeout) {
         SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
 
-        return runOnce(() -> this.collectPIDController.setReference(desiredVelocity, ControlType.kVelocity));
+        return runOnce(() -> this.collectPIDController.setReference(desiredVelocity, ControlType.kVelocity))
+                .withTimeout(timeout)
+                .handleInterrupt(() -> this.collectPIDController.setReference(0, ControlType.kVoltage));
     }
 
-    public Command setCollectorSpeedP(double speed) {
+    public Command setCollectorPower(double speed) {
         return runOnce(() -> this.collectSparkMax.set(speed));
     }
 
