@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,6 +15,7 @@ public class Shooter extends SubsystemBase {
 
     TalonFX m_greenTalon;
     TalonFX m_greyTalon;
+    DigitalInput m_noteSwitch;
 
     public enum ShooterMove {
         LOAD,
@@ -23,7 +25,8 @@ public class Shooter extends SubsystemBase {
     public Shooter() {
         this.m_greenTalon = new TalonFX(42, "rio");
         this.m_greyTalon = new TalonFX(43, "rio");
-
+        
+        this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);
 
         // set slot 0 gains
@@ -170,6 +173,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-
+        SmartDashboard.putBoolean("Note Loaded", m_noteSwitch.get());
     }
 }
