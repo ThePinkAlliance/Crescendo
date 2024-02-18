@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.CANSparkMax;
@@ -70,6 +71,10 @@ public class Angle extends SubsystemBase {
 
     public void resetAngle() {
         this.m_relEncoder.setPosition(0);
+    }
+
+    public Command setAngleCommand(double angle) {
+        return runOnce(() -> this.setAngle(angle));
     }
 
 }

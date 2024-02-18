@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
 import frc.robot.commands.AdjustIntakeAngle;
+import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.shooter.AdjustAngle;
@@ -55,7 +56,7 @@ public class RobotContainer {
 
     private Shooter m_shooter = new Shooter();
     private Angle m_angle = new Angle();
-    private Loader m_loader = new Loader();
+    //private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private Climber m_climber = new Climber();
 
@@ -136,17 +137,19 @@ public class RobotContainer {
         .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         // For running the intake
-        new JoystickButton(baseJoystick, 4).whileTrue(
-                Commands.runOnce(() -> m_shooter.setSpeed(.3))
-                        .alongWith(Commands.runOnce(() -> m_loader.move(1))));
+        //new JoystickButton(baseJoystick, 4).whileTrue(
+        //        Commands.runOnce(() -> m_shooter.setSpeed(.3))
+        //                .alongWith(Commands.runOnce(() -> m_shooter.load(1))));
 
-        new JoystickButton(baseJoystick, 1).whileTrue(m_intake.setCollectorPower(.85));
-
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).whileTrue(m_intake.setCollectorSpeed2(.85));
+        new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
+        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(m_intake.deployCollector());
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle));
         //m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(new TuneShootAction(m_shooter, m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(m_shooter.loadNote(.3));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(new ShootAction(4200, -30, m_shooter, m_angle));
+                .whileTrue(m_shooter.rampUp(-400));
 
         new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new SetClimber(m_climber, 69, -64));
         new POVButton(baseJoystick, JoystickMap.POV_DOWN).whileTrue(new SetClimber(m_climber, 0, 0));
