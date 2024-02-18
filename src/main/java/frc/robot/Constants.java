@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -33,6 +35,10 @@ public class Constants {
         public static final double kJoystickDeadband = 0.05;
     }
 
+    public static final class FieldConstants {
+        public static final AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    }
+
     public static final class DriveConstants {
         public static final double kTrackWidth = Units.inchesToMeters(22.75);
         // Distance between right and left wheels
@@ -51,22 +57,22 @@ public class Constants {
         public static final int kBackLeftDriveMotorPort = 13;
         public static final int kFrontRightDriveMotorPort = 15;
         public static final int kBackRightDriveMotorPort = 11;
-            
+
         public static final int kFrontLeftTurningMotorPort = 18;
         public static final int kBackLeftTurningMotorPort = 14;
         public static final int kFrontRightTurningMotorPort = 16;
         public static final int kBackRightTurningMotorPort = 12;
-        
+
         public static final boolean kFrontLeftTurningReversed = false;
         public static final boolean kBackLeftTurningReversed = false;
         public static final boolean kFrontRightTurningReversed = false;
         public static final boolean kBackRightTurningReversed = false;
-            
+
         public static final boolean kFrontLeftDriveEncoderReversed = false;
         public static final boolean kBackLeftDriveEncoderReversed = false;
         public static final boolean kFrontRightDriveEncoderReversed = false;
         public static final boolean kBackRightDriveEncoderReversed = false;
-            
+
         public static final int kFrontLeftDriveAbsoluteEncoderPort = 8;
         public static final int kBackLeftDriveAbsoluteEncoderPort = 4;
         public static final int kFrontRightDriveAbsoluteEncoderPort = 6;

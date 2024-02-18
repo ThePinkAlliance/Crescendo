@@ -28,6 +28,7 @@ import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.shooter.AdjustAngle;
 import frc.robot.commands.shooter.ShootAction;
+import frc.robot.commands.shooter.TuneScoring;
 import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Climber;
@@ -36,6 +37,7 @@ import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -50,13 +52,14 @@ public class RobotContainer {
 
     public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
+    public VisionSubsystem visionSubsystem;
 
     public ChoreoTrajectory selectedTrajectory;
     public SendableChooser<Command> chooser;
 
     private Shooter m_shooter = new Shooter();
     private Angle m_angle = new Angle();
-    //private Loader m_loader = new Loader();
+    // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private Climber m_climber = new Climber();
 
@@ -71,8 +74,8 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
-        swerveSubsystem = new
-        SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
+        swerveSubsystem = new SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
+        visionSubsystem = new VisionSubsystem();
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
@@ -127,25 +130,26 @@ public class RobotContainer {
      */
     private void configureBindings() {
         swerveSubsystem
-        .setDefaultCommand(
-        new JoystickDrive(swerveSubsystem,
-        () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
-        () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
-        () -> baseJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
+                .setDefaultCommand(
+                        new JoystickDrive(swerveSubsystem,
+                                () -> baseJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
+                                () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
+                                () -> baseJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
-        .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
+                .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         // For running the intake
-        //new JoystickButton(baseJoystick, 4).whileTrue(
-        //        Commands.runOnce(() -> m_shooter.setSpeed(.3))
-        //                .alongWith(Commands.runOnce(() -> m_shooter.load(1))));
+        // new JoystickButton(baseJoystick, 4).whileTrue(
+        // Commands.runOnce(() -> m_shooter.setSpeed(.3))
+        // .alongWith(Commands.runOnce(() -> m_shooter.load(1))));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).whileTrue(m_intake.setCollectorSpeed2(.85));
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(m_intake.deployCollector());
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle));
-        //m_angle.setDefaultCommand(Commands.run(() -> m_angle.setPower(baseJoystick.getRawAxis(5)), m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+                .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle));
+        m_angle.setDefaultCommand(new TuneScoring(visionSubsystem, m_angle));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(m_shooter.loadNote(.3));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)

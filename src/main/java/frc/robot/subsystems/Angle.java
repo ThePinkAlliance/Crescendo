@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -23,7 +23,7 @@ public class Angle extends SubsystemBase {
 
         this.m_motor.restoreFactoryDefaults();
         this.m_relEncoder = m_motor.getEncoder();
-        //this.m_relEncoder.setPosition(0);
+        // this.m_relEncoder.setPosition(0);
         this.m_motor.setIdleMode(IdleMode.kCoast);
 
         var m_pidController = m_motor.getPIDController();
@@ -33,6 +33,7 @@ public class Angle extends SubsystemBase {
 
         m_pidController.setP(kP);
         m_pidController.setI(kI);
+        m_pidController.setOutputRange(-0.5, 0.5);
 
         this.currentTargetRotations = 0;
 
@@ -48,6 +49,9 @@ public class Angle extends SubsystemBase {
         double relativeEncoderPosition = m_relEncoder.getPosition();
         double angleError = currentTargetRotations - relativeEncoderPosition;
 
+        Logger.recordOutput("Shooter/Angle Position", relativeEncoderPosition);
+        Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (52.2 / 53.95));
+
         SmartDashboard.putNumber("Angle Error", angleError);
         SmartDashboard.putBoolean("Foward Switch", fowardSwitch.isPressed());
     }
@@ -60,6 +64,12 @@ public class Angle extends SubsystemBase {
         double targetRotation = SmartDashboard.getNumber("Angle Target", 0);
 
         this.setAngle(targetRotation);
+    }
+
+    public void setAngleNew(double angle) {
+        double rotations = angle * (53.95 / 52.2);
+
+        this.m_motor.getPIDController().setReference(rotations, ControlType.kPosition);
     }
 
     public void setAngle(double angle) {
