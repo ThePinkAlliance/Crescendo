@@ -24,6 +24,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final IntegerSubscriber target_id_subscriber;
     private final DoubleSubscriber target_x_subscriber;
     private final DoubleSubscriber target_y_subscriber;
+    private double tag_correction_factor;
 
     /** Creates a new Vision. */
     public VisionSubsystem() {
@@ -34,6 +35,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_x_subscriber = table.getDoubleTopic("tx").subscribe(0);
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
 
+        this.tag_correction_factor = 0.2992125984;
     }
 
     public Translation3d getTranslation() {
@@ -43,13 +45,11 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public double getClosestTargetDistance() {
-        double correction_factor = 0.2992125984;
         double distance = 56 / Math.tan((25 + this.target_y_subscriber.get()) * (3.14 / 180));
-
-        distance = distance - (distance * correction_factor);
+        distance = distance - (distance * tag_correction_factor);
 
         Logger.recordOutput("Closest Target Distance", distance);
-        Logger.recordOutput("Closest Target Correction Factor", correction_factor);
+        Logger.recordOutput("Closest Target Correction Factor", tag_correction_factor);
 
         return distance;
     }
