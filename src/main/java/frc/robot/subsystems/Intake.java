@@ -23,34 +23,34 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
     private final CANSparkMax angleSparkMax;
     private final CANSparkMax collectSparkMax;
 
-    //private final SparkPIDController anglePIDController;
+    // private final SparkPIDController anglePIDController;
     private final SparkPIDController collectPIDController;
 
-    //private final RelativeEncoder angleEncoder;
+    // private final RelativeEncoder angleEncoder;
     private final RelativeEncoder collectEncoder;
 
     private final AnalogInput noteSwitchFar;
     private final AnalogInput noteSwitchNear;
     private Encoder hexEncoder;
-    public static final int[] HEX_ENCODER_IDS = {4,5};
+    public static final int[] HEX_ENCODER_IDS = { 4, 5 };
     public static final double WHEEL_DIAMETER = 4.0;
-    public static final double PULSE_PER_REVOLUTION = 250;  //Need to revisit this value!!
-    public final double DISTANCE_PER_PULSE = (double)(Math.PI*WHEEL_DIAMETER)/PULSE_PER_REVOLUTION;
+    public static final double PULSE_PER_REVOLUTION = 250; // Need to revisit this value!!
+    public final double DISTANCE_PER_PULSE = (double) (Math.PI * WHEEL_DIAMETER) / PULSE_PER_REVOLUTION;
 
     public Intake() {
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
         this.collectSparkMax = new CANSparkMax(21, MotorType.kBrushless);
-        
-      
+
         this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
         this.collectEncoder = collectSparkMax.getEncoder();
-        //this.angleEncoder = angleSparkMax.getEncoder();
+        // this.angleEncoder = angleSparkMax.getEncoder();
 
         this.collectSparkMax.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setIdleMode(IdleMode.kBrake);
@@ -63,7 +63,7 @@ public class Intake extends SubsystemBase {
         this.collectPIDController.setP(.1);
         this.collectPIDController.setFF(0);
 
-        //this.angleEncoder.setPosition(0);
+        // this.angleEncoder.setPosition(0);
 
         this.noteSwitchFar = new AnalogInput(0);
         this.noteSwitchNear = new AnalogInput(1);
@@ -72,19 +72,19 @@ public class Intake extends SubsystemBase {
     }
 
     // public void setCollectorAngle(double desiredAngle) {
-    //     SmartDashboard.putNumber("collect_angle_setpoint", desiredAngle);
+    // SmartDashboard.putNumber("collect_angle_setpoint", desiredAngle);
 
-    //     this.anglePIDController.setReference(desiredAngle, ControlType.kPosition);
+    // this.anglePIDController.setReference(desiredAngle, ControlType.kPosition);
     // }
 
     // public Command setCollectorAngleCmd(double desiredAngle) {
-    //     return runOnce(() -> this.setCollectorAngle(desiredAngle));
+    // return runOnce(() -> this.setCollectorAngle(desiredAngle));
     // }
-    
+
     private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
-    
+
         if (enc == null)
-           return;
+            return;
         enc.setMaxPeriod(.1);
         enc.setMinRate(10);
         System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
@@ -99,56 +99,60 @@ public class Intake extends SubsystemBase {
     }
 
     // public void stowCollector() {
-    //     moveCollector(0.10);
+    // moveCollector(0.10);
     // }
 
     // public void deployCollector() {
-    //     moveCollector(-0.10);
+    // moveCollector(-0.10);
     // }
 
     public Command setCollectorSpeed(double desiredVelocity) {
         SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
         return runOnce(() -> this.collectSparkMax.set(desiredVelocity))
-        .handleInterrupt(() -> this.collectSparkMax.set(0))
-        .until(()->noteFound());
+                .handleInterrupt(() -> this.collectSparkMax.set(0))
+                .until(() -> noteFound());
     }
 
     public Command setCollectorSpeed2(double desiredVelocity) {
         SmartDashboard.putNumber("collect_velocity_setpoint", desiredVelocity);
 
-        return new FunctionalCommand (()->{}, 
-        () ->  this.collectSparkMax.set(desiredVelocity), 
-        (interrupted) ->  this.collectSparkMax.set(0), 
-        () -> noteFound(), 
-        this);
-        
+        return new FunctionalCommand(() -> {
+        },
+                () -> this.collectSparkMax.set(desiredVelocity),
+                (interrupted) -> this.collectSparkMax.set(0),
+                () -> noteFound(),
+                this);
+
     }
 
     public Command stowCollector() {
-       return new FunctionalCommand (()->{}, 
-        () ->  this.moveCollector(0.10),
-        (interrupted) ->  this.moveCollector(0.0), 
-        () -> isStowed(), 
-        this);  
+        return new FunctionalCommand(() -> {
+        },
+                () -> this.moveCollector(0.10),
+                (interrupted) -> this.moveCollector(0.0),
+                () -> isStowed(),
+                this);
     }
 
     public Command deployCollector() {
-       return new FunctionalCommand (()->{}, 
-        () ->  this.moveCollector(-0.10),
-        (interrupted) ->  this.moveCollector(0.0), 
-        () -> isDeployed(), 
-        this);  
+        return new FunctionalCommand(() -> {
+        },
+                () -> this.moveCollector(-0.10),
+                (interrupted) -> this.moveCollector(0.0),
+                () -> isDeployed(),
+                this);
     }
 
-     public Command goToTransfer() {
-       return new FunctionalCommand (()->{}, 
-        () ->  this.moveCollector(0.15),
-        (interrupted) ->  {
-            this.moveCollector(0.0);
-            this.collectSparkMax.set(0.85); 
-        }, 
-        () -> canDeliver(), 
-        this);  
+    public Command goToTransfer() {
+        return new FunctionalCommand(() -> {
+        },
+                () -> this.moveCollector(0.15),
+                (interrupted) -> {
+                    this.moveCollector(0.0);
+                    this.collectSparkMax.set(0.85);
+                },
+                () -> canDeliver(),
+                this);
     }
 
     public boolean isStowed() {
@@ -169,12 +173,12 @@ public class Intake extends SubsystemBase {
 
     public boolean canDeliver() {
         boolean value = false;
-        if (hexEncoder.get() > 242 && hexEncoder.get() < 312) {
+        if (hexEncoder.get() > 242 && hexEncoder.get() < 312 * 1.5) {
             value = true;
         }
+        Logger.recordOutput("Intake/Hex Encoder", hexEncoder.get());
         return value;
     }
-
 
     public Command setCollectorPower(double speed) {
         return runOnce(() -> this.collectSparkMax.set(speed));
@@ -187,17 +191,20 @@ public class Intake extends SubsystemBase {
         }
         System.out.println("Intake: found note = " + value);
         return value;
-        
+
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
 
-       // SmartDashboard.putNumber("collector_angle", this.angleEncoder.getPosition());
+        Logger.recordOutput("Intake/Sensor Far", noteSwitchFar.getValue());
+        Logger.recordOutput("Intake/Sensor Near", noteSwitchNear.getValue());
+
+        // SmartDashboard.putNumber("collector_angle", this.angleEncoder.getPosition());
         SmartDashboard.putNumber("collect_velocity", this.collectEncoder.getVelocity());
         SmartDashboard.putNumber("collector_angle_absolute",
-        this.angleSparkMax.getAbsoluteEncoder(Type.kDutyCycle).getPosition());
+                this.angleSparkMax.getAbsoluteEncoder(Type.kDutyCycle).getPosition());
         SmartDashboard.putNumber("InTkFarNoteSwitchVal", this.noteSwitchFar.getValue());
         SmartDashboard.putNumber("InTkFarNoteSwitchVol", this.noteSwitchFar.getVoltage());
         SmartDashboard.putNumber("InTkNearNoteSwitchVal", this.noteSwitchNear.getValue());

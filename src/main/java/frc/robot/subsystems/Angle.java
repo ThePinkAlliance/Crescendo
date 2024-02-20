@@ -2,8 +2,12 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -14,32 +18,34 @@ import com.revrobotics.SparkLimitSwitch;
 public class Angle extends SubsystemBase {
 
     private CANSparkMax m_motor;
+    private CANcoder m_angleCancoder;
     private RelativeEncoder m_relEncoder;
-
-    private double currentTargetRotations;
+    private double target_rotations;
 
     public Angle() {
         this.m_motor = new CANSparkMax(41, MotorType.kBrushless);
+        this.m_angleCancoder = new CANcoder(20);
+        this.target_rotations = 0;
+
+        var cancoderConfig = new CANcoderConfiguration();
+        cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+
+        this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 
         this.m_motor.restoreFactoryDefaults();
         this.m_relEncoder = m_motor.getEncoder();
-        // this.m_relEncoder.setPosition(0);
         this.m_motor.setIdleMode(IdleMode.kCoast);
+        this.m_motor.setInverted(true);
 
         var m_pidController = m_motor.getPIDController();
 
-        double kP = 0.1;
-        double kI = 1e-5;
+        double kP = 0.09;
+        double kI = 0.00;
 
         m_pidController.setP(kP);
         m_pidController.setI(kI);
-        m_pidController.setOutputRange(-0.5, 0.5);
-
-        this.currentTargetRotations = 0;
-
-        SmartDashboard.putNumber("point error", 0);
-        SmartDashboard.putNumber("Realative Angle", 0);
-        SmartDashboard.putNumber("Angle Target", 0);
+        m_pidController.setFF(.001);
+        m_pidController.setOutputRange(-1, 1);
     }
 
     @Override
@@ -47,36 +53,45 @@ public class Angle extends SubsystemBase {
         var fowardSwitch = m_motor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
         double relativeEncoderPosition = m_relEncoder.getPosition();
-        double angleError = currentTargetRotations - relativeEncoderPosition;
 
         Logger.recordOutput("Shooter/Angle Position", relativeEncoderPosition);
         Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (52.2 / 53.95));
+        Logger.recordOutput("Shooter/CANCoder Angle", this.m_angleCancoder.getAbsolutePosition().getValueAsDouble());
+        Logger.recordOutput("Shooter/CANcoder Angle Real",
+                getCancoderAngle());
 
-        SmartDashboard.putNumber("Angle Error", angleError);
-        SmartDashboard.putBoolean("Foward Switch", fowardSwitch.isPressed());
+        Logger.recordOutput("Shooter/Foward Switch", fowardSwitch.isPressed());
     }
 
-    public void setPower(double power) {
-        this.m_motor.set(power);
+    public void disable() {
+        this.m_motor.set(0);
     }
 
-    public void setAnglePID() {
+    public void updateTuneAnglePID() {
         double targetRotation = SmartDashboard.getNumber("Angle Target", 0);
 
         this.setAngle(targetRotation);
     }
 
-    public void setAngleNew(double angle) {
-        double rotations = angle * (53.95 / 52.2);
+    private double getCancoderAngle() {
+        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.37) * 360) + 4.8;
+    }
 
-        this.m_motor.getPIDController().setReference(rotations, ControlType.kPosition);
+    public void setAngleNew(double angle) {
+        double rotationDiff = (angle - getCancoderAngle()) * (53.95 / 52.2);
+        double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
+
+        this.m_motor.getPIDController().setReference(desired_rotations,
+                ControlType.kPosition);
+        this.target_rotations = desired_rotations;
+        Logger.recordOutput("Shooter/Angle Setpoint", desired_rotations);
+        Logger.recordOutput("Shooter/Angle Ref", angle);
     }
 
     public void setAngle(double angle) {
         double targetRotations = angle * (57.2 / (58.2 + 2));
 
         this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
-        this.currentTargetRotations = targetRotations;
     }
 
     public void resetAngle() {
@@ -87,4 +102,19 @@ public class Angle extends SubsystemBase {
         return runOnce(() -> this.setAngle(angle));
     }
 
+    public double getControlError() {
+        return this.target_rotations - this.m_relEncoder.getPosition();
+    }
+
+    public void stop() {
+        this.m_motor.getPIDController().setReference(0, ControlType.kCurrent);
+    }
+
+    public double getSpeed() {
+        return this.m_motor.get();
+    }
+
+    public Command setAngleCommandNew(double angle) {
+        return runOnce(() -> this.setAngleNew(angle));
+    }
 }

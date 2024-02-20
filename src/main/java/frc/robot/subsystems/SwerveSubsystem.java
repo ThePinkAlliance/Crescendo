@@ -25,6 +25,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.subsystems.drive.SwerveModule;
 import frc.robot.subsystems.drive.modules.WPI_SwerveModule;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
 
@@ -44,6 +45,9 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveModule[] modules;
     private SwerveModulePosition[] lastModulePositionsMeters;
     private Rotation2d lastGyroYaw;
+
+    private double lastEpoch = 0;
+    private double lastAngularPos = 0;
 
     /**
      * Creates a Swerve subsystem with the added kinematics.
@@ -94,10 +98,6 @@ public class SwerveSubsystem extends SubsystemBase {
         this.lastModulePositionsMeters = getPositions();
 
         SmartDashboard.putData("Field", field2d);
-
-        SmartDashboard.putNumber("Kp", 10);
-        SmartDashboard.putNumber("Ki", 0);
-        SmartDashboard.putNumber("Kd", 0.40);
 
         calibrateGyro();
     }
@@ -200,27 +200,22 @@ public class SwerveSubsystem extends SubsystemBase {
         return estimator.getEstimatedPosition();
     }
 
-    private double lastEpoch = 0;
-    private double lastAngularPos = 0;
-
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
 
-        SmartDashboard.putNumber("Front Right Position", (frontRightModule.getRawAbsoluteAngularPosition()));
-        SmartDashboard.putNumber("Back Left Position", (backLeftModule.getRawAbsoluteAngularPosition()));
-        SmartDashboard.putNumber("Back Right Position", (backRightModule.getRawAbsoluteAngularPosition()));
-        SmartDashboard.putNumber("Front Left Position", (frontLeftModule.getRawAbsoluteAngularPosition()));
+        Logger.recordOutput("Swerve/Front Right Absolute", frontRightModule.getRawAbsoluteAngularPosition());
+        Logger.recordOutput("Swerve/Back Left Absolute", backLeftModule.getRawAbsoluteAngularPosition());
+        Logger.recordOutput("Swerve/Back Right Absolute", backRightModule.getRawAbsoluteAngularPosition());
+        Logger.recordOutput("Swerve/Front Left Absolute", frontLeftModule.getRawAbsoluteAngularPosition());
+        Logger.recordOutput("Swerve/Heading", getHeading());
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();
-            SmartDashboard.putNumber("Angular Vel Rad/s",
-                    ((currentAngularPos - lastAngularPos) * (Math.PI / 180)) / (Timer.getFPGATimestamp() - lastEpoch));
+            Logger.recordOutput("Base/Angular Vel Rads",
+                    (currentAngularPos - lastAngularPos) * (Math.PI / 180) / (Timer.getFPGATimestamp() - lastEpoch));
             lastAngularPos = currentAngularPos;
         }
-
-        SmartDashboard.putNumber("Back Right Heading", backRightModule.getRawAbsoluteAngularPosition());
-        SmartDashboard.putNumber("Heading", getHeading());
 
         Pose2d pose = getCurrentPose();
 

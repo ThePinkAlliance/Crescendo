@@ -33,11 +33,11 @@ public class TuneScoring extends Command {
     @Override
     public void execute() {
         double distance = visionSubsystem.getClosestTargetDistance();
-        double desiredAngle = Math.atan2(84, distance) * (180 / Math.PI);
+        double desiredAngle = Math.atan2(80 - 15, distance) * (180 / Math.PI);
 
         Logger.recordOutput("Desired Angle", desiredAngle);
 
-        this.angleSubsystem.setAngleNew(-desiredAngle);
+        this.angleSubsystem.setAngleNew(desiredAngle);
     }
 
     // Called once the command ends or is interrupted.

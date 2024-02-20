@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
 
@@ -31,7 +32,6 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder m_encoder;
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
     DigitalInput m_noteSwitch;
-    
 
     public enum ShooterMove {
         LOAD,
@@ -42,7 +42,7 @@ public class Shooter extends SubsystemBase {
         this.m_greenTalon = new TalonFX(42, "rio");
         this.m_greyTalon = new TalonFX(43, "rio");
         this.m_motor = new CANSparkMax(44, CANSparkLowLevel.MotorType.kBrushless);
-        
+
         this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);
 
@@ -83,6 +83,7 @@ public class Shooter extends SubsystemBase {
         m_pidController.setFF(kFF);
         m_pidController.setOutputRange(kMinOutput, kMaxOutput);
     }
+
     public void setupLoaderDashboardInputs() {
 
         // display PID coefficients on SmartDashboard
@@ -166,6 +167,7 @@ public class Shooter extends SubsystemBase {
         m_greyTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
     }
 
+    @Deprecated
     public void adjustPID() {
         double proportional = SmartDashboard.getNumber("P", 0);
         double intergral = SmartDashboard.getNumber("I", 0);
@@ -183,6 +185,7 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    @Deprecated
     public void putValues() {
 
         StatusSignal<Double> m_greyFXTickVelocity = m_greyTalon.getRotorVelocity();
@@ -216,6 +219,10 @@ public class Shooter extends SubsystemBase {
         double rpm2 = Math.abs(m_greenFXToRPM);
         double error = 0.05;
         t = t - (t * error);
+
+        Logger.recordOutput("RPM2", rpm2);
+        Logger.recordOutput("RPM1", rpm1);
+
         System.out.println("Values: " + rpm1 + ":" + rpm2 + ":" + t);
         if (rpm1 >= t && rpm2 >= t && t > minimumRpm) {
             result = true;
@@ -228,7 +235,7 @@ public class Shooter extends SubsystemBase {
         return !m_noteSwitch.get();
     }
 
-    //Do not call directly, use launch and load instead
+    // Do not call directly, use launch and load instead
     private void move(double rpms) {
         this.m_motor.set(rpms);
     }
@@ -246,55 +253,60 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command loadNote(double desiredVelocity) {
-        
-        return new FunctionalCommand (()->{}, 
-        () ->  { 
-            this.setSpeed(desiredVelocity);
-            this.load(1);
-        }, 
-        (interrupted) -> {
-            this.move(0);
-            this.setSpeed(0);
-        },  
-        () -> noteFound(), 
-        this);
-        
+
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    this.setSpeed(desiredVelocity);
+                    this.load(1);
+                },
+                (interrupted) -> {
+                    this.move(0);
+                    this.setSpeed(0);
+                },
+                () -> noteFound(),
+                this);
+
     }
 
     public Command rampUp2(double desiredVelocity) {
-        
-        return new FunctionalCommand (()->{}, 
-        () ->  { 
-            this.setVelocity(desiredVelocity);
-        }, 
-        (interrupted) -> {},  
-        () -> isAtLeastRpm(4200), 
-        this);
+
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    this.setVelocity(desiredVelocity);
+                },
+                (interrupted) -> {
+                },
+                () -> isAtLeastRpm(4200),
+                this);
     }
+
     public Command rampUp(double speed) {
         return runOnce(() -> this.setVelocity(speed));
     }
-    
+
     public Command launchNote() {
         return runOnce(() -> this.launch(1));
     }
+
     public Command launchNote2() {
         Timer time = new Timer();
-        return new FunctionalCommand (()->{
+        return new FunctionalCommand(() -> {
             time.reset();
             time.start();
-        }, 
-        () ->  { 
-            this.launch(1);
-        }, 
-        (interrupted) -> {
-            this.setSpeed(0);
-            this.stop();
-        },  
-        () -> {
-            return time.hasElapsed(1);
-        }, 
-        this);
+        },
+                () -> {
+                    this.launch(1);
+                },
+                (interrupted) -> {
+                    this.setSpeed(0);
+                    this.stop();
+                },
+                () -> {
+                    return time.hasElapsed(1);
+                },
+                this);
     }
 
     public Command stopShooter() {
@@ -307,5 +319,8 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Note Loaded", m_noteSwitch.get());
+
+        Logger.recordOutput("Shooter/Top Velocity", this.m_greenTalon.getVelocity().getValueAsDouble() * 60);
+        Logger.recordOutput("Shooter/Bottom Velocity", this.m_greyTalon.getVelocity().getValueAsDouble() * 60);
     }
 }

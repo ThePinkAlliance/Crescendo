@@ -52,7 +52,7 @@ public class TuneShootAction extends Command {
         /*
          * ANGLE CONTROL
          */
-        m_angle.setAnglePID();
+        m_angle.updateTuneAnglePID();
     }
 
     // Called once the command ends or is interrupted.

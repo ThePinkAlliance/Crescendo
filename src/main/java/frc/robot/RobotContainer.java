@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -52,7 +53,7 @@ public class RobotContainer {
 
     public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
-    public VisionSubsystem visionSubsystem;
+    public VisionSubsystem m_visionSubsystem;
 
     public ChoreoTrajectory selectedTrajectory;
     public SendableChooser<Command> chooser;
@@ -75,7 +76,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
         swerveSubsystem = new SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
-        visionSubsystem = new VisionSubsystem();
+        m_visionSubsystem = new VisionSubsystem();
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
@@ -109,6 +110,8 @@ public class RobotContainer {
         // Choreo.getTrajectory("point_2")));
 
         SmartDashboard.putData(chooser);
+
+        SmartDashboard.putNumber("shooter_angle", 2);
 
         // Configure the trigger bindings
         configureBindings();
@@ -144,16 +147,34 @@ public class RobotContainer {
         // Commands.runOnce(() -> m_shooter.setSpeed(.3))
         // .alongWith(Commands.runOnce(() -> m_shooter.load(1))));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).whileTrue(m_intake.setCollectorSpeed2(.85));
+        // new JoystickButton(baseJoystick,
+        // JoystickMap.BUTTON_A).whileTrue(m_intake.setCollectorSpeed2(.85));
+        // new JoystickButton(baseJoystick,
+        // JoystickMap.BUTTON_A).whileTrue(m_angle.setAngleCommandNew(25));
+        // new JoystickButton(baseJoystick,
+        // JoystickMap.BUTTON_B).whileTrue(m_angle.setAngleCommandNew(0));
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(m_intake.deployCollector());
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+        // .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
+        // m_visionSubsystem));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
+                .onTrue(new FunctionalCommand(() -> {
+                }, () -> {
+                    var angle = SmartDashboard.getNumber("shooter_angle", 0);
+                    m_angle.setAngleNew(angle);
+                }, (e) -> {
+                    m_angle.stop();
+                }, () -> false, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-                .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle));
-        m_angle.setDefaultCommand(new TuneScoring(visionSubsystem, m_angle));
-
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(m_shooter.loadNote(.3));
+                .onTrue(m_shooter.loadNote(0.3).andThen(m_shooter.rampUp2(2000)))
+                .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+                .whileTrue(m_shooter.loadNote(.3).andThen(m_shooter.rampUp2(-4800)))
+                .onFalse(Commands.runOnce(() -> m_shooter.load(-.3)));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(m_shooter.rampUp(-400));
+                .whileTrue(m_shooter.rampUp(-400).andThen(Commands.runOnce(() -> m_shooter.load(-.3))))
+                .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
 
         new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new SetClimber(m_climber, 69, -64));
         new POVButton(baseJoystick, JoystickMap.POV_DOWN).whileTrue(new SetClimber(m_climber, 0, 0));
