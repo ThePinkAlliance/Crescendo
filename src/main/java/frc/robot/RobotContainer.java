@@ -158,6 +158,7 @@ public class RobotContainer {
         // new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
         // .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
         // m_visionSubsystem));
+        
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .onTrue(new FunctionalCommand(() -> {
                 }, () -> {
@@ -167,8 +168,11 @@ public class RobotContainer {
                     m_angle.stop();
                 }, () -> false, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-                .onTrue(m_shooter.loadNote(0.3).andThen(m_shooter.rampUp2(2000)))
-                .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
+         .whileTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
+         m_visionSubsystem));
+        //new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+        //        .onTrue(m_shooter.loadNote(0.3).andThen(m_shooter.rampUp2(2000)))
+        //        .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
                 .whileTrue(m_shooter.loadNote(.3).andThen(m_shooter.rampUp2(-4800)))
                 .onFalse(Commands.runOnce(() -> m_shooter.load(-.3)));
