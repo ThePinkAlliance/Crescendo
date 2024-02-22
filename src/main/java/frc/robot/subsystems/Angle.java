@@ -99,7 +99,7 @@ public class Angle extends SubsystemBase {
     }
 
     public Command setAngleCommand(double angle) {
-        return runOnce(() -> this.setAngle(angle));
+        return runOnce(() -> this.setAngleNew(angle));
     }
 
     public double getControlError() {
@@ -117,4 +117,11 @@ public class Angle extends SubsystemBase {
     public Command setAngleCommandNew(double angle) {
         return runOnce(() -> this.setAngleNew(angle));
     }
+
+    public Command GotoAngle(double setpoint) {
+        return new FunctionalCommand(() -> this.setAngleNew(setpoint), () -> {
+        }, (i) -> {
+        }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
+    }
+
 }

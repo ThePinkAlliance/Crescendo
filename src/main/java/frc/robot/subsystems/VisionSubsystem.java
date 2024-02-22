@@ -99,7 +99,7 @@ public class VisionSubsystem extends SubsystemBase {
         return Optional.empty();
     }
 
-    public double uncorrectedDistance() {
+    public double UncorrectedDistance() {
         // using tag 4 height (56)
         return 56 / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
     }
@@ -125,6 +125,6 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         Logger.recordOutput("Closest Target Distance", getClosestTargetDistance());
-        Logger.recordOutput("Uncorrected Distance", uncorrectedDistance());
+        Logger.recordOutput("Uncorrected Distance", UncorrectedDistance());
     }
 }

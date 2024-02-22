@@ -38,15 +38,15 @@ public class PickupAndLoadNote extends SequentialCommandGroup {
         this.visionSubsystem = visionSubsystem;
 
         addCommands(
-                Commands.runOnce(()->angle.setAngleNew(0)),
-                intake.setCollectorSpeed(.85),
-                intake.goToTransfer().alongWith(shooter.loadNote(0.30)),
+                Commands.runOnce(() -> angle.setAngleNew(0)),
+                intake.collectUntilFound(.85),
+                intake.goToTransfer().alongWith(shooter.loadNoteUntilFound(0.30)),
                 intake.setCollectorPower(0),
                 intake.stowCollector(),
-               // shooter.rampUp2(-4200),
-               // go_to_angle(angle),
-               // shooter.launchNote2(),
-               // angle.setAngleCommandNew(0),
+                // shooter.rampUp2(-4200),
+                // go_to_angle(angle),
+                // shooter.launchNote2(),
+                // angle.setAngleCommandNew(0),
                 Commands.runOnce(() -> shooter.stop()));
     }
 

@@ -29,6 +29,7 @@ import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.shooter.AdjustAngle;
 import frc.robot.commands.shooter.ShootAction;
+import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.TuneScoring;
 import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
@@ -37,8 +38,10 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.commands.intake.CollectNote;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.Climber.ClimberSide;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -158,35 +161,34 @@ public class RobotContainer {
         // new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
         // .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
         // m_visionSubsystem));
-        
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
-                .onTrue(new FunctionalCommand(() -> {
-                }, () -> {
-                    var angle = SmartDashboard.getNumber("shooter_angle", 0);
-                    m_angle.setAngleNew(angle);
-                }, (e) -> {
-                    m_angle.stop();
-                }, () -> false, m_angle));
+
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
+        // .onTrue(new FunctionalCommand(() -> {
+        // }, () -> {
+        // var angle = SmartDashboard.getNumber("shooter_angle", 0);
+        // m_angle.setAngleNew(angle);
+        // }, (e) -> {
+        // m_angle.stop();
+        // }, () -> true, m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new CollectNote(m_intake, m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-         .whileTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
-         m_visionSubsystem));
-        //new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-        //        .onTrue(m_shooter.loadNote(0.3).andThen(m_shooter.rampUp2(2000)))
-        //        .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
-                .whileTrue(m_shooter.loadNote(.3).andThen(m_shooter.rampUp2(-4800)))
-                .onFalse(Commands.runOnce(() -> m_shooter.load(-.3)));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(m_shooter.rampUp(-400).andThen(Commands.runOnce(() -> m_shooter.load(-.3))))
-                .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
+                .onTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem));
 
-        new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new SetClimber(m_climber, 69, -64));
-        new POVButton(baseJoystick, JoystickMap.POV_DOWN).whileTrue(new SetClimber(m_climber, 0, 0));
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+        // .whileTrue(m_shooter.loadNoteUntilFound(.3).andThen(m_shooter.rampUp2(-4800)))
+        // .onFalse(Commands.runOnce(() -> m_shooter.load(-.3)));
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
+        // .whileTrue(m_shooter.rampUp(-400).andThen(Commands.runOnce(() ->
+        // m_shooter.load(-.3))))
+        // .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
 
-        new POVButton(baseJoystick, JoystickMap.POV_LEFT)
-                .whileTrue(new ResetClimber(m_climber, Climber.ClimberSide.LEFT));
-        new POVButton(baseJoystick, JoystickMap.POV_RIGHT)
-                .whileTrue(new ResetClimber(m_climber, Climber.ClimberSide.RIGHT));
+        // new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new
+        // SetClimber(m_climber, 79, -64));
+        // new POVButton(baseJoystick, JoystickMap.POV_DOWN).whileTrue(new
+        // SetClimber(m_climber, 0, 0));
+
+        // new POVButton(baseJoystick, JoystickMap.POV_LEFT)
+        // .whileTrue(m_climber.resetLeftClimber());
     }
 
     /**

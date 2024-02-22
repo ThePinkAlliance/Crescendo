@@ -249,7 +249,7 @@ public class Shooter extends SubsystemBase {
         move(0);
     }
 
-    public Command loadNote(double desiredVelocity) {
+    public Command loadNoteUntilFound(double desiredVelocity) {
 
         return new FunctionalCommand(() -> {
         },
@@ -275,7 +275,7 @@ public class Shooter extends SubsystemBase {
                 },
                 (interrupted) -> {
                 },
-                () -> isAtLeastRpm(4200),
+                () -> isAtLeastRpm(desiredVelocity),
                 this);
     }
 
@@ -301,7 +301,7 @@ public class Shooter extends SubsystemBase {
                     this.stop();
                 },
                 () -> {
-                    return time.hasElapsed(1);
+                    return time.hasElapsed(1.5);
                 },
                 this);
     }
