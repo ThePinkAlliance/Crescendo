@@ -12,6 +12,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,6 +20,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
@@ -28,6 +30,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import org.ejml.simple.SimpleMatrix;
 import org.littletonrobotics.junction.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -37,7 +40,10 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
-    private Matrix<N3, N1> correction_matrix;
+    private Matrix<N2, N1> y_correction_matrix;
+    private Matrix<N2, N1> x_correction_matrix;
+    private LinearFilter x_filter;
+    private LinearFilter y_filter;
 
     private final double mounted_angle;
 
@@ -52,7 +58,12 @@ public class VisionSubsystem extends SubsystemBase {
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
 
-        this.correction_matrix = VecBuilder.fill(0, 0, 0);
+        this.x_correction_matrix = VecBuilder.fill(1.1709, 0);
+        this.y_correction_matrix = VecBuilder.fill(1.0296, 0.0463);
+
+        // Tune the number of taps (samples) for both x & y.
+        this.x_filter = LinearFilter.movingAverage(5);
+        this.y_filter = LinearFilter.movingAverage(5);
         this.mounted_angle = 22.5;
     }
 
@@ -64,11 +75,13 @@ public class VisionSubsystem extends SubsystemBase {
             double botpose_y = data[1];
             double botpose_z = data[2];
 
-            double corrected_x = botpose_x - (botpose_x * correction_matrix.get(0, 0));
-            double corrected_y = botpose_y - (botpose_y * correction_matrix.get(1, 0));
-            double corrected_z = botpose_z - (botpose_z * correction_matrix.get(2, 0));
+            botpose_x = this.x_filter.calculate(botpose_x);
+            botpose_y = this.y_filter.calculate(botpose_y);
 
-            return Optional.of(new Translation3d(corrected_x, corrected_y, corrected_z));
+            double corrected_x = x_correction_matrix.get(0, 0) * botpose_x + x_correction_matrix.get(1, 0);
+            double corrected_y = y_correction_matrix.get(0, 0) * botpose_y + y_correction_matrix.get(1, 0);
+
+            return Optional.of(new Translation3d(corrected_x, corrected_y, botpose_z));
         }
 
         return Optional.empty();
@@ -122,6 +135,9 @@ public class VisionSubsystem extends SubsystemBase {
             Logger.recordOutput("Speaker-Red-Tag", tag_pose.toPose2d());
             Logger.recordOutput("Robot-Pose",
                     new Pose2d(getTranslation().get().toTranslation2d(), Rotation2d.fromDegrees(0)));
+
+            Logger.recordOutput("Vision/Pose x", translation2d.getX());
+            Logger.recordOutput("Vision/Pose y", translation2d.getY());
         }
 
         Logger.recordOutput("Closest Target Distance", getClosestTargetDistance());
