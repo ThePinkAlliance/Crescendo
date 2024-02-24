@@ -164,7 +164,7 @@ public class Intake extends SubsystemBase {
     public Command deployCollector() {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(0.10),
+                () -> this.moveCollector(0.20),
                 (interrupted) -> this.moveCollector(0.0),
                 () -> isDeployed(),
                 this);
@@ -200,7 +200,7 @@ public class Intake extends SubsystemBase {
 
     public boolean canDeliver() {
         boolean value = false;
-        if (hexEncoder.get() > 242 && hexEncoder.get() < 312 * 1.5) {
+        if (hexEncoder.get() > 242 && hexEncoder.get() < 312 * 1.3) {
             value = true;
         }
         Logger.recordOutput("Intake/Hex Encoder", hexEncoder.get());

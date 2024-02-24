@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.estimator.ExtendedKalmanFilter;
+import edu.wpi.first.math.estimator.KalmanFilter;
+import edu.wpi.first.math.estimator.UnscentedKalmanFilter;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -61,9 +65,15 @@ public class VisionSubsystem extends SubsystemBase {
         this.x_correction_matrix = VecBuilder.fill(1.1709, 0);
         this.y_correction_matrix = VecBuilder.fill(1.0296, 0.0463);
 
-        // Tune the number of taps (samples) for both x & y.
-        this.x_filter = LinearFilter.movingAverage(5);
+        /**
+         * Tune the number of taps (samples) for both x & y.
+         * 
+         * Filter types:
+         * https://docs.wpilib.org/en/stable/docs/software/advanced-controls/filters/linear-filter.html
+         */
+        this.x_filter = LinearFilter.singlePoleIIR(.25, 0.02);
         this.y_filter = LinearFilter.movingAverage(5);
+
         this.mounted_angle = 22.5;
     }
 
@@ -71,8 +81,8 @@ public class VisionSubsystem extends SubsystemBase {
         double[] data = this.botpose_subscriber.get();
 
         if (data != null) {
-            double botpose_x = data[0];
-            double botpose_y = data[1];
+            double botpose_y = data[0];
+            double botpose_x = data[1];
             double botpose_z = data[2];
 
             botpose_x = this.x_filter.calculate(botpose_x);

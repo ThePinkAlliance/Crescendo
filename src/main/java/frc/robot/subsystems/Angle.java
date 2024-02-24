@@ -5,6 +5,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -21,11 +24,13 @@ public class Angle extends SubsystemBase {
     private CANcoder m_angleCancoder;
     private RelativeEncoder m_relEncoder;
     private double target_rotations;
+    private double cancoder_offset;
 
     public Angle() {
         this.m_motor = new CANSparkMax(41, MotorType.kBrushless);
         this.m_angleCancoder = new CANcoder(20);
         this.target_rotations = 0;
+        this.cancoder_offset = 0.374;
 
         var cancoderConfig = new CANcoderConfiguration();
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
@@ -46,12 +51,15 @@ public class Angle extends SubsystemBase {
         m_pidController.setI(kI);
         m_pidController.setFF(.001);
         m_pidController.setOutputRange(-1, 1);
+
+        double current_angle = (this.m_angleCancoder.getAbsolutePosition().getValueAsDouble() - cancoder_offset);
+        this.m_motor.getEncoder().setPosition((current_angle * 360) * (53.95 / 52.2));
     }
 
     @Override
     public void periodic() {
         var fowardSwitch = m_motor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
-
+        var reverseSwitch = m_motor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
         double relativeEncoderPosition = m_relEncoder.getPosition();
 
         Logger.recordOutput("Shooter/Angle Position", relativeEncoderPosition);
@@ -61,6 +69,7 @@ public class Angle extends SubsystemBase {
                 getCancoderAngle());
 
         Logger.recordOutput("Shooter/Foward Switch", fowardSwitch.isPressed());
+        Logger.recordOutput("Shooter/Reverse Switch", reverseSwitch.isPressed());
     }
 
     public void disable() {
@@ -74,7 +83,7 @@ public class Angle extends SubsystemBase {
     }
 
     private double getCancoderAngle() {
-        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.37) * 360) + 4.8;
+        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - this.cancoder_offset) * 360);
     }
 
     public void setAngleNew(double angle) {
@@ -120,6 +129,12 @@ public class Angle extends SubsystemBase {
 
     public Command GotoAngle(double setpoint) {
         return new FunctionalCommand(() -> this.setAngleNew(setpoint), () -> {
+        }, (i) -> {
+        }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
+    }
+
+    public Command GotoAngle(DoubleSupplier setpoint) {
+        return new FunctionalCommand(() -> this.setAngleNew(setpoint.getAsDouble()), () -> {
         }, (i) -> {
         }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
     }

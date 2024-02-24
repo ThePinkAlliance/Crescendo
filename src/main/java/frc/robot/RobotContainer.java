@@ -4,14 +4,11 @@
 
 package frc.robot;
 
-import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,29 +16,19 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
-import frc.robot.commands.AdjustIntakeAngle;
-import frc.robot.commands.PickupAndLoadNote;
-import frc.robot.commands.ResetClimber;
-import frc.robot.commands.SetClimber;
-import frc.robot.commands.shooter.AdjustAngle;
-import frc.robot.commands.shooter.ShootAction;
 import frc.robot.commands.shooter.ShootNote;
-import frc.robot.commands.shooter.TuneScoring;
-import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
+import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.intake.CollectNote;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.Climber.ClimberSide;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -158,29 +145,20 @@ public class RobotContainer {
         // JoystickMap.BUTTON_B).whileTrue(m_angle.setAngleCommandNew(0));
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(m_intake.deployCollector());
-        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-        // .onTrue(new PickupAndLoadNote(m_intake, m_shooter, m_angle,
-        // m_visionSubsystem));
 
-        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
-        // .onTrue(new FunctionalCommand(() -> {
-        // }, () -> {
-        // var angle = SmartDashboard.getNumber("shooter_angle", 0);
-        // m_angle.setAngleNew(angle);
-        // }, (e) -> {
-        // m_angle.stop();
-        // }, () -> true, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new CollectNote(m_intake, m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
                 .onTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem));
 
-        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
+        // .onTrue(m_angle.GotoAngle(() -> SmartDashboard.getNumber("shooter_angle",
+        // 0)));
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
         // .whileTrue(m_shooter.loadNoteUntilFound(.3).andThen(m_shooter.rampUp2(-4800)))
         // .onFalse(Commands.runOnce(() -> m_shooter.load(-.3)));
         // new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-        // .whileTrue(m_shooter.rampUp(-400).andThen(Commands.runOnce(() ->
-        // m_shooter.load(-.3))))
-        // .onFalse(Commands.runOnce(() -> m_shooter.load(0)));
+        // .whileTrue(m_shooter.rampUp(0).andThen(Commands.runOnce(() ->
+        // m_shooter.load(0))));
 
         // new POVButton(baseJoystick, JoystickMap.POV_UP).whileTrue(new
         // SetClimber(m_climber, 79, -64));

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.VisionSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -22,11 +23,15 @@ public class ShootNote extends SequentialCommandGroup {
                 shooter.rampUp2(-4800),
                 angle.GotoAngle(calculateAngle(visionSubsystem.getClosestTargetDistance())),
                 shooter.launchNote2(),
-                angle.setAngleCommandNew(0),
+                angle.setAngleCommandNew(4),
                 shooter.stopShooter());
     }
 
     public double calculateAngle(double distance) {
-        return -0.1471 * distance + 59.912;
+        double angle = (72.7 - 0.41 * distance + 9.1E-04 * (distance * distance));
+
+        Logger.recordOutput("Shooter/Angle", angle);
+
+        return angle;
     }
 }

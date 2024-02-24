@@ -21,7 +21,7 @@ public class CollectNote extends SequentialCommandGroup {
                 // Set turret zero here.
                 intake.deployCollector(),
                 intake.collectUntilFound(.85),
-                angle.setAngleCommand(0),
+                angle.setAngleCommand(4),
                 intake.goToTransfer().alongWith(shooter.loadNoteUntilFound(0.3)),
                 intake.setCollectorPower(0),
                 intake.stowCollector());
