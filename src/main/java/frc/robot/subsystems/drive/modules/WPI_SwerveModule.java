@@ -5,6 +5,8 @@
 package frc.robot.subsystems.drive.modules;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -23,138 +25,141 @@ import frc.robot.subsystems.drive.SwerveModule;
  * used for both steering and driving.
  */
 public class WPI_SwerveModule implements SwerveModule {
-  private PIDController steerController;
+    private PIDController steerController;
 
-  private TalonFX driveMotor;
-  private TalonFX steerMotor;
-  private CANcoder canCoder;
+    private TalonFX driveMotor;
+    private TalonFX steerMotor;
+    private CANcoder canCoder;
 
-  private double absoluteEncoderOffsetRad;
+    private double absoluteEncoderOffsetRad;
 
-  public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
-      double absoluteEncoderOffsetRad,
-      Gains steerGains, String network) {
-    this.canCoder = new CANcoder(canCoderId, network);
-    this.steerMotor = new TalonFX(steerId, network);
-    this.driveMotor = new TalonFX(driveId, network);
+    public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
+            double absoluteEncoderOffsetRad,
+            Gains steerGains, String network) {
+        this.canCoder = new CANcoder(canCoderId, network);
+        this.steerMotor = new TalonFX(steerId, network);
+        this.driveMotor = new TalonFX(driveId, network);
 
-    this.absoluteEncoderOffsetRad = absoluteEncoderOffsetRad;
+        this.absoluteEncoderOffsetRad = absoluteEncoderOffsetRad;
 
-    this.steerController = new PIDController(steerGains.kP, steerGains.kI, steerGains.kD);
-    this.steerController.enableContinuousInput(-Math.PI, Math.PI);
+        this.steerController = new PIDController(steerGains.kP, steerGains.kI, steerGains.kD);
+        this.steerController.enableContinuousInput(-Math.PI, Math.PI);
 
-    this.driveMotor.setInverted(invertDrive);
-    this.steerMotor.setInverted(invertSteer);
+        this.driveMotor.setInverted(invertDrive);
+        this.steerMotor.setInverted(invertSteer);
 
-    this.steerMotor.setNeutralMode(NeutralModeValue.Brake);
-    this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
+        this.steerMotor.setNeutralMode(NeutralModeValue.Brake);
+        this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    CANcoderConfiguration config = new CANcoderConfiguration();
+        CANcoderConfiguration config = new CANcoderConfiguration();
 
-    config.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        config.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
 
-    this.canCoder.getConfigurator().apply(config);
+        this.canCoder.getConfigurator().apply(config);
 
-    resetEncoders();
-  }
+        resetEncoders();
+    }
 
-  /**
-   * Returns the drive wheel position in meters.
-   */
-  @Override
-  public double getDrivePosition() {
-    double position = driveMotor.getPosition().getValueAsDouble();
+    /**
+     * Returns the drive wheel position in meters.
+     */
+    @Override
+    public double getDrivePosition() {
+        double position = driveMotor.getRotorPosition().getValueAsDouble();
 
-    return (position * Constants.ModuleConstants.kDriveMotorGearRatio)
-        * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
-  }
+        position = position * 1.01845;
 
-  /*
-   * This returns the current position of the steer shaft in radians.
-   */
-  @Override
-  public double getSteerPosition() {
-    double absolute_position = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
+        return (position * Constants.ModuleConstants.kDriveMotorGearRatio)
+                * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
+    }
 
-    return absolute_position - absoluteEncoderOffsetRad;
-  }
+    /*
+     * This returns the current position of the steer shaft in radians.
+     */
+    @Override
+    public double getSteerPosition() {
+        double absolute_position = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
 
-  @Override
-  public double getRawAbsoluteAngularPosition() {
-    double absolute_position = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
+        return absolute_position - absoluteEncoderOffsetRad;
+    }
 
-    return absolute_position;
-  }
+    @Override
+    public double getRawAbsoluteAngularPosition() {
+        double absolute_position = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
 
-  @Override
-  public double getDriveVelocity() {
-    double selected_velocity = driveMotor.getVelocity().getValueAsDouble();
+        return absolute_position;
+    }
 
-    return selected_velocity * Constants.ModuleConstants.kDriveMotorGearRatio;
-  }
+    @Override
+    public double getDriveVelocity() {
+        double selected_velocity = driveMotor.getVelocity().getValueAsDouble();
 
-  @Override
-  public double getSteerError() {
-    return steerController.getPositionError();
-  }
+        return selected_velocity * Constants.ModuleConstants.kDriveMotorGearRatio;
+    }
 
-  /**
-   * Returns the velocity of the steer motor in rad/sec.
-   */
-  @Override
-  public double getSteerVelocity() {
-    return canCoder.getVelocity().getValueAsDouble() * 2 * Math.PI;
-  }
+    @Override
+    public double getSteerError() {
+        return steerController.getPositionError();
+    }
 
-  @Override
-  public void resetEncoders() {
-    driveMotor.setPosition(0);
-    steerMotor.setPosition(getAbsoluteEncoderAngle());
-  }
+    /**
+     * Returns the velocity of the steer motor in rad/sec.
+     */
+    @Override
+    public double getSteerVelocity() {
+        return canCoder.getVelocity().getValueAsDouble() * 2 * Math.PI;
+    }
 
-  @Override
-  public double getAbsoluteEncoderAngle() {
-    double angle = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
-    angle -= absoluteEncoderOffsetRad;
+    @Override
+    public void resetEncoders() {
+        driveMotor.setPosition(0);
+        steerMotor.setPosition(getAbsoluteEncoderAngle());
+    }
 
-    return angle;
-  }
+    @Override
+    public double getAbsoluteEncoderAngle() {
+        double angle = canCoder.getAbsolutePosition().getValueAsDouble() * (Math.PI / .5);
+        angle -= absoluteEncoderOffsetRad;
 
-  /*
-   * Returns the current state of the swerve module using velocity.
-   */
-  @Override
-  public SwerveModuleState getState() {
-    return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSteerPosition()));
-  }
+        return angle;
+    }
 
-  /*
-   * Returns the current state of the swerve module using position.
-   */
-  @Override
-  public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerPosition()));
-  }
+    /*
+     * Returns the current state of the swerve module using velocity.
+     */
+    @Override
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSteerPosition()));
+    }
 
-  /**
-   * Sets the current module state to the desired one.
-   * 
-   * @param state desired swerve module state
-   */
-  @Override
-  public void setDesiredState(SwerveModuleState state) {
-    state = SwerveModuleState.optimize(state, getState().angle);
-    driveMotor
-        .setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
+    /*
+     * Returns the current state of the swerve module using position.
+     */
+    @Override
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerPosition()));
+    }
 
-    double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
-    SmartDashboard.putNumber("steer: " + this.steerMotor.getDeviceID(), output);
-    steerMotor.set(output);
-  }
+    /**
+     * Sets the current module state to the desired one.
+     * 
+     * @param state desired swerve module state
+     */
+    @Override
+    public void setDesiredState(SwerveModuleState state) {
+        state = SwerveModuleState.optimize(state, getState().angle);
+        driveMotor
+                .setVoltage(
+                        (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
-  @Override
-  public void stop() {
-    driveMotor.set(0);
-    steerMotor.set(0);
-  }
+        double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
+        SmartDashboard.putNumber("steer: " + this.steerMotor.getDeviceID(), output);
+        steerMotor.set(output);
+    }
+
+    @Override
+    public void stop() {
+        driveMotor.set(0);
+        steerMotor.set(0);
+    }
 }

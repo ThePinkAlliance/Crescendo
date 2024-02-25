@@ -92,7 +92,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         frontLeftModule.getPosition(), backRightModule.getPosition(),
                         backLeftModule
                                 .getPosition() },
-                new Pose2d(), VecBuilder.fill(0.0, 0.0, 0.0),
+                new Pose2d(0, 0, new Rotation2d()), VecBuilder.fill(0.0, 0.0, 0.0),
                 VecBuilder.fill(0.9, 0.9, 0.9));
         this.modules = new SwerveModule[] { frontRightModule, frontLeftModule, backRightModule, backLeftModule };
         this.lastModulePositionsMeters = getPositions();
@@ -178,6 +178,8 @@ public class SwerveSubsystem extends SubsystemBase {
                 twist_vel.dy / looper,
                 twist_vel.dtheta);
 
+        Logger.recordOutput("Base/Pose", currentPose);
+
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
         frontRightModule.setDesiredState(states[3]);
@@ -200,6 +202,10 @@ public class SwerveSubsystem extends SubsystemBase {
         return estimator.getEstimatedPosition();
     }
 
+    public Pose2d getDifferentPose() {
+        return new Pose2d(getCurrentPose().getX(), getCurrentPose().getY(), getRotation2d());
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
@@ -208,7 +214,13 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Back Left Absolute", backLeftModule.getRawAbsoluteAngularPosition());
         Logger.recordOutput("Swerve/Back Right Absolute", backRightModule.getRawAbsoluteAngularPosition());
         Logger.recordOutput("Swerve/Front Left Absolute", frontLeftModule.getRawAbsoluteAngularPosition());
+
+        Logger.recordOutput("Swerve/Front Right Position", frontRightModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Back Left Position", backLeftModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Back Right Position", backRightModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Front Left Position", frontLeftModule.getDrivePosition());
         Logger.recordOutput("Swerve/Heading", getHeading());
+        Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();

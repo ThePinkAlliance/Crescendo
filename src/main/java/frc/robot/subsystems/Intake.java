@@ -155,7 +155,7 @@ public class Intake extends SubsystemBase {
     public Command stowCollector() {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(-0.15),
+                () -> this.moveCollector(-0.20),
                 (interrupted) -> this.moveCollector(0.0),
                 () -> isStowed(),
                 this);

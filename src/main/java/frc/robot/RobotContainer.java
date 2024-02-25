@@ -8,6 +8,8 @@ import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,10 +25,14 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.JoystickMap;
 import frc.lib.PinkPIDConstants;
+import frc.lib.pathing.ChoreoUtil;
+import frc.lib.pathing.events.ChoreoEvent;
+import frc.lib.pathing.events.ChoreoEventHandler;
 import frc.robot.commands.AdjustIntakeAngle;
 import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
+import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.shooter.AdjustAngle;
 import frc.robot.commands.shooter.ShootAction;
 import frc.robot.commands.shooter.ShootNote;
@@ -42,6 +48,7 @@ import frc.robot.commands.intake.CollectNote;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.Climber.ClimberSide;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -68,11 +75,11 @@ public class RobotContainer {
     private Climber m_climber = new Climber();
 
     // i: 0.0045
-    public PinkPIDConstants translation_y_constants = new PinkPIDConstants(0.12, 0.0, 0.0);
+    public PinkPIDConstants translation_y_constants = new PinkPIDConstants(0.7, 0.0, 0.0);
     // i: 0.005
-    public PinkPIDConstants translation_x_constants = new PinkPIDConstants(0.10, 0.0, 0.0);
+    public PinkPIDConstants translation_x_constants = new PinkPIDConstants(0.7, 0.0, 0.0);
 
-    public PinkPIDConstants rotation_constants = new PinkPIDConstants(0.12, 0.001, 0);
+    public PinkPIDConstants rotation_constants = new PinkPIDConstants(.7, 0.0, 0);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -83,37 +90,74 @@ public class RobotContainer {
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
-        // this.chooser.addOption("Speaker Backup",
-        // new Pair<ChoreoTrajectory, ChoreoEvent[]>(Choreo.getTrajectory("leave_one"),
-        // null));
-        // this.chooser.addOption("Speaker Backup Rotate",
-        // new Pair<ChoreoTrajectory,
-        // ChoreoEvent[]>(Choreo.getTrajectory("leave_three"),
-        // new ChoreoEvent[] { new ChoreoEvent(
-        // Commands.print("======= Path Finished ======="),
-        // new Translation2d(
-        // 4.22,
-        // 6.48)) }));
-        // this.chooser.addOption("Speaker Rotate 90",
-        // new Pair<ChoreoTrajectory, ChoreoEvent[]>(Choreo.getTrajectory("leave_four"),
-        // null));
-        // this.chooser.addOption("Shoot Speaker",
-        // new Pair<ChoreoTrajectory, ChoreoEvent[]>(Choreo.getTrajectory("shoot_one"),
-        // null));
-        // this.chooser.setDefaultOption("Speaker Align",
-        // new Pair<ChoreoTrajectory, ChoreoEvent[]>(Choreo.getTrajectory("leave_two"),
-        // new ChoreoEvent[] {
-        // new ChoreoEvent(Commands.runOnce(() -> System.out
-        // .println("====== Hi =====")),
-        // new Translation2d(
-        // 2.22, 5.36)) }));
+        var path = Choreo.getTrajectory("shoot-leave.1");
+        var path2 = Choreo.getTrajectory("shoot-leave.2");
 
-        // this.chooser.addOption("Chained Paths",
-        // link_trajectory_commands(Choreo.getTrajectory("point_1"),
-        // Choreo.getTrajectory("point_2")));
+        Pose2d path_pose = path.getInitialPose();
+
+        ChoreoEventHandler handler = new ChoreoEventHandler(
+                new ChoreoEvent[] {
+                        new ChoreoEvent(new CollectNote(m_intake, m_shooter, m_angle), new Translation2d(
+                                14.8, 5.58)) });
+
+        // Added events to the path follower
+        Command p1 = ChoreoUtil.choreoSwerveCommandWithEvents(path,
+                swerveSubsystem::getCurrentPose,
+                swerveController(
+                        new PIDController(translation_x_constants.kP,
+                                translation_x_constants.kI,
+                                translation_x_constants.kD,
+                                0.02),
+                        new PIDController(
+                                translation_y_constants.kP,
+                                translation_y_constants.kI,
+                                translation_y_constants.kD,
+                                0.02),
+                        new PIDController(
+                                rotation_constants.kP,
+                                rotation_constants.kI,
+                                rotation_constants.kD, 0.02)),
+                swerveSubsystem::setStates, handler, () -> false,
+                swerveSubsystem);
+
+        Command p2 = ChoreoUtil.choreoSwerveCommand(
+                path2,
+                swerveSubsystem::getCurrentPose,
+                swerveController(
+                        new PIDController(translation_x_constants.kP,
+                                translation_x_constants.kI,
+                                translation_x_constants.kD,
+                                0.02),
+                        new PIDController(
+                                translation_y_constants.kP,
+                                translation_y_constants.kI,
+                                translation_y_constants.kD,
+                                0.02),
+                        new PIDController(
+                                rotation_constants.kP,
+                                rotation_constants.kI,
+                                rotation_constants.kD, 0.02)),
+                swerveSubsystem::setStates, () -> false,
+                swerveSubsystem);
+
+        var command_one = Commands
+                .sequence(
+                        Commands.runOnce(() -> {
+                            swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
+                                    path_pose.getRotation()));
+                        }, swerveSubsystem),
+                        // new ShootCenterClose(m_shooter, m_angle),
+                        Commands.waitSeconds(0.2),
+                        p1,
+                        // p2,
+                        // new ShootNote(m_shooter, m_angle, m_visionSubsystem),
+                        Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+                                swerveSubsystem));
+
+        this.chooser.addOption("Choreo Path 1", command_one);
+        this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
 
         SmartDashboard.putData(chooser);
-
         SmartDashboard.putNumber("shooter_angle", 2);
 
         // Configure the trigger bindings
@@ -198,49 +242,17 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         // var pair = chooser.getSelected();
-        // ChoreoTrajectory path = pair.getFirst();
+        // ChoreoTrajectory path = chooser.getSelected();
         // ChoreoEvent[] events = pair.getSecond();
 
         // ChoreoEventHandler handler = new ChoreoEventHandler(events);
 
-        double translation_x_kP = SmartDashboard.getNumber("translation_x_kP", translation_x_constants.kP);
-        double translation_x_kI = SmartDashboard.getNumber("translation_x_kI", translation_x_constants.kI);
-        double translation_x_kD = SmartDashboard.getNumber("translation_x_kD", translation_x_constants.kD);
-
-        double translation_y_kP = SmartDashboard.getNumber("translation_y_kP", translation_y_constants.kP);
-        double translation_y_kI = SmartDashboard.getNumber("translation_y_kI", translation_y_constants.kI);
-        double translation_y_kD = SmartDashboard.getNumber("translation_y_kD", translation_y_constants.kD);
-
-        double rotation_kP = SmartDashboard.getNumber("rotation_kP", rotation_constants.kP);
-        double rotation_kI = SmartDashboard.getNumber("rotation_kI", rotation_constants.kI);
-        double rotation_kD = SmartDashboard.getNumber("rotation_kD", rotation_constants.kD);
-
-        // Pose2d path_pose = path.getInitialPose();
-        // swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
-        // path_pose.getRotation()));
-
-        // Added events to the path follower
-        // Command trajectory_command = ChoreoUtil.choreoSwerveCommandWithEvents(path,
-        // swerveSubsystem::getCurrentPose,
-        // swerveController(
-        // new PIDController(translation_x_kP, translation_x_kI, translation_x_kD,
-        // 0.02),
-        // new PIDController(translation_y_kP, translation_y_kI, translation_y_kD,
-        // 0.02),
-        // new PIDController(rotation_kP, rotation_kI, rotation_kD, 0.02)),
-        // swerveSubsystem::setStates, handler, () -> false,
-        // swerveSubsystem);
-
-        // return Commands
-        // .sequence(
-        // trajectory_command,
-        // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-        // swerveSubsystem));
+        return chooser.getSelected();
 
         // return link_trajectory_commands(Choreo.getTrajectory("point_1"),
         // Choreo.getTrajectory("point_2"));
 
-        return Commands.none();
+        // return Commands.none();
     }
 
     // public Command link_trajectory_commands(ChoreoTrajectory... trajs) {
@@ -284,29 +296,30 @@ public class RobotContainer {
         return (pose, referenceState) -> {
             double xFF = referenceState.velocityX;
             double yFF = referenceState.velocityY;
-            double rotationFF = referenceState.angularVelocity;
+            double rotationFF = 0;// referenceState.angularVelocity;
 
             double xFeedback = xController.calculate(pose.getX(), referenceState.x);
             double yFeedback = yController.calculate(pose.getY(), referenceState.y);
             double rotationFeedback = rotationController.calculate(pose.getRotation().getRadians(),
                     referenceState.heading);
 
-            SmartDashboard.putNumber("xReference", referenceState.x);
-            SmartDashboard.putNumber("yReference", referenceState.y);
+            Logger.recordOutput("Auto/X Reference", referenceState.x);
+            Logger.recordOutput("Auto/Y Reference", referenceState.y);
 
-            SmartDashboard.putNumber("xFeedback", pose.getX());
-            SmartDashboard.putNumber("yFeedback", pose.getY());
+            Logger.recordOutput("Auto/X Feedback", xFeedback);
+            Logger.recordOutput("Auto/Y Feedback", yFeedback);
 
-            SmartDashboard.putNumber("xError", xController.getPositionError());
-            SmartDashboard.putNumber("yError", yController.getPositionError());
+            Logger.recordOutput("Auto/X Error", xController.getPositionError());
+            Logger.recordOutput("Auto/Y Error", yController.getPositionError());
 
-            SmartDashboard.putNumber("rotationFeedback", rotationFeedback);
-            SmartDashboard.putNumber("rotationFF", rotationFF);
-            SmartDashboard.putNumber("rotationSetpoint", referenceState.heading);
-            SmartDashboard.putNumber("rotation", pose.getRotation().getRadians());
+            Logger.recordOutput("rotationFeedback", rotationFeedback);
+            Logger.recordOutput("rotationFF", rotationFF);
+            Logger.recordOutput("rotationSetpoint", referenceState.heading);
+            Logger.recordOutput("rotation", pose.getRotation().getRadians());
 
+            // Reverse the sum of x so it moves forward and backwards on the field
             return ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback,
+                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, (rotationFF + rotationFeedback) * -1,
                     pose.getRotation());
         };
     }
