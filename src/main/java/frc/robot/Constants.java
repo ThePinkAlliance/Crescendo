@@ -24,10 +24,10 @@ public class Constants {
         public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
         public static final double kPTurning = 0.47;
 
-        public static final Gains kBackLeftSteerGains = new Gains(.35, 0.00, 0);
-        public static final Gains kBackRightSteerGains = new Gains(.35, 0.0, 0);
-        public static final Gains kFrontRightSteerGains = new Gains(.35, 0.0, 0);
-        public static final Gains kFrontLeftSteerGains = new Gains(.35, 0.0, 0);
+        public static final Gains kBackLeftSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kBackRightSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kFrontRightSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kFrontLeftSteerGains = new Gains(.34, 0.0, 0);
 
     }
 

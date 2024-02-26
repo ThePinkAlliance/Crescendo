@@ -19,14 +19,14 @@ public class ChoreoEventHandler {
         this.differenceTolerance = 0.06;
     }
 
-    public Optional<ChoreoEvent> compute(Pose2d _robot_pose) {
+    public Optional<ChoreoEvent> compute(Pose2d _robot_pose, double current_time) {
         ChoreoEvent event = this.queue.peek();
 
         if (event != null && !queue.isEmpty()) {
-            Translation2d event_pos = event.getPosition();
-            Translation2d difference = event_pos.minus(_robot_pose.getTranslation());
+            double event_time = event.getExecTime();
+            boolean trigger_event = current_time - event_time >= 0.03;
 
-            if (Math.abs(difference.getNorm()) <= differenceTolerance) {
+            if (trigger_event) {
                 try {
                     queue.remove();
                 } catch (NoSuchElementException err) {
@@ -35,8 +35,6 @@ public class ChoreoEventHandler {
 
                 return Optional.of(event);
             }
-
-            this.previousDifference = difference;
         }
 
         return Optional.empty();

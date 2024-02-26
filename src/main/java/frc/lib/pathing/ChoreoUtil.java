@@ -9,7 +9,10 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.lib.pathing.events.ChoreoEvent;
 import frc.lib.pathing.events.ChoreoEventHandler;
 
@@ -40,8 +43,18 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + 3),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + 1),
                 requirements);
+    }
+
+    public static Command choreoEventCommand(ChoreoEvent[] events, Command controller) {
+        SequentialCommandGroup timed_commands = new SequentialCommandGroup();
+
+        for (ChoreoEvent event : events) {
+            timed_commands.addCommands(new WaitCommand(event.getExecTime()), event.getCommand());
+        }
+
+        return controller.alongWith(timed_commands);
     }
 
     public static Command choreoSwerveCommandWithEvents(
@@ -58,7 +71,7 @@ public class ChoreoUtil {
                 () -> {
                     ;
                     // Does optional slow down robot loops?
-                    Optional<ChoreoEvent> event = handler.compute(poseSupplier.get());
+                    Optional<ChoreoEvent> event = handler.compute(poseSupplier.get(), timer.get());
 
                     // This might benefit from using a parallel command.
                     if (event.isPresent()) {
@@ -76,7 +89,7 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + 3),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .5),
                 requirements);
     }
 }

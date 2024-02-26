@@ -37,6 +37,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
+    private final DoubleSubscriber target_angle_subscriber;
     private Matrix<N3, N1> correction_matrix;
 
     private final double mounted_angle;
@@ -51,6 +52,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
+        this.target_angle_subscriber = table.getDoubleTopic("ta").subscribe(0);
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
         this.mounted_angle = 22.5;
@@ -106,6 +108,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     public double getVisionLatency() {
         return (target_latency_subscriber.get() / 1000) - (capture_latency_subscriber.get() / 1000);
+    }
+
+    public double getTargetX() {
+        return this.target_x_subscriber.get();
     }
 
     @Override

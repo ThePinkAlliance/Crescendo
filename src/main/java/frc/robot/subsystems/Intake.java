@@ -162,9 +162,13 @@ public class Intake extends SubsystemBase {
     }
 
     public Command deployCollector() {
+        return deployCollector(0.20);
+    }
+
+    public Command deployCollector(double speed) {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(0.10),
+                () -> this.moveCollector(speed),
                 (interrupted) -> this.moveCollector(0.0),
                 () -> isDeployed(),
                 this);

@@ -103,7 +103,7 @@ public class Angle extends SubsystemBase {
     }
 
     public double getControlError() {
-        return this.target_rotations - this.m_relEncoder.getPosition();
+        return Math.abs(this.target_rotations - this.m_relEncoder.getPosition());
     }
 
     public void stop() {

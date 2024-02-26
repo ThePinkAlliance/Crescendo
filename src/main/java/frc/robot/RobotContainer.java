@@ -8,9 +8,11 @@ import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -34,8 +36,10 @@ import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.shooter.AdjustAngle;
+import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootAction;
 import frc.robot.commands.shooter.ShootNote;
+import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.TuneScoring;
 import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
@@ -45,6 +49,7 @@ import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.intake.CollectNote;
+import frc.robot.commands.intake.CollectNoteAuto;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.Climber.ClimberSide;
@@ -75,11 +80,11 @@ public class RobotContainer {
     private Climber m_climber = new Climber();
 
     // i: 0.0045
-    public PinkPIDConstants translation_y_constants = new PinkPIDConstants(0.7, 0.0, 0.0);
+    public PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
     // i: 0.005
-    public PinkPIDConstants translation_x_constants = new PinkPIDConstants(0.7, 0.0, 0.0);
+    public PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
 
-    public PinkPIDConstants rotation_constants = new PinkPIDConstants(.7, 0.0, 0);
+    public PinkPIDConstants rotation_constants = new PinkPIDConstants(3.5, 0.0, 0);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -90,55 +95,53 @@ public class RobotContainer {
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
-        var path = Choreo.getTrajectory("shoot-leave.1");
-        var path2 = Choreo.getTrajectory("shoot-leave.2");
+        var path = Choreo.getTrajectory("shoot-two.1");
+        var path2 = Choreo.getTrajectory("shoot-two.2");
 
         Pose2d path_pose = path.getInitialPose();
 
-        ChoreoEventHandler handler = new ChoreoEventHandler(
-                new ChoreoEvent[] {
-                        new ChoreoEvent(new CollectNote(m_intake, m_shooter, m_angle), new Translation2d(
-                                14.8, 5.58)) });
-
         // Added events to the path follower
-        Command p1 = ChoreoUtil.choreoSwerveCommandWithEvents(path,
-                swerveSubsystem::getCurrentPose,
-                swerveController(
-                        new PIDController(translation_x_constants.kP,
-                                translation_x_constants.kI,
-                                translation_x_constants.kD,
-                                0.02),
-                        new PIDController(
-                                translation_y_constants.kP,
-                                translation_y_constants.kI,
-                                translation_y_constants.kD,
-                                0.02),
-                        new PIDController(
-                                rotation_constants.kP,
-                                rotation_constants.kI,
-                                rotation_constants.kD, 0.02)),
-                swerveSubsystem::setStates, handler, () -> false,
-                swerveSubsystem);
+        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
+                new ChoreoEvent(new CollectNoteAuto(m_intake, m_shooter, m_angle),
+                        0.32) },
+                ChoreoUtil.choreoSwerveCommand(path,
+                        swerveSubsystem::getCurrentPose,
+                        swerveController(
+                                new PIDController(translation_x_constants.kP,
+                                        translation_x_constants.kI,
+                                        translation_x_constants.kD,
+                                        0.02),
+                                new PIDController(
+                                        translation_y_constants.kP,
+                                        translation_y_constants.kI,
+                                        translation_y_constants.kD,
+                                        0.02),
+                                new ProfiledPIDController(
+                                        rotation_constants.kP,
+                                        rotation_constants.kI,
+                                        rotation_constants.kD, new Constraints(10, 7))),
+                        swerveSubsystem::setStates, () -> false,
+                        swerveSubsystem));
 
-        Command p2 = ChoreoUtil.choreoSwerveCommand(
-                path2,
-                swerveSubsystem::getCurrentPose,
-                swerveController(
-                        new PIDController(translation_x_constants.kP,
-                                translation_x_constants.kI,
-                                translation_x_constants.kD,
-                                0.02),
-                        new PIDController(
-                                translation_y_constants.kP,
-                                translation_y_constants.kI,
-                                translation_y_constants.kD,
-                                0.02),
-                        new PIDController(
-                                rotation_constants.kP,
-                                rotation_constants.kI,
-                                rotation_constants.kD, 0.02)),
-                swerveSubsystem::setStates, () -> false,
-                swerveSubsystem);
+        Command p2 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {},
+                ChoreoUtil.choreoSwerveCommand(path2,
+                        swerveSubsystem::getCurrentPose,
+                        swerveController(
+                                new PIDController(translation_x_constants.kP,
+                                        translation_x_constants.kI,
+                                        translation_x_constants.kD,
+                                        0.02),
+                                new PIDController(
+                                        translation_y_constants.kP,
+                                        translation_y_constants.kI,
+                                        translation_y_constants.kD,
+                                        0.02),
+                                new ProfiledPIDController(
+                                        rotation_constants.kP,
+                                        rotation_constants.kI,
+                                        rotation_constants.kD, new Constraints(10, 7))),
+                        swerveSubsystem::setStates, () -> false,
+                        swerveSubsystem));
 
         var command_one = Commands
                 .sequence(
@@ -146,11 +149,13 @@ public class RobotContainer {
                             swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
                                     path_pose.getRotation()));
                         }, swerveSubsystem),
-                        // new ShootCenterClose(m_shooter, m_angle),
-                        Commands.waitSeconds(0.2),
+                        new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
+                        Commands.waitSeconds(0.5),
                         p1,
-                        // p2,
-                        // new ShootNote(m_shooter, m_angle, m_visionSubsystem),
+                        p2,
+                        new AlignShoot(20, swerveSubsystem, m_visionSubsystem).alongWith(
+                                new ShootNoteAuto(42, -4800, m_shooter, m_angle,
+                                        m_visionSubsystem)),
                         Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
                                 swerveSubsystem));
 
@@ -215,6 +220,8 @@ public class RobotContainer {
         // m_angle.stop();
         // }, () -> true, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new CollectNote(m_intake, m_shooter, m_angle));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+                .onTrue(new AlignShoot(25, swerveSubsystem, m_visionSubsystem));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
                 .onTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem));
 
@@ -291,12 +298,12 @@ public class RobotContainer {
     // }
 
     public static ChoreoControlFunction swerveController(
-            PIDController xController, PIDController yController, PIDController rotationController) {
+            PIDController xController, PIDController yController, ProfiledPIDController rotationController) {
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
         return (pose, referenceState) -> {
             double xFF = referenceState.velocityX;
             double yFF = referenceState.velocityY;
-            double rotationFF = 0;// referenceState.angularVelocity;
+            double rotationFF = referenceState.angularVelocity;
 
             double xFeedback = xController.calculate(pose.getX(), referenceState.x);
             double yFeedback = yController.calculate(pose.getY(), referenceState.y);
@@ -315,7 +322,7 @@ public class RobotContainer {
             Logger.recordOutput("rotationFeedback", rotationFeedback);
             Logger.recordOutput("rotationFF", rotationFF);
             Logger.recordOutput("rotationSetpoint", referenceState.heading);
-            Logger.recordOutput("rotation", pose.getRotation().getRadians());
+            Logger.recordOutput("rotation", Math.abs(pose.getRotation().getRadians()));
 
             // Reverse the sum of x so it moves forward and backwards on the field
             return ChassisSpeeds.fromFieldRelativeSpeeds(
