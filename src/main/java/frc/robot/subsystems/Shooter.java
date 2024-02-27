@@ -160,8 +160,8 @@ public class Shooter extends SubsystemBase {
         var request = new VelocityVoltage(0).withSlot(0);
 
         // set velocity rps, add 0.5 V to overcome gravity
-        m_greenTalon.setControl(request.withVelocity(topRpm).withFeedForward(0.5));
-        m_greyTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
+        m_greenTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
+        m_greyTalon.setControl(request.withVelocity(topRpm).withFeedForward(0.5));
     }
 
     @Deprecated
@@ -228,6 +228,34 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    public boolean isAtLeastRpm(double top, double bottom) {
+        boolean result = false;
+        StatusSignal<Double> m_greyFXTickVelocity = m_greyTalon.getRotorVelocity();
+        StatusSignal<Double> m_greenFXTickVelocity = m_greenTalon.getRotorVelocity();
+        double m_greyFXToRPM = m_greyFXTickVelocity.getValueAsDouble() * 60;
+        double m_greenFXToRPM = m_greenFXTickVelocity.getValueAsDouble() * 60;
+        double minimumRpm = 100;
+        double t_1 = Math.abs(top);
+        double t_2 = Math.abs(bottom);
+        double rpm1 = Math.abs(m_greyFXToRPM);
+        double rpm2 = Math.abs(m_greenFXToRPM);
+        double error = 0.05;
+        t_1 = t_1 - (t_1 * error);
+        t_2 = t_2 - (t_2 * error);
+
+        Logger.recordOutput("RPM2", rpm2);
+        Logger.recordOutput("RPM1", rpm1);
+
+        System.out.println("Values: " + rpm1 + ":" + rpm2 + ":" + t_1);
+        boolean t_up_to_speed = rpm1 >= t_1 && rpm1 >= t_1 && t_1 > minimumRpm;
+        boolean t_bottom_to_speed = rpm2 >= t_2 && rpm2 >= t_2 && t_2 > minimumRpm;
+        if (t_up_to_speed && t_bottom_to_speed) {
+            result = true;
+        }
+        return result;
+
+    }
+
     public boolean noteFound() {
         return !m_noteSwitch.get();
     }
@@ -276,6 +304,19 @@ public class Shooter extends SubsystemBase {
                 (interrupted) -> {
                 },
                 () -> isAtLeastRpm(desiredVelocity),
+                this);
+    }
+
+    public Command rampUp2(double vel_top, double vel_bottom) {
+
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    this.setVelocity(vel_top, vel_bottom);
+                },
+                (interrupted) -> {
+                },
+                () -> isAtLeastRpm(vel_top, vel_bottom),
                 this);
     }
 

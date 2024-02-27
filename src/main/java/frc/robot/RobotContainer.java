@@ -220,8 +220,24 @@ public class RobotContainer {
         // m_angle.stop();
         // }, () -> true, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new CollectNote(m_intake, m_shooter, m_angle));
+
+        double f = 1;
+
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+        // .onTrue(m_shooter.rampUp2(-600 * f,
+        // -3000 * f))
+        // .onFalse(m_shooter.launchNote2().andThen(m_shooter.stopShooter()));
+        // new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
+        // .onTrue(m_shooter.loadNoteUntilFound(.5).andThen(m_shooter.rampUp2(
+        // 200)))
+        // .onFalse(m_shooter.stopShooter());
+
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
-                .onTrue(new AlignShoot(25, swerveSubsystem, m_visionSubsystem));
+                .whileTrue(m_intake.setCollectorPower(1)).onFalse(m_intake.setCollectorPower(0));
+        new JoystickButton(baseJoystick,
+                JoystickMap.BUTTON_B).whileTrue(m_intake.setCollectorPower(-1))
+                .onFalse(m_intake.setCollectorPower(0));
+
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
                 .onTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem));
 
