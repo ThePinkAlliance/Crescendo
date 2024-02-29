@@ -8,11 +8,13 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.SparkRelativeEncoder;
+
+import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
@@ -21,9 +23,53 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
+import java.lang.module.ResolutionException;
+
+import javax.swing.text.Position;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
+
+    class CurrentEncoder {
+
+        private Encoder hexEncoder;
+        private CANcoder canCoder;
+
+        private static final int m_robotNumber = Constants.RobotConstants.robotNumber;
+        private static final int m_robotOne = Constants.RobotConstants.robotOne;
+        private static final int m_robotTwo = Constants.RobotConstants.robotTwo;
+
+        public CurrentEncoder() {
+             if (m_robotNumber == m_robotOne) {
+                this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
+                SetupHexEncoder(hexEncoder, true);
+
+            } else if (m_robotNumber == m_robotTwo) {
+                this.canCoder = new CANcoder(3, "rio");
+
+            }           
+        }
+
+
+        public double getPosition() {
+
+            double position;
+
+            if (m_robotNumber == m_robotOne) {
+                position = this.hexEncoder.get();
+            } else {
+                position = this.canCoder.getPosition().getValueAsDouble();
+            }
+
+            return position;
+        }
+
+    };
+
+    private CurrentEncoder m_encoder;
 
     private final CANSparkMax angleSparkMax;
     private final CANSparkMax collectSparkMax;
@@ -31,7 +77,6 @@ public class Intake extends SubsystemBase {
     private final SparkPIDController collectPIDController;
     private final RelativeEncoder collectEncoder;
 
-    private Encoder hexEncoder;
     private DigitalInput m_noteSwitch;
     public static final int[] HEX_ENCODER_IDS = { 4, 5 };
     public static final double WHEEL_DIAMETER = 4.0;
@@ -40,12 +85,15 @@ public class Intake extends SubsystemBase {
     public final double angleFF;
     public final PIDController anglePidController;
 
+
     public Intake() {
+
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
         this.collectSparkMax = new CANSparkMax(21, MotorType.kBrushless);
         this.m_noteSwitch = new DigitalInput(9);
 
-        this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
+        this.m_encoder = new CurrentEncoder();
+
         this.collectEncoder = collectSparkMax.getEncoder();
 
         this.collectSparkMax.setIdleMode(IdleMode.kBrake);
@@ -61,8 +109,8 @@ public class Intake extends SubsystemBase {
 
         this.angleFF = 0.1;
 
-        SetupHexEncoder(hexEncoder, true);
     }
+
 
     private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
 
@@ -128,20 +176,20 @@ public class Intake extends SubsystemBase {
                      * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
                      */
 
-                    double effort = this.anglePidController.calculate(hexEncoder.get(),
+                    double effort = this.anglePidController.calculate(m_encoder.getPosition(),
                             pos)
-                            + (angleFF * Math.sin(hexEncoder.get() * (1 / 734)));
+                            + (angleFF * Math.sin(m_encoder.getPosition() * (1 / 734)));
 
                     Logger.recordOutput("Intake/Control Effort 2", effort);
 
                     // scale control effort to a ratio to make it useable with voltage control.
-                    double full_error = Math.abs(pos - hexEncoder.get());
+                    double full_error = Math.abs(pos - m_encoder.getPosition());
                     effort = effort * (1 / full_error);
 
                     Logger.recordOutput("Intake/Control Effort", effort);
                     Logger.recordOutput("Intake/Full Error", full_error);
                     Logger.recordOutput("Intake/Setpoint", pos);
-                    Logger.recordOutput("Intake/FF", (angleFF * Math.cos(hexEncoder.get() * (1 /
+                    Logger.recordOutput("Intake/FF", (angleFF * Math.cos(m_encoder.getPosition() * (1 /
                             734))));
 
                     this.angleSparkMax.setVoltage(effort * 12);
@@ -188,7 +236,7 @@ public class Intake extends SubsystemBase {
 
     public boolean isStowed() {
         boolean value = false;
-        if (hexEncoder.get() < 10.0) {
+        if (m_encoder.getPosition() < 10.0) {
             value = true;
         }
         return value;
@@ -196,7 +244,7 @@ public class Intake extends SubsystemBase {
 
     public boolean isDeployed() {
         boolean value = false;
-        if (hexEncoder.get() > 700) {
+        if (m_encoder.getPosition() > 700) {
             value = true;
         }
         return value;
@@ -204,10 +252,10 @@ public class Intake extends SubsystemBase {
 
     public boolean canDeliver() {
         boolean value = false;
-        if (hexEncoder.get() > 242 && hexEncoder.get() < 312 * 1.5) {
+        if (m_encoder.getPosition() > 242 && m_encoder.getPosition() < 312 * 1.5) {
             value = true;
         }
-        Logger.recordOutput("Intake/Hex Encoder", hexEncoder.get());
+        Logger.recordOutput("Intake/Hex Encoder", m_encoder.getPosition());
         return value;
     }
 
@@ -220,7 +268,7 @@ public class Intake extends SubsystemBase {
         // This method will be called once per scheduler run
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
-                hexEncoder.get());
+                m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Velocity", this.collectEncoder.getVelocity());
     }
 }

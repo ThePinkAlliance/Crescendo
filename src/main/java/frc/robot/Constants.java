@@ -101,4 +101,12 @@ public class Constants {
         public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 0.55;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3.5;
     }
+
+    public static final class RobotConstants {
+
+        public static final int robotOne = 1;
+        public static final int robotTwo = 1;
+        public static int robotNumber = robotTwo;
+        
+    }
 }
