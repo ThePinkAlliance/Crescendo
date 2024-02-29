@@ -11,6 +11,7 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.RobotConstants.RobotType;
 
 import java.lang.module.ResolutionException;
 
@@ -40,29 +42,29 @@ public class Intake extends SubsystemBase {
         private Encoder hexEncoder;
         private CANcoder canCoder;
 
-        private static final int m_robotOne = Constants.RobotConstants.robotOne;
-        private static final int m_robotTwo = Constants.RobotConstants.robotTwo;
-        private static final int m_robotNumber = Constants.RobotConstants.robotNumber;
+        private RobotType currentRobot = Constants.RobotConstants.CURRENT_ROBOT;
+
         public CurrentEncoder() {
-             if (m_robotNumber == m_robotOne) {
+            if (currentRobot == RobotType.ROBOT_ONE) {
                 this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
                 SetupHexEncoder(hexEncoder, true);
 
-            } else if (m_robotNumber == m_robotTwo) {
+            } else if (currentRobot == RobotType.ROBOT_TWO) {
                 this.canCoder = new CANcoder(7, "rio");
                 var cancoderConfig = new CANcoderConfiguration();
-                cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+                cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+                cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+                cancoderConfig.MagnetSensor.MagnetOffset = 0.00317;
                 this.canCoder.getConfigurator().apply(cancoderConfig);
 
-            }           
+            }
         }
-
 
         public double getPosition() {
 
             double position;
 
-            if (m_robotNumber == m_robotOne) {
+            if (currentRobot == RobotType.ROBOT_ONE) {
                 position = this.hexEncoder.get();
             } else {
                 position = this.canCoder.getAbsolutePosition().getValueAsDouble();
@@ -72,26 +74,25 @@ public class Intake extends SubsystemBase {
         }
 
         public void reset() {
-            if (m_robotNumber == m_robotOne) {
+            if (currentRobot == RobotType.ROBOT_ONE) {
                 this.hexEncoder.reset();
             } else {
                 this.canCoder.setPosition(0);
             }
         }
 
-        
         private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
 
-        if (enc == null)
-            return;
-        enc.setMaxPeriod(.1);
-        enc.setMinRate(10);
-        System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
-        enc.setDistancePerPulse(DISTANCE_PER_PULSE);
-        enc.setReverseDirection(reverseDirection);
-        enc.setSamplesToAverage(7);
-        enc.reset();
-    }
+            if (enc == null)
+                return;
+            enc.setMaxPeriod(.1);
+            enc.setMinRate(10);
+            System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
+            enc.setDistancePerPulse(DISTANCE_PER_PULSE);
+            enc.setReverseDirection(reverseDirection);
+            enc.setSamplesToAverage(7);
+            enc.reset();
+        }
 
     };
 
@@ -111,7 +112,6 @@ public class Intake extends SubsystemBase {
     public final double angleFF;
     public final PIDController anglePidController;
 
-
     public Intake() {
 
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
@@ -123,22 +123,19 @@ public class Intake extends SubsystemBase {
         this.collectEncoder = collectSparkMax.getEncoder();
 
         this.collectSparkMax.setIdleMode(IdleMode.kBrake);
-        this.angleSparkMax.setIdleMode(IdleMode.kBrake);
+        this.angleSparkMax.setIdleMode(IdleMode.kCoast);
         this.angleSparkMax.setInverted(true);
 
         this.collectPIDController = collectSparkMax.getPIDController();
         this.collectPIDController.setP(.1);
 
         this.anglePidController = new PIDController(0, 0, 0);
-
         this.angleSparkMax.getPIDController().setP(.1);
-
         this.angleFF = 0.1;
 
         this.m_encoder.reset();
 
     }
-
 
     public boolean noteFound() {
         return !m_noteSwitch.get();
@@ -156,30 +153,6 @@ public class Intake extends SubsystemBase {
                 () -> noteFound(),
                 this);
     }
-
-    // public Command setAnglePosition(double pos) {
-    // return new FunctionalCommand(
-    // () -> {
-    // },
-    // () -> {
-    // this.angleSparkMax.getPIDController().setFF(angleFF *
-    // Math.sin(hexEncoder.get() * (1 / 734)));
-    // this.angleSparkMax.getPIDController().setReference(pos,
-    // ControlType.kPosition);
-    // Logger.recordOutput("Intake/Angle Setpoint", pos);
-    // Logger.recordOutput("Intake/FF",
-    // this.angleSparkMax.getPIDController().getFF());
-    // },
-    // (interrupt) -> {
-    // this.angleSparkMax.set(0);
-    // },
-    // () -> {
-    // double control_error = pos - this.angleSparkMax.getEncoder().getPosition();
-    // double tolerence = 2;
-
-    // return Math.abs(control_error) <= tolerence;
-    // }, this);
-    // }
 
     public Command setAnglePosition(double pos) {
         return new FunctionalCommand(
@@ -251,9 +224,9 @@ public class Intake extends SubsystemBase {
 
     public boolean isStowed() {
         boolean value = false;
-        //if (m_encoder.getPosition() < 10.0) {
-        //    value = true;
-        //}
+        // if (m_encoder.getPosition() < 10.0) {
+        // value = true;
+        // }
         return value;
     }
 
@@ -283,7 +256,7 @@ public class Intake extends SubsystemBase {
         // This method will be called once per scheduler run
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
-                m_encoder.getPosition());
+                this.m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Velocity", this.collectEncoder.getVelocity());
     }
 }
