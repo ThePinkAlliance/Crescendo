@@ -13,6 +13,16 @@ import frc.lib.Gains;
 
 /** Add your docs here. */
 public class Constants {
+
+    public static final class RobotConstants {
+        public enum RobotType {
+            ROBOT_ONE,
+            ROBOT_TWO
+        }
+
+        public static RobotType CURRENT_ROBOT = RobotType.ROBOT_TWO;
+    }
+
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(3.80);
         public static final double kDriveMotorGearRatio = 0.1633986928;
@@ -100,14 +110,5 @@ public class Constants {
         public static double kTeleDriveSpeedReduction = 1;
         public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 0.55;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3.5;
-    }
-
-    public static final class RobotConstants {
-        public enum RobotType {
-            ROBOT_ONE,
-            ROBOT_TWO
-        }
-
-        public static RobotType CURRENT_ROBOT = RobotType.ROBOT_TWO;
     }
 }
