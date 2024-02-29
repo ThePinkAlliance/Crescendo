@@ -105,7 +105,7 @@ public class Constants {
     public static final class RobotConstants {
 
         public static final int robotOne = 1;
-        public static final int robotTwo = 1;
+        public static final int robotTwo = 2;
         public static int robotNumber = robotTwo;
         
     }

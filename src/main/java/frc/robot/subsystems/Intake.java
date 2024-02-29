@@ -8,7 +8,9 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -38,17 +40,19 @@ public class Intake extends SubsystemBase {
         private Encoder hexEncoder;
         private CANcoder canCoder;
 
-        private static final int m_robotNumber = Constants.RobotConstants.robotNumber;
         private static final int m_robotOne = Constants.RobotConstants.robotOne;
         private static final int m_robotTwo = Constants.RobotConstants.robotTwo;
-
+        private static final int m_robotNumber = Constants.RobotConstants.robotNumber;
         public CurrentEncoder() {
              if (m_robotNumber == m_robotOne) {
                 this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
                 SetupHexEncoder(hexEncoder, true);
 
             } else if (m_robotNumber == m_robotTwo) {
-                this.canCoder = new CANcoder(3, "rio");
+                this.canCoder = new CANcoder(7, "rio");
+                var cancoderConfig = new CANcoderConfiguration();
+                cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+                this.canCoder.getConfigurator().apply(cancoderConfig);
 
             }           
         }
@@ -61,11 +65,33 @@ public class Intake extends SubsystemBase {
             if (m_robotNumber == m_robotOne) {
                 position = this.hexEncoder.get();
             } else {
-                position = this.canCoder.getPosition().getValueAsDouble();
+                position = this.canCoder.getAbsolutePosition().getValueAsDouble();
             }
 
             return position;
         }
+
+        public void reset() {
+            if (m_robotNumber == m_robotOne) {
+                this.hexEncoder.reset();
+            } else {
+                this.canCoder.setPosition(0);
+            }
+        }
+
+        
+        private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
+
+        if (enc == null)
+            return;
+        enc.setMaxPeriod(.1);
+        enc.setMinRate(10);
+        System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
+        enc.setDistancePerPulse(DISTANCE_PER_PULSE);
+        enc.setReverseDirection(reverseDirection);
+        enc.setSamplesToAverage(7);
+        enc.reset();
+    }
 
     };
 
@@ -109,21 +135,10 @@ public class Intake extends SubsystemBase {
 
         this.angleFF = 0.1;
 
+        this.m_encoder.reset();
+
     }
 
-
-    private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
-
-        if (enc == null)
-            return;
-        enc.setMaxPeriod(.1);
-        enc.setMinRate(10);
-        System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
-        enc.setDistancePerPulse(DISTANCE_PER_PULSE);
-        enc.setReverseDirection(reverseDirection);
-        enc.setSamplesToAverage(7);
-        enc.reset();
-    }
 
     public boolean noteFound() {
         return !m_noteSwitch.get();
@@ -236,9 +251,9 @@ public class Intake extends SubsystemBase {
 
     public boolean isStowed() {
         boolean value = false;
-        if (m_encoder.getPosition() < 10.0) {
-            value = true;
-        }
+        //if (m_encoder.getPosition() < 10.0) {
+        //    value = true;
+        //}
         return value;
     }
 
