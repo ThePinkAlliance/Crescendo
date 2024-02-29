@@ -19,8 +19,8 @@ public class ShootNoteAuto extends SequentialCommandGroup {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
         addCommands(
-                shooter.rampUp2(desired_rpm),
-                angle.GotoAngle(desired_angle),
+                shooter.rampUp2(desired_rpm).alongWith(angle.GotoAngle(
+                        desired_angle)),
                 shooter.launchNote2(),
                 shooter.stopShooter());
     }

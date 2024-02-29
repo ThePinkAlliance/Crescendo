@@ -177,7 +177,7 @@ public class Intake extends SubsystemBase {
     public Command goToTransfer() {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(-0.15),
+                () -> this.moveCollector(-0.25),
                 (interrupted) -> {
                     this.moveCollector(0.0);
                     this.collectSparkMax.set(0.85);
