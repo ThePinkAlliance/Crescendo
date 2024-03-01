@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -81,6 +82,8 @@ public class RobotContainer {
     private Climber m_climber = new Climber();
     private TurretSubsystem m_turret = new TurretSubsystem();
 
+    private double start_time;
+
     // i: 0.0045
     public PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
     // i: 0.005
@@ -106,11 +109,17 @@ public class RobotContainer {
         // new ChoreoEvent(new CollectNoteAuto(m_intake, m_shooter, m_turret, m_angle),
         // 0.25)
         Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point1", true)), .25),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2", true)), .96),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3", true)), 1.85),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4", true)), 2.23),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5", true)), 2.88),
+                new ChoreoEvent(
+                        Commands.runOnce(() -> Logger.recordOutput("point1", (Timer.getFPGATimestamp() - start_time))),
+                        .25),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2", (Timer.getFPGATimestamp()
+                        - start_time))), .96),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3", (Timer.getFPGATimestamp()
+                        - start_time))), 1.85),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4", (Timer.getFPGATimestamp()
+                        - start_time))), 2.23),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5", (Timer.getFPGATimestamp()
+                        - start_time))), 2.88),
         },
                 ChoreoUtil.choreoSwerveCommand(path,
                         swerveSubsystem::getCurrentPose,
@@ -136,6 +145,7 @@ public class RobotContainer {
                         Commands.runOnce(() -> {
                             swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
                                     path_pose.getRotation()));
+                            start_time = Timer.getFPGATimestamp();
                         }, swerveSubsystem),
                         // new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
                         p1,
