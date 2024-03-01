@@ -86,8 +86,8 @@ public class RobotContainer {
     // i: 0.005
     public PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
 
-    // 3.5
-    public PinkPIDConstants rotation_constants = new PinkPIDConstants(4, 0.05, 0);
+    // kP: 2, kI: 0.01;
+    public PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -98,18 +98,23 @@ public class RobotContainer {
         baseJoystick = new Joystick(0);
         this.chooser = new SendableChooser<>();
 
-        var path = Choreo.getTrajectory("2");
-
+        var path = Choreo.getTrajectory("three");
         Pose2d path_pose = path.getInitialPose();
 
         // Added events to the path follower
 
         // new ChoreoEvent(new CollectNoteAuto(m_intake, m_shooter, m_turret, m_angle),
         // 0.25)
-        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {},
+        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point1", true)), .25),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2", true)), .96),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3", true)), 1.85),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4", true)), 2.23),
+                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5", true)), 2.88),
+        },
                 ChoreoUtil.choreoSwerveCommand(path,
                         swerveSubsystem::getCurrentPose,
-                        swerveControllerHold(
+                        swerveController(
                                 new PIDController(translation_x_constants.kP,
                                         translation_x_constants.kI,
                                         translation_x_constants.kD,
@@ -119,11 +124,10 @@ public class RobotContainer {
                                         translation_y_constants.kI,
                                         translation_y_constants.kD,
                                         0.02),
-                                new ProfiledPIDController(
+                                new PIDController(
                                         rotation_constants.kP,
                                         rotation_constants.kI,
-                                        rotation_constants.kD, new Constraints(10, 7)),
-                                true),
+                                        rotation_constants.kD)),
                         swerveSubsystem::setStates, () -> false,
                         swerveSubsystem));
 
@@ -133,7 +137,7 @@ public class RobotContainer {
                             swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
                                     path_pose.getRotation()));
                         }, swerveSubsystem),
-                        new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
+                        // new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
                         p1,
                         // m_turret.setTargetPosition(160).alongWith(
                         // new ShootNoteAuto(42, -4800, m_shooter, m_angle,
@@ -242,50 +246,8 @@ public class RobotContainer {
     // return group;
     // }
 
-    public static ChoreoControlFunction swerveController(PIDController xController, PIDController yController,
-            ProfiledPIDController rotationController) {
-        return swerveController(xController, yController, rotationController, false);
-    }
-
-    public static ChoreoControlFunction swerveControllerHold(
-            PIDController xController, PIDController yController, ProfiledPIDController rotationController,
-            boolean hold_angle) {
-        rotationController.enableContinuousInput(-Math.PI, Math.PI);
-        return (pose, referenceState) -> {
-            double xFF = referenceState.velocityX;
-            double yFF = referenceState.velocityY;
-            double rotationFF = 0;
-
-            double xFeedback = xController.calculate(pose.getX(), referenceState.x);
-            double yFeedback = yController.calculate(pose.getY(), referenceState.y);
-            double rotationFeedback = rotationController.calculate(pose.getRotation().getRadians(),
-                    referenceState.heading);
-
-            Logger.recordOutput("Auto/X Reference", referenceState.x);
-            Logger.recordOutput("Auto/Y Reference", referenceState.y);
-
-            Logger.recordOutput("Auto/X Feedback", xFeedback);
-            Logger.recordOutput("Auto/Y Feedback", yFeedback);
-
-            Logger.recordOutput("Auto/X Error", xController.getPositionError());
-            Logger.recordOutput("Auto/Y Error", yController.getPositionError());
-
-            Logger.recordOutput("rotationFeedback", rotationFeedback);
-            Logger.recordOutput("rotationFF", rotationFF);
-            Logger.recordOutput("rotationSetpoint", referenceState.heading);
-            Logger.recordOutput("rotationOutput", (rotationFF + rotationFeedback));
-            Logger.recordOutput("rotation", pose.getRotation().getRadians());
-
-            // Reverse the sum of x so it moves forward and backwards on the field
-            return ChassisSpeeds.fromFieldRelativeSpeeds(
-                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, (rotationFF + rotationFeedback) * -1,
-                    pose.getRotation());
-        };
-    }
-
     public static ChoreoControlFunction swerveController(
-            PIDController xController, PIDController yController, ProfiledPIDController rotationController,
-            boolean disable_angle_ff) {
+            PIDController xController, PIDController yController, PIDController rotationController) {
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
         return (pose, referenceState) -> {
             double xFF = referenceState.velocityX;
@@ -296,6 +258,8 @@ public class RobotContainer {
             double yFeedback = yController.calculate(pose.getY(), referenceState.y);
             double rotationFeedback = rotationController.calculate(pose.getRotation().getRadians(),
                     referenceState.heading);
+
+            Logger.recordOutput("Auto/Rotation Error", rotationController.getPositionError());
 
             Logger.recordOutput("Auto/X Reference", referenceState.x);
             Logger.recordOutput("Auto/Y Reference", referenceState.y);
@@ -313,7 +277,7 @@ public class RobotContainer {
 
             // Reverse the sum of x so it moves forward and backwards on the field
             return ChassisSpeeds.fromFieldRelativeSpeeds(
-                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, (rotationFF + rotationFeedback) * -1,
+                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, (rotationFF - rotationFeedback),
                     pose.getRotation());
         };
     }
