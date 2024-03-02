@@ -77,7 +77,6 @@ public class RobotContainer {
     private Angle m_angle = new Angle();
     // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
-    private Climber m_climber = new Climber();
 
     // i: 0.0045
     public PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);

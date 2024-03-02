@@ -10,7 +10,9 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -99,10 +101,7 @@ public class Intake extends SubsystemBase {
     private CurrentEncoder m_encoder;
 
     private final CANSparkMax angleSparkMax;
-    private final CANSparkMax collectSparkMax;
-
-    private final SparkPIDController collectPIDController;
-    private final RelativeEncoder collectEncoder;
+    private final TalonFX collectMotor;
 
     private DigitalInput m_noteSwitch;
     public static final int[] HEX_ENCODER_IDS = { 4, 5 };
@@ -115,19 +114,13 @@ public class Intake extends SubsystemBase {
     public Intake() {
 
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
-        this.collectSparkMax = new CANSparkMax(21, MotorType.kBrushless);
+        this.collectMotor = new TalonFX(21);
         this.m_noteSwitch = new DigitalInput(9);
 
         this.m_encoder = new CurrentEncoder();
-
-        this.collectEncoder = collectSparkMax.getEncoder();
-
-        this.collectSparkMax.setIdleMode(IdleMode.kBrake);
+        this.collectMotor.setNeutralMode(NeutralModeValue.Brake);
         this.angleSparkMax.setIdleMode(IdleMode.kCoast);
         this.angleSparkMax.setInverted(true);
-
-        this.collectPIDController = collectSparkMax.getPIDController();
-        this.collectPIDController.setP(.1);
 
         this.anglePidController = new PIDController(0, 0, 0);
         this.angleSparkMax.getPIDController().setP(.1);
@@ -148,8 +141,8 @@ public class Intake extends SubsystemBase {
     public Command collectUntilFound(double power) {
         return new FunctionalCommand(() -> {
         },
-                () -> this.collectSparkMax.set(power),
-                (interrupted) -> this.collectSparkMax.set(0),
+                () -> this.collectMotor.set(power),
+                (interrupted) -> this.collectMotor.set(0),
                 () -> noteFound(),
                 this);
     }
@@ -216,7 +209,7 @@ public class Intake extends SubsystemBase {
                 () -> this.moveCollector(-0.15),
                 (interrupted) -> {
                     this.moveCollector(0.0);
-                    this.collectSparkMax.set(0.85);
+                    this.collectMotor.set(0.85);
                 },
                 () -> canDeliver(),
                 this);
@@ -248,7 +241,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setCollectorPower(double speed) {
-        return runOnce(() -> this.collectSparkMax.set(speed));
+        return runOnce(() -> this.collectMotor.set(speed));
     }
 
     @Override
@@ -257,6 +250,6 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
                 this.m_encoder.getPosition());
-        Logger.recordOutput("Intake/Collect Velocity", this.collectEncoder.getVelocity());
+        Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getVelocity().getValueAsDouble());
     }
 }
