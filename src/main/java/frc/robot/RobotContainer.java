@@ -111,19 +111,19 @@ public class RobotContainer {
         var path2 = Choreo.getTrajectory("three.2");
         var path3 = Choreo.getTrajectory("three.3");
         Pose2d path_pose = path1.getInitialPose();
-
-        Command p1 = buildAutoFollower(path1, new ChoreoEvent(m_intake.setAnglePosition(730), 0.10));
-        Command p2 = buildAutoFollower(path2);
-
         var prepare_shooter = new ParallelCommandGroup(m_angle.setAngleCommand(4), m_turret.setTargetPosition(
                 0));
 
-        Command transfer = new SequentialCommandGroup(prepare_shooter, m_intake.collectUntilFound(.85),
+        Command p1 = buildAutoFollower(path1, new ChoreoEvent(m_intake.setAnglePosition(730, 0.85).andThen(
+                prepare_shooter.alongWith(m_intake.collectUntilFound(.85))), 0.0));
+        Command p2 = buildAutoFollower(path2);
+
+        Command transfer = new SequentialCommandGroup(
                 m_intake.goToTransfer()
                         .alongWith(m_shooter.loadNoteUntilFound(0.35)));
 
-        Command shoot = new ShootNoteAuto(43, -4200, m_shooter, m_angle, m_visionSubsystem)
-                .alongWith(m_turret.setTargetPosition(100));
+        Command shoot = new ShootNoteAuto(38, -4200, m_shooter, m_angle, m_visionSubsystem)
+                .alongWith(m_turret.setTargetPosition(96));
 
         var command_one = Commands
                 .sequence(
@@ -134,6 +134,7 @@ public class RobotContainer {
                         }, swerveSubsystem),
                         p1,
                         transfer.andThen(shoot),
+                        m_intake.setCollectorPower(0),
                         Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
                                 swerveSubsystem));
 
@@ -203,8 +204,8 @@ public class RobotContainer {
                 .onFalse(
                         m_intake.setCollectorPower(0));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(m_intake.setAnglePosition(367));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_intake.setAnglePosition(2));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(m_turret.setTargetPosition(180));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_turret.setTargetPosition(0));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
                 .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));

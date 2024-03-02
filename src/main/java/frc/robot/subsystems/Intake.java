@@ -96,6 +96,16 @@ public class Intake extends SubsystemBase {
                 this);
     }
 
+    public Command stopWhenFound(double power) {
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                },
+                (interrupted) -> this.collectSparkMax.set(0),
+                () -> noteFound(),
+                this);
+    }
+
     public Command setAnglePosition(double pos) {
         return new FunctionalCommand(
                 () -> {
@@ -120,6 +130,39 @@ public class Intake extends SubsystemBase {
                     Logger.recordOutput("Intake/Setpoint", pos);
                     Logger.recordOutput("Intake/FF", applied_ff);
 
+                    this.angleSparkMax.setVoltage(effort * 12);
+                },
+                (interrupt) -> {
+                    this.angleSparkMax.set(0);
+                },
+                () -> this.anglePidController.atSetpoint(), this);
+    }
+
+    public Command setAnglePosition(double pos, double speed) {
+        return new FunctionalCommand(
+                () -> {
+                },
+                () -> {
+                    /**
+                     * Calculate the desired control effort using WPIlib pid controller and
+                     * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
+                     */
+
+                    double applied_ff = angleFF * Math.sin(hexEncoder.get() * (1 / 734));
+                    double effort = anglePidController.calculate(hexEncoder.get(),
+                            pos);
+
+                    Logger.recordOutput("Intake/Control Effort 2", effort);
+
+                    // scale control effort to a ratio to make it useable with voltage control.
+                    effort = (effort * 0.0013623978) + applied_ff;
+
+                    Logger.recordOutput("Intake/Control Effort", effort);
+                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
+                    Logger.recordOutput("Intake/Setpoint", pos);
+                    Logger.recordOutput("Intake/FF", applied_ff);
+
+                    this.collectSparkMax.set(speed);
                     this.angleSparkMax.setVoltage(effort * 12);
                 },
                 (interrupt) -> {
