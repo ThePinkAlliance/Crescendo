@@ -41,6 +41,11 @@ public class Constants {
 
     }
 
+    public static final class IntakeConstants {
+        public static final double COLLECT_FLOOR_POS = 36;
+        public static final double COLLECT_MID_POS = 21.21;
+    }
+
     public static final class OIConstants {
         public static final double kJoystickDeadband = 0.05;
     }
@@ -108,7 +113,7 @@ public class Constants {
         public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1; // 0.96
         public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond;
         public static double kTeleDriveSpeedReduction = 1;
-        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 0.55;
+        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3.5;
     }
 }

@@ -2,28 +2,17 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.intake;
 
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.SparkAbsoluteEncoder.Type;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.SparkRelativeEncoder;
 
-import edu.wpi.first.hal.simulation.RoboRioDataJNI;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkMax;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
@@ -31,83 +20,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotConstants.RobotType;
 
-import java.lang.module.ResolutionException;
-
-import javax.swing.text.Position;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
-
-    class CurrentEncoder {
-
-        private Encoder hexEncoder;
-        private CANcoder canCoder;
-
-        private RobotType currentRobot = Constants.RobotConstants.CURRENT_ROBOT;
-
-        public CurrentEncoder() {
-            if (currentRobot == RobotType.ROBOT_ONE) {
-                this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
-                SetupHexEncoder(hexEncoder, true);
-
-            } else if (currentRobot == RobotType.ROBOT_TWO) {
-                this.canCoder = new CANcoder(7, "rio");
-                var cancoderConfig = new CANcoderConfiguration();
-                cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-                cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-                cancoderConfig.MagnetSensor.MagnetOffset = 0.00317;
-                this.canCoder.getConfigurator().apply(cancoderConfig);
-
-            }
-        }
-
-        public double getPosition() {
-
-            double position;
-
-            if (currentRobot == RobotType.ROBOT_ONE) {
-                position = this.hexEncoder.get();
-            } else {
-                position = this.canCoder.getAbsolutePosition().getValueAsDouble();
-            }
-
-            return position;
-        }
-
-        public void reset() {
-            if (currentRobot == RobotType.ROBOT_ONE) {
-                this.hexEncoder.reset();
-            } else {
-                this.canCoder.setPosition(0);
-            }
-        }
-
-        private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
-
-            if (enc == null)
-                return;
-            enc.setMaxPeriod(.1);
-            enc.setMinRate(10);
-            System.out.println("SetupHexEncoder: Distance per Pulse: " + DISTANCE_PER_PULSE);
-            enc.setDistancePerPulse(DISTANCE_PER_PULSE);
-            enc.setReverseDirection(reverseDirection);
-            enc.setSamplesToAverage(7);
-            enc.reset();
-        }
-
-    };
-
-    private CurrentEncoder m_encoder;
+    private CollectorEncoder m_encoder;
 
     private final CANSparkMax angleSparkMax;
     private final TalonFX collectMotor;
-
     private DigitalInput m_noteSwitch;
-    public static final int[] HEX_ENCODER_IDS = { 4, 5 };
-    public static final double WHEEL_DIAMETER = 4.0;
-    public static final double PULSE_PER_REVOLUTION = 250; // Need to revisit this value!!
-    public final double DISTANCE_PER_PULSE = (double) (Math.PI * WHEEL_DIAMETER) / PULSE_PER_REVOLUTION;
+
     public final double angleFF;
     public final PIDController anglePidController;
 
@@ -117,17 +38,14 @@ public class Intake extends SubsystemBase {
         this.collectMotor = new TalonFX(21);
         this.m_noteSwitch = new DigitalInput(9);
 
-        this.m_encoder = new CurrentEncoder();
+        this.m_encoder = new CollectorEncoder();
         this.collectMotor.setNeutralMode(NeutralModeValue.Brake);
         this.angleSparkMax.setIdleMode(IdleMode.kCoast);
         this.angleSparkMax.setInverted(true);
 
-        this.anglePidController = new PIDController(0, 0, 0);
-        this.angleSparkMax.getPIDController().setP(.1);
+        this.anglePidController = new PIDController(.5, 0, 0);
+        this.anglePidController.setTolerance(2);
         this.angleFF = 0.1;
-
-        this.m_encoder.reset();
-
     }
 
     public boolean noteFound() {
@@ -157,21 +75,19 @@ public class Intake extends SubsystemBase {
                      * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
                      */
 
-                    double effort = this.anglePidController.calculate(m_encoder.getPosition(),
-                            pos)
-                            + (angleFF * Math.sin(m_encoder.getPosition() * (1 / 734)));
+                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition() * 0.0268456376);
+                    double effort = anglePidController.calculate(m_encoder.getPosition(),
+                            pos);
 
                     Logger.recordOutput("Intake/Control Effort 2", effort);
 
                     // scale control effort to a ratio to make it useable with voltage control.
-                    double full_error = Math.abs(pos - m_encoder.getPosition());
-                    effort = effort * (1 / full_error);
+                    effort = (effort * 0.0268456376) + applied_ff;
 
                     Logger.recordOutput("Intake/Control Effort", effort);
-                    Logger.recordOutput("Intake/Full Error", full_error);
+                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
                     Logger.recordOutput("Intake/Setpoint", pos);
-                    Logger.recordOutput("Intake/FF", (angleFF * Math.cos(m_encoder.getPosition() * (1 /
-                            734))));
+                    Logger.recordOutput("Intake/FF", applied_ff);
 
                     this.angleSparkMax.setVoltage(effort * 12);
                 },
@@ -181,17 +97,52 @@ public class Intake extends SubsystemBase {
                 () -> this.anglePidController.atSetpoint(), this);
     }
 
+    // Untested
+    public Command setAnglePositionHold(double pos) {
+        return new FunctionalCommand(
+                () -> {
+                },
+                () -> {
+                    /**
+                     * Calculate the desired control effort using WPIlib pid controller and
+                     * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
+                     */
+
+                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition());
+                    double effort = anglePidController.calculate(m_encoder.getPosition(),
+                            pos);
+
+                    Logger.recordOutput("Intake/Control Effort 2", effort);
+
+                    // scale control effort to a ratio to make it useable with voltage control.
+                    effort = (effort * 0.0013623978) + applied_ff;
+
+                    Logger.recordOutput("Intake/Control Effort", effort);
+                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
+                    Logger.recordOutput("Intake/Setpoint", pos);
+                    Logger.recordOutput("Intake/FF", applied_ff);
+
+                    this.angleSparkMax.setVoltage(effort * 12);
+                },
+                (interrupt) -> {
+                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition() * 0.0268456376);
+
+                    this.angleSparkMax.set(applied_ff);
+                },
+                () -> this.anglePidController.atSetpoint(), this);
+    }
+
     public Command stowCollector() {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(-0.20),
+                () -> this.moveCollector(-0.30),
                 (interrupted) -> this.moveCollector(0.0),
                 () -> isStowed(),
                 this);
     }
 
     public Command deployCollector() {
-        return deployCollector(0.20);
+        return deployCollector(0.25);
     }
 
     public Command deployCollector(double speed) {
@@ -203,10 +154,19 @@ public class Intake extends SubsystemBase {
                 this);
     }
 
+    public Command transferNote() {
+        return new FunctionalCommand(() -> {
+            this.setAnglePosition(367);
+        }, () -> {
+        }, (i) -> {
+            this.collectMotor.set(0.85);
+        }, () -> canDeliver(), this);
+    }
+
     public Command goToTransfer() {
         return new FunctionalCommand(() -> {
         },
-                () -> this.moveCollector(-0.15),
+                () -> this.moveCollector(-0.25),
                 (interrupted) -> {
                     this.moveCollector(0.0);
                     this.collectMotor.set(0.85);
@@ -233,8 +193,15 @@ public class Intake extends SubsystemBase {
 
     public boolean canDeliver() {
         boolean value = false;
-        if (m_encoder.getPosition() > 242 && m_encoder.getPosition() < 312 * 1.5) {
-            value = true;
+        if (Constants.RobotConstants.CURRENT_ROBOT == RobotType.ROBOT_ONE) {
+            if (m_encoder.getPosition() > 242 && m_encoder.getPosition() < 312 * 1.5) {
+                value = true;
+            }
+        } else {
+            // 21.21 ideal; 24.7 bottom; 16.8 top;
+            if (m_encoder.getPosition() < 24.7 && m_encoder.getPosition() > 16.8) {
+                value = true;
+            }
         }
         Logger.recordOutput("Intake/Hex Encoder", m_encoder.getPosition());
         return value;
@@ -242,6 +209,10 @@ public class Intake extends SubsystemBase {
 
     public Command setCollectorPower(double speed) {
         return runOnce(() -> this.collectMotor.set(speed));
+    }
+
+    public double getCollectorPosition() {
+        return this.m_encoder.getPosition();
     }
 
     @Override

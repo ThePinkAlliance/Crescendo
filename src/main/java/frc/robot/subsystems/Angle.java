@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -74,11 +75,11 @@ public class Angle extends SubsystemBase {
     }
 
     private double getCancoderAngle() {
-        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.37) * 360) + 4.8;
+        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.138) * 360);
     }
 
     public void setAngleNew(double angle) {
-        double rotationDiff = (angle - getCancoderAngle()) * (53.95 / 52.2);
+        double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
 
         this.m_motor.getPIDController().setReference(desired_rotations,
@@ -89,7 +90,7 @@ public class Angle extends SubsystemBase {
     }
 
     public void setAngle(double angle) {
-        double targetRotations = angle * (57.2 / (58.2 + 2));
+        double targetRotations = angle * (51.71 / 52.07);
 
         this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
     }
@@ -99,7 +100,13 @@ public class Angle extends SubsystemBase {
     }
 
     public Command setAngleCommand(double angle) {
-        return runOnce(() -> this.setAngleNew(angle));
+        double position = this.getCancoderAngle();
+
+        if (position >= 2) {
+            return runOnce(() -> this.setAngleNew(angle));
+        } else {
+            return Commands.none();
+        }
     }
 
     public double getControlError() {
