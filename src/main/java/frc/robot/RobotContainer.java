@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -38,7 +39,6 @@ import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.shooter.AdjustAngle;
 import frc.robot.commands.shooter.AlignShoot;
-import frc.robot.commands.shooter.ShootAction;
 import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.TuneScoring;
@@ -51,6 +51,8 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.intake.CollectNote;
 import frc.robot.commands.intake.CollectNoteAuto;
+import frc.robot.commands.intake.CollectNoteV2;
+import frc.robot.commands.intake.CollectTransferNote;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -70,6 +72,7 @@ public class RobotContainer {
 
     public SwerveSubsystem swerveSubsystem;
     public Joystick baseJoystick;
+    public Joystick towerJoystick;
     public VisionSubsystem m_visionSubsystem;
 
     public ChoreoTrajectory selectedTrajectory;
@@ -99,15 +102,12 @@ public class RobotContainer {
         swerveSubsystem = new SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
         m_visionSubsystem = new VisionSubsystem();
         baseJoystick = new Joystick(0);
+        towerJoystick = new Joystick(1);
         this.chooser = new SendableChooser<>();
 
         var path = Choreo.getTrajectory("three");
         Pose2d path_pose = path.getInitialPose();
 
-        // Added events to the path follower
-
-        // new ChoreoEvent(new CollectNoteAuto(m_intake, m_shooter, m_turret, m_angle),
-        // 0.25)
         Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
                 new ChoreoEvent(
                         Commands.runOnce(() -> Logger.recordOutput("point1", (Timer.getFPGATimestamp() - start_time))),
@@ -191,13 +191,27 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
-        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER).whileTrue(m_intake.deployCollector());
+        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
+                .whileTrue(new ConditionalCommand(new CollectTransferNote(m_intake, m_shooter, m_angle, m_turret),
+                        new CollectNoteV2(m_intake, m_shooter, m_angle,
+                                m_turret),
+                        () -> m_intake.noteFound()))
+                .onFalse(
+                        m_intake.setCollectorPower(0));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new CollectNote(m_intake, m_shooter, m_angle));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(m_intake.setAnglePosition(367));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_intake.setAnglePosition(2));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
+                .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
+                .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
+
+        // Tower
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
                 .onTrue(m_turret.setTargetPosition(180));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
                 .onTrue(m_turret.setTargetPosition(0));
+        m_turret.setDefaultCommand(
+                Commands.run(() -> m_turret.set(towerJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS)), m_turret));
 
     }
 
@@ -207,54 +221,8 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        // var pair = chooser.getSelected();
-        // ChoreoTrajectory path = chooser.getSelected();
-        // ChoreoEvent[] events = pair.getSecond();
-
-        // ChoreoEventHandler handler = new ChoreoEventHandler(events);
-
         return chooser.getSelected();
-
-        // return link_trajectory_commands(Choreo.getTrajectory("point_1"),
-        // Choreo.getTrajectory("point_2"));
-
-        // return Commands.none();
     }
-
-    // public Command link_trajectory_commands(ChoreoTrajectory... trajs) {
-    // SequentialCommandGroup group = new SequentialCommandGroup();
-
-    // group.addCommands(Commands.runOnce(() -> {
-    // Pose2d inital_pose = trajs[0].getInitialPose();
-
-    // swerveSubsystem.resetPose(new Pose2d(inital_pose.getX(), inital_pose.getY(),
-    // inital_pose.getRotation()));
-    // }));
-
-    // for (ChoreoTrajectory traj : trajs) {
-    // Command cmd = ChoreoUtil.choreoSwerveCommand(traj,
-    // swerveSubsystem::getCurrentPose,
-    // swerveController(
-    // new PIDController(translation_x_constants.kP,
-    // translation_x_constants.kI,
-    // translation_x_constants.kD,
-    // 0.02),
-    // new PIDController(translation_y_constants.kP,
-    // translation_y_constants.kI,
-    // translation_y_constants.kD,
-    // 0.02),
-    // new PIDController(
-    // rotation_constants.kP,
-    // rotation_constants.kI,
-    // rotation_constants.kD, 0.02)),
-    // swerveSubsystem::setStates, () -> false,
-    // swerveSubsystem);
-
-    // group.addCommands(cmd);
-    // }
-
-    // return group;
-    // }
 
     public static ChoreoControlFunction swerveController(
             PIDController xController, PIDController yController, PIDController rotationController) {

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -99,7 +100,13 @@ public class Angle extends SubsystemBase {
     }
 
     public Command setAngleCommand(double angle) {
-        return runOnce(() -> this.setAngleNew(angle));
+        double position = this.getCancoderAngle();
+
+        if (position >= 2) {
+            return runOnce(() -> this.setAngleNew(angle));
+        } else {
+            return Commands.none();
+        }
     }
 
     public double getControlError() {

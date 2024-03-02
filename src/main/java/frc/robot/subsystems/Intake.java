@@ -9,6 +9,8 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -55,11 +57,11 @@ public class Intake extends SubsystemBase {
         this.collectPIDController = collectSparkMax.getPIDController();
         this.collectPIDController.setP(.1);
 
-        this.anglePidController = new PIDController(0, 0, 0);
-
+        this.anglePidController = new PIDController(.5, 0.02, 0.0);
+        this.anglePidController.setTolerance(15);
         this.angleSparkMax.getPIDController().setP(.1);
 
-        this.angleFF = 0.1;
+        this.angleFF = 0.2;
 
         SetupHexEncoder(hexEncoder, true);
     }
@@ -94,30 +96,6 @@ public class Intake extends SubsystemBase {
                 this);
     }
 
-    // public Command setAnglePosition(double pos) {
-    // return new FunctionalCommand(
-    // () -> {
-    // },
-    // () -> {
-    // this.angleSparkMax.getPIDController().setFF(angleFF *
-    // Math.sin(hexEncoder.get() * (1 / 734)));
-    // this.angleSparkMax.getPIDController().setReference(pos,
-    // ControlType.kPosition);
-    // Logger.recordOutput("Intake/Angle Setpoint", pos);
-    // Logger.recordOutput("Intake/FF",
-    // this.angleSparkMax.getPIDController().getFF());
-    // },
-    // (interrupt) -> {
-    // this.angleSparkMax.set(0);
-    // },
-    // () -> {
-    // double control_error = pos - this.angleSparkMax.getEncoder().getPosition();
-    // double tolerence = 2;
-
-    // return Math.abs(control_error) <= tolerence;
-    // }, this);
-    // }
-
     public Command setAnglePosition(double pos) {
         return new FunctionalCommand(
                 () -> {
@@ -128,26 +106,63 @@ public class Intake extends SubsystemBase {
                      * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
                      */
 
-                    double effort = this.anglePidController.calculate(hexEncoder.get(),
-                            pos)
-                            + (angleFF * Math.sin(hexEncoder.get() * (1 / 734)));
+                    double applied_ff = angleFF * Math.sin(hexEncoder.get() * (1 / 734));
+                    double effort = anglePidController.calculate(hexEncoder.get(),
+                            pos);
 
                     Logger.recordOutput("Intake/Control Effort 2", effort);
 
                     // scale control effort to a ratio to make it useable with voltage control.
-                    double full_error = Math.abs(pos - hexEncoder.get());
-                    effort = effort * (1 / full_error);
+                    effort = (effort * 0.0013623978) + applied_ff;
 
                     Logger.recordOutput("Intake/Control Effort", effort);
-                    Logger.recordOutput("Intake/Full Error", full_error);
+                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
                     Logger.recordOutput("Intake/Setpoint", pos);
-                    Logger.recordOutput("Intake/FF", (angleFF * Math.cos(hexEncoder.get() * (1 /
-                            734))));
+                    Logger.recordOutput("Intake/FF", applied_ff);
 
                     this.angleSparkMax.setVoltage(effort * 12);
                 },
                 (interrupt) -> {
                     this.angleSparkMax.set(0);
+                },
+                () -> this.anglePidController.atSetpoint(), this);
+    }
+
+    public DoubleSupplier getAngleSupplier() {
+        return () -> this.hexEncoder.get();
+    }
+
+    // Untested
+    public Command setAnglePositionHold(double pos) {
+        return new FunctionalCommand(
+                () -> {
+                },
+                () -> {
+                    /**
+                     * Calculate the desired control effort using WPIlib pid controller and
+                     * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
+                     */
+
+                    double applied_ff = angleFF * Math.sin(hexEncoder.get() * (1 / 734));
+                    double effort = anglePidController.calculate(hexEncoder.get(),
+                            pos);
+
+                    Logger.recordOutput("Intake/Control Effort 2", effort);
+
+                    // scale control effort to a ratio to make it useable with voltage control.
+                    effort = (effort * 0.0013623978) + applied_ff;
+
+                    Logger.recordOutput("Intake/Control Effort", effort);
+                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
+                    Logger.recordOutput("Intake/Setpoint", pos);
+                    Logger.recordOutput("Intake/FF", applied_ff);
+
+                    this.angleSparkMax.setVoltage(effort * 12);
+                },
+                (interrupt) -> {
+                    double applied_ff = angleFF * Math.sin(hexEncoder.get() * (1 / 734));
+
+                    this.angleSparkMax.set(applied_ff);
                 },
                 () -> this.anglePidController.atSetpoint(), this);
     }
@@ -162,7 +177,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command deployCollector() {
-        return deployCollector(0.20);
+        return deployCollector(0.25);
     }
 
     public Command deployCollector(double speed) {
@@ -172,6 +187,15 @@ public class Intake extends SubsystemBase {
                 (interrupted) -> this.moveCollector(0.0),
                 () -> isDeployed(),
                 this);
+    }
+
+    public Command transferNote() {
+        return new FunctionalCommand(() -> {
+            this.setAnglePosition(367);
+        }, () -> {
+        }, (i) -> {
+            this.collectSparkMax.set(0.85);
+        }, () -> canDeliver(), this);
     }
 
     public Command goToTransfer() {

@@ -19,11 +19,10 @@ public class ShootNote extends SequentialCommandGroup {
         // addCommands(new FooCommand(), new BarCommand());
 
         addCommands(
-                shooter.rampUp2(-4800),
-                angle.GotoAngle(calculateAngle(visionSubsystem.getClosestTargetDistance())),
+                shooter.rampUp2(-4800).alongWith(angle.GotoAngle(calculateAngle(visionSubsystem
+                        .getClosestTargetDistance()))),
                 shooter.launchNote2(),
-                angle.setAngleCommandNew(5),
-                shooter.stopShooter());
+                angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));
     }
 
     public double calculateAngle(double distance) {

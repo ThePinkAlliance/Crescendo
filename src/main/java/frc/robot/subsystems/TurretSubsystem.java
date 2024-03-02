@@ -46,6 +46,7 @@ public class TurretSubsystem extends SubsystemBase {
         this.target_position = 0;
 
         this.m_pidController = new PIDController(.1, 0.001, 0.0);
+        this.m_pidController.setTolerance(.5);
 
         m_relEncoder = m_turretMotor.getEncoder();
         m_absEncoder = m_turretMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);

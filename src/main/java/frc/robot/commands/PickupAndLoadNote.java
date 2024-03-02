@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.lib.JoystickMap;
-import frc.robot.commands.shooter.ShootAction;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
