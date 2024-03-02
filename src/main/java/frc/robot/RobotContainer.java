@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -102,25 +104,70 @@ public class RobotContainer {
         this.chooser = new SendableChooser<>();
 
         var path = Choreo.getTrajectory("three");
+        var path1 = Choreo.getTrajectory("three.1");
+        var path2 = Choreo.getTrajectory("three.2");
+        var path3 = Choreo.getTrajectory("three.3");
         Pose2d path_pose = path.getInitialPose();
 
         // Added events to the path follower
 
         // new ChoreoEvent(new CollectNoteAuto(m_intake, m_shooter, m_turret, m_angle),
         // 0.25)
-        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
-                new ChoreoEvent(
-                        Commands.runOnce(() -> Logger.recordOutput("point1", (Timer.getFPGATimestamp() - start_time))),
-                        .25),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2", (Timer.getFPGATimestamp()
-                        - start_time))), .96),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3", (Timer.getFPGATimestamp()
-                        - start_time))), 1.85),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4", (Timer.getFPGATimestamp()
-                        - start_time))), 2.23),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5", (Timer.getFPGATimestamp()
-                        - start_time))), 2.88),
-        },
+
+        // new ChoreoEvent(
+        // Commands.runOnce(() -> Logger.recordOutput("point1",
+        // (Timer.getFPGATimestamp() - start_time))),
+        // .25),
+        // new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2",
+        // (Timer.getFPGATimestamp()
+        // - start_time))), .96),
+        // new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3",
+        // (Timer.getFPGATimestamp()
+        // - start_time))), 1.85),
+        // new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4",
+        // (Timer.getFPGATimestamp()
+        // - start_time))), 2.23),
+        // new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5",
+        // (Timer.getFPGATimestamp()
+        // - start_time))), 2.88),
+
+        Command p1 = buildAutoFollower(path1, new ChoreoEvent(m_intake.setAnglePosition(730), 0.10));
+        Command p2 = buildAutoFollower(path2);
+
+        var prepare_shooter = new ParallelCommandGroup(m_angle.setAngleCommand(4), m_turret.setTargetPosition(
+                0));
+
+        Command transfer = new SequentialCommandGroup(prepare_shooter, m_intake.collectUntilFound(.85),
+                m_intake.goToTransfer()
+                        .alongWith(m_shooter.loadNoteUntilFound(0.35)));
+
+        Command shoot = new ShootNoteAuto(43, -4200, m_shooter, m_angle, m_visionSubsystem)
+                .alongWith(m_turret.setTargetPosition(-80));
+
+        var command_one = Commands
+                .sequence(
+                        Commands.runOnce(() -> {
+                            swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
+                                    path_pose.getRotation()));
+                            start_time = Timer.getFPGATimestamp();
+                        }, swerveSubsystem),
+                        p1,
+                        transfer.andThen(shoot),
+                        Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+                                swerveSubsystem));
+
+        this.chooser.addOption("Choreo Path 1", command_one);
+        this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
+
+        SmartDashboard.putData(chooser);
+        SmartDashboard.putNumber("shooter_angle", 2);
+
+        // Configure the trigger bindings
+        configureBindings();
+    }
+
+    public Command buildAutoFollower(ChoreoTrajectory path, ChoreoEvent... events) {
+        return ChoreoUtil.choreoEventCommand(events,
                 ChoreoUtil.choreoSwerveCommand(path,
                         swerveSubsystem::getCurrentPose,
                         swerveController(
@@ -139,30 +186,6 @@ public class RobotContainer {
                                         rotation_constants.kD)),
                         swerveSubsystem::setStates, () -> false,
                         swerveSubsystem));
-
-        var command_one = Commands
-                .sequence(
-                        Commands.runOnce(() -> {
-                            swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
-                                    path_pose.getRotation()));
-                            start_time = Timer.getFPGATimestamp();
-                        }, swerveSubsystem),
-                        // new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
-                        p1,
-                        // m_turret.setTargetPosition(160).alongWith(
-                        // new ShootNoteAuto(42, -4800, m_shooter, m_angle,
-                        // m_visionSubsystem)),
-                        Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-                                swerveSubsystem));
-
-        this.chooser.addOption("Choreo Path 1", command_one);
-        this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
-
-        SmartDashboard.putData(chooser);
-        SmartDashboard.putNumber("shooter_angle", 2);
-
-        // Configure the trigger bindings
-        configureBindings();
     }
 
     /**
