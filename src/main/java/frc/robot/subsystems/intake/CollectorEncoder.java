@@ -28,7 +28,7 @@ public class CollectorEncoder {
             var cancoderConfig = new CANcoderConfiguration();
             cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
             cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-            cancoderConfig.MagnetSensor.MagnetOffset = 0.00317;
+            cancoderConfig.MagnetSensor.MagnetOffset = 0.097;
             this.canCoder.getConfigurator().apply(cancoderConfig);
         }
     }
@@ -41,6 +41,19 @@ public class CollectorEncoder {
             position = this.hexEncoder.get();
         } else {
             position = this.canCoder.getAbsolutePosition().getValueAsDouble() * 100;
+        }
+
+        return position;
+    }
+
+    public double getRawPosition() {
+
+        double position;
+
+        if (currentRobot == RobotType.ROBOT_ONE) {
+            position = this.hexEncoder.get();
+        } else {
+            position = this.canCoder.getAbsolutePosition().getValueAsDouble();
         }
 
         return position;

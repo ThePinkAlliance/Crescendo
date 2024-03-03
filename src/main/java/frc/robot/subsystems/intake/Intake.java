@@ -199,7 +199,7 @@ public class Intake extends SubsystemBase {
             }
         } else {
             // 21.21 ideal; 24.7 bottom; 16.8 top;
-            if (m_encoder.getPosition() < 24.7 && m_encoder.getPosition() > 16.8) {
+            if (m_encoder.getPosition() <= 24.7 && m_encoder.getPosition() >= 16.8) {
                 value = true;
             }
         }
@@ -221,6 +221,7 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
                 this.m_encoder.getPosition());
+        Logger.recordOutput("Intake/Collect Raw Encoder", this.m_encoder.getRawPosition());
         Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getVelocity().getValueAsDouble());
     }
 }

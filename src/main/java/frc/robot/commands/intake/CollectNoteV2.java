@@ -20,7 +20,8 @@ public class CollectNoteV2 extends SequentialCommandGroup {
                         new WaitUntilCommand(
                                 () -> intake.getCollectorPosition() >= Constants.IntakeConstants.COLLECT_MID_POS)
                                 .andThen(prepare_shooter)),
-                intake.collectUntilFound(.85), intake.goToTransfer()
+                intake.collectUntilFound(.85),
+                intake.goToTransfer()
                         .alongWith(shooter.loadNoteUntilFound(0.35)),
                 intake.setCollectorPower(0), intake.setAnglePosition(5));
     }
