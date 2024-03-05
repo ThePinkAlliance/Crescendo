@@ -41,9 +41,20 @@ public class Constants {
 
     }
 
+    public static final class AngleConstants {
+        public static final double IDLE_ANGLE = 5;
+        public static final double MIN_ANGLE = 2;
+    }
+
     public static final class IntakeConstants {
-        public static final double COLLECT_FLOOR_POS = 36;
-        public static final double COLLECT_MID_POS = 21.21;
+        public static final double COLLECT_FLOOR_POS = 37.1;
+        public static final double COLLECT_MID_POS = 19.8;
+
+        public static final double COLLECT_DUTY_CYCLE = 0.85;
+    }
+
+    public static final class ShooterConstants {
+        public static final double COLLECT_DUTY_CYCLE = 0.35;
     }
 
     public static final class OIConstants {

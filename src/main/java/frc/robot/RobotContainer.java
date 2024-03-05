@@ -148,9 +148,9 @@ public class RobotContainer {
                         }, swerveSubsystem),
                         // new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
                         p1,
-                        // m_turret.setTargetPosition(160).alongWith(
-                        // new ShootNoteAuto(42, -4800, m_shooter, m_angle,
-                        // m_visionSubsystem)),
+                        m_turret.setTargetPosition(160).alongWith(
+                                new ShootNoteAuto(42, -4800, m_shooter, m_angle,
+                                        m_visionSubsystem)),
                         Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
                                 swerveSubsystem));
 
@@ -189,12 +189,10 @@ public class RobotContainer {
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
-        new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
+        new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.setAnglePosition(0));
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
-                .whileTrue(new ConditionalCommand(new CollectTransferNote(m_intake, m_shooter, m_angle, m_turret),
-                        new CollectNoteV2(m_intake, m_shooter, m_angle,
-                                m_turret),
-                        () -> m_intake.noteFound()))
+                .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle,
+                        m_turret))
                 .onFalse(
                         m_intake.setCollectorPower(0));
 

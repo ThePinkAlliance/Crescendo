@@ -17,19 +17,22 @@ public class CollectorEncoder {
     public static final double PULSE_PER_REVOLUTION = 250; // Need to revisit this value!!
     public final double DISTANCE_PER_PULSE = (double) (Math.PI * WHEEL_DIAMETER) / PULSE_PER_REVOLUTION;
     private RobotType currentRobot = Constants.RobotConstants.CURRENT_ROBOT;
+    private final double SENSOR_OFFSET;
 
     public CollectorEncoder() {
         if (currentRobot == RobotType.ROBOT_ONE) {
             this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
             SetupHexEncoder(hexEncoder, true);
-
+            this.SENSOR_OFFSET = 0;
         } else if (currentRobot == RobotType.ROBOT_TWO) {
             this.canCoder = new CANcoder(7, "rio");
             var cancoderConfig = new CANcoderConfiguration();
             cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
             cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-            cancoderConfig.MagnetSensor.MagnetOffset = 0.097;
             this.canCoder.getConfigurator().apply(cancoderConfig);
+            this.SENSOR_OFFSET = 0.001;
+        } else {
+            this.SENSOR_OFFSET = 0;
         }
     }
 
@@ -38,9 +41,9 @@ public class CollectorEncoder {
         double position;
 
         if (currentRobot == RobotType.ROBOT_ONE) {
-            position = this.hexEncoder.get();
+            position = (this.hexEncoder.get() + SENSOR_OFFSET);
         } else {
-            position = this.canCoder.getAbsolutePosition().getValueAsDouble() * 100;
+            position = (this.canCoder.getAbsolutePosition().getValueAsDouble() + SENSOR_OFFSET) * 100;
         }
 
         return position;
@@ -56,7 +59,7 @@ public class CollectorEncoder {
             position = this.canCoder.getAbsolutePosition().getValueAsDouble();
         }
 
-        return position;
+        return position + SENSOR_OFFSET;
     }
 
     public void reset() {

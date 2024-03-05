@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -102,7 +103,7 @@ public class Angle extends SubsystemBase {
     public Command setAngleCommand(double angle) {
         double position = this.getCancoderAngle();
 
-        if (position >= 2) {
+        if (position >= Constants.AngleConstants.MIN_ANGLE) {
             return runOnce(() -> this.setAngleNew(angle));
         } else {
             return Commands.none();

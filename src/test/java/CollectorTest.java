@@ -1,8 +1,25 @@
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.controller.PIDController;
+import frc.robot.Constants;
+import frc.robot.subsystems.intake.Intake;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.littletonrobotics.junction.Logger;
 
 public class CollectorTest {
+    static Intake intake;
+
+    @BeforeAll
+    public static void before() {
+        HAL.initialize(500, 0);
+
+        intake = new Intake();
+    }
+
+    @Test
+    public void testPID() {
+    }
+
     @Test
     public void intake() {
         double pos = 0;

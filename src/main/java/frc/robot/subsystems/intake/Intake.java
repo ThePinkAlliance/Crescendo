@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
@@ -30,6 +31,7 @@ public class Intake extends SubsystemBase {
     private DigitalInput m_noteSwitch;
 
     public final double angleFF;
+    public final double CANCODER_ROTATIONS_TO_MOTOR_TICKS;
     public final PIDController anglePidController;
 
     public Intake() {
@@ -40,12 +42,13 @@ public class Intake extends SubsystemBase {
 
         this.m_encoder = new CollectorEncoder();
         this.collectMotor.setNeutralMode(NeutralModeValue.Brake);
-        this.angleSparkMax.setIdleMode(IdleMode.kCoast);
+        this.angleSparkMax.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setInverted(true);
 
         this.anglePidController = new PIDController(.5, 0, 0);
         this.anglePidController.setTolerance(2);
         this.angleFF = 0.1;
+        this.CANCODER_ROTATIONS_TO_MOTOR_TICKS = 0.0268456376;
     }
 
     public boolean noteFound() {
@@ -72,17 +75,17 @@ public class Intake extends SubsystemBase {
                 () -> {
                     /**
                      * Calculate the desired control effort using WPIlib pid controller and
-                     * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
+                     * calculate feedforward using angleFF * Math.sin(rotation_ratio_collector)
                      */
 
-                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition() * 0.0268456376);
+                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition() * CANCODER_ROTATIONS_TO_MOTOR_TICKS);
                     double effort = anglePidController.calculate(m_encoder.getPosition(),
                             pos);
 
                     Logger.recordOutput("Intake/Control Effort 2", effort);
 
                     // scale control effort to a ratio to make it useable with voltage control.
-                    effort = (effort * 0.0268456376) + applied_ff;
+                    effort = (effort * CANCODER_ROTATIONS_TO_MOTOR_TICKS) + applied_ff;
 
                     Logger.recordOutput("Intake/Control Effort", effort);
                     Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
@@ -93,41 +96,6 @@ public class Intake extends SubsystemBase {
                 },
                 (interrupt) -> {
                     this.angleSparkMax.set(0);
-                },
-                () -> this.anglePidController.atSetpoint(), this);
-    }
-
-    // Untested
-    public Command setAnglePositionHold(double pos) {
-        return new FunctionalCommand(
-                () -> {
-                },
-                () -> {
-                    /**
-                     * Calculate the desired control effort using WPIlib pid controller and
-                     * calculate feedforward using angleFF * Math.cos(rotation_ratio_collector)
-                     */
-
-                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition());
-                    double effort = anglePidController.calculate(m_encoder.getPosition(),
-                            pos);
-
-                    Logger.recordOutput("Intake/Control Effort 2", effort);
-
-                    // scale control effort to a ratio to make it useable with voltage control.
-                    effort = (effort * 0.0013623978) + applied_ff;
-
-                    Logger.recordOutput("Intake/Control Effort", effort);
-                    Logger.recordOutput("Intake/Control Error", anglePidController.getPositionError());
-                    Logger.recordOutput("Intake/Setpoint", pos);
-                    Logger.recordOutput("Intake/FF", applied_ff);
-
-                    this.angleSparkMax.setVoltage(effort * 12);
-                },
-                (interrupt) -> {
-                    double applied_ff = angleFF * Math.sin(m_encoder.getPosition() * 0.0268456376);
-
-                    this.angleSparkMax.set(applied_ff);
                 },
                 () -> this.anglePidController.atSetpoint(), this);
     }
