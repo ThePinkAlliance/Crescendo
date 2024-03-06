@@ -10,7 +10,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
-
+import com.revrobotics.SparkLimitSwitch;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
@@ -191,5 +191,12 @@ public class Intake extends SubsystemBase {
                 this.m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Raw Encoder", this.m_encoder.getRawPosition());
         Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getVelocity().getValueAsDouble());
+
+        boolean endstop_pressed = this.angleSparkMax.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
+                .isPressed();
+
+        if (endstop_pressed && m_encoder.getPosition() >= 1) {
+            this.m_encoder.setOffset(-m_encoder.getPosition());
+        }
     }
 }

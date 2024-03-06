@@ -218,10 +218,12 @@ public class RobotContainer {
                 .onFalse(
                         m_intake.setCollectorPower(0));
 
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).whileTrue(Commands.runOnce(() -> m_shooter.load(1)))
-                .onFalse(
-                        Commands.runOnce(() -> m_shooter.load(0)));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_turret.setTargetPosition(0));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+                .whileTrue(Commands.runOnce(() -> m_shooter.setVelocity(-500))).onFalse(
+                        Commands.runOnce(() -> m_shooter.setSpeed(0)));
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
+                .whileTrue(Commands.runOnce(() -> m_shooter.setVelocity(-4800))).onFalse(
+                        Commands.runOnce(() -> m_shooter.setSpeed(0)));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
                 .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));

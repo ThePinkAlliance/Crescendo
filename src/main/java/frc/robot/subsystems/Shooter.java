@@ -28,6 +28,7 @@ public class Shooter extends SubsystemBase {
     SparkPIDController m_pidController;
     private RelativeEncoder m_encoder;
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+    public double velocity_ff;
     DigitalInput m_noteSwitch;
 
     public enum ShooterMove {
@@ -43,12 +44,14 @@ public class Shooter extends SubsystemBase {
         this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);
 
+        // this.m_greenTalon.ramp
+
         // set slot 0 gains
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
         slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
         slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        slot0Configs.kI = 0.5; // An error of 1 rps increases output by 0.5 V each second
+        slot0Configs.kI = 0; // An error of 1 rps increases output by 0.5 V each second
         slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
 
         m_greenTalon.getConfigurator().apply(slot0Configs);
@@ -132,12 +135,12 @@ public class Shooter extends SubsystemBase {
         var request = new VelocityVoltage(0).withSlot(0);
 
         if (!controlIndividual) {
-            m_greenTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(0.5));
-            m_greyTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(0.5));
+            m_greenTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
+            m_greyTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
         } else if (controlIndividual) {
-            // set velocity rps, add 0.5 V to overcome gravity
-            m_greenTalon.setControl(request.withVelocity(greenToRpm).withFeedForward(0.5));
-            m_greyTalon.setControl(request.withVelocity(greyToRpm).withFeedForward(0.5));
+            // set velocity rps, add velocity_ff V to overcome gravity
+            m_greenTalon.setControl(request.withVelocity(greenToRpm).withFeedForward(velocity_ff));
+            m_greyTalon.setControl(request.withVelocity(greyToRpm).withFeedForward(velocity_ff));
         } else {
             DriverStation.reportWarning("!cannot determine motor control! (shooter.java, 95)", true);
         }
