@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -220,6 +221,7 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Back Right Position", backRightModule.getDrivePosition());
         Logger.recordOutput("Swerve/Front Left Position", frontLeftModule.getDrivePosition());
         Logger.recordOutput("Swerve/Heading", getHeading());
+        Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
         Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
 
         if (lastEpoch != 0) {

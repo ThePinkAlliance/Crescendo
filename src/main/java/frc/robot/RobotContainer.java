@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -104,22 +106,12 @@ public class RobotContainer {
         towerJoystick = new Joystick(1);
         this.chooser = new SendableChooser<>();
 
-        var path = Choreo.getTrajectory("three");
+        var path = Choreo.getTrajectory("red-left-two");
         Pose2d path_pose = path.getInitialPose();
 
-        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {
-                new ChoreoEvent(
-                        Commands.runOnce(() -> Logger.recordOutput("point1", (Timer.getFPGATimestamp() - start_time))),
-                        .25),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point2", (Timer.getFPGATimestamp()
-                        - start_time))), .96),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point3", (Timer.getFPGATimestamp()
-                        - start_time))), 1.85),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point4", (Timer.getFPGATimestamp()
-                        - start_time))), 2.23),
-                new ChoreoEvent(Commands.runOnce(() -> Logger.recordOutput("point5", (Timer.getFPGATimestamp()
-                        - start_time))), 2.88),
-        },
+        var prepare_turret = m_turret.setTargetPosition(0).alongWith(m_angle.setAngleCommand(5));
+
+        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {},
                 ChoreoUtil.choreoSwerveCommand(path,
                         swerveSubsystem::getCurrentPose,
                         swerveController(
@@ -139,6 +131,17 @@ public class RobotContainer {
                         swerveSubsystem::setStates, () -> false,
                         swerveSubsystem));
 
+        var shoot_routine = new SequentialCommandGroup(new WaitCommand(0.85),
+                m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_SHOOTING_POS).alongWith(
+                        new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
+                                m_visionSubsystem)));
+
+        var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
+                m_turret.setTargetPositionRaw(
+                        48.96).alongWith(
+                                new ShootNoteAuto(41, -4500, m_shooter, m_angle,
+                                        m_visionSubsystem)));
+
         var command_one = Commands
                 .sequence(
                         Commands.runOnce(() -> {
@@ -146,15 +149,42 @@ public class RobotContainer {
                                     path_pose.getRotation()));
                             start_time = Timer.getFPGATimestamp();
                         }, swerveSubsystem),
-                        // new ShootNoteAuto(54, -4200, m_shooter, m_angle, m_visionSubsystem),
-                        p1,
-                        m_turret.setTargetPosition(160).alongWith(
-                                new ShootNoteAuto(42, -4800, m_shooter, m_angle,
-                                        m_visionSubsystem)),
+                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
+                        p1.alongWith(Commands.sequence(
+                                m_intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE)
+                                        .alongWith(prepare_turret),
+                                m_intake.goToTransfer()
+                                        .alongWith(m_shooter
+                                                .loadNoteUntilFound(Constants.ShooterConstants.COLLECT_DUTY_CYCLE)),
+                                m_intake.setCollectorPower(
+                                        0))),
+                        shoot_routine2,
                         Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
                                 swerveSubsystem));
 
-        this.chooser.addOption("Choreo Path 1", command_one);
+        var path_2 = Choreo.getTrajectory("move-1m");
+        var path_2_inital_pose = path_2.getInitialPose();
+        var e1 = Commands.sequence(Commands.runOnce(() -> {
+            swerveSubsystem.resetPose(new Pose2d(path_2_inital_pose.getX(), path_2_inital_pose.getY(),
+                    path_2_inital_pose.getRotation()));
+            start_time = Timer.getFPGATimestamp();
+        }, swerveSubsystem), buildAutoFollower(path_2),
+                Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+                        swerveSubsystem));
+
+        var path_3 = Choreo.getTrajectory("rotate-90");
+        var path_3_inital_pose = path_3.getInitialPose();
+        var e2 = Commands.sequence(Commands.runOnce(() -> {
+            swerveSubsystem.resetPose(new Pose2d(path_3_inital_pose.getX(), path_3_inital_pose.getY(),
+                    path_3_inital_pose.getRotation()));
+            start_time = Timer.getFPGATimestamp();
+        }, swerveSubsystem), buildAutoFollower(path_3),
+                Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+                        swerveSubsystem));
+
+        this.chooser.addOption("Test Command", command_one);
+        this.chooser.addOption("move-1m", e1);
+        this.chooser.addOption("rotate-90", e2);
         this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
 
         SmartDashboard.putData(chooser);
@@ -274,11 +304,11 @@ public class RobotContainer {
             Logger.recordOutput("rotationFeedback", rotationFeedback);
             Logger.recordOutput("rotationFF", rotationFF);
             Logger.recordOutput("rotationSetpoint", referenceState.heading);
-            Logger.recordOutput("rotation", Math.abs(pose.getRotation().getRadians()));
+            Logger.recordOutput("rotation", pose.getRotation().getRadians());
 
             // Reverse the sum of x so it moves forward and backwards on the field
             return ChassisSpeeds.fromFieldRelativeSpeeds(
-                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, (rotationFF - rotationFeedback),
+                    (xFF + xFeedback) * -1, (yFF + yFeedback) * -1, rotationFF - rotationFeedback,
                     pose.getRotation());
         };
     }

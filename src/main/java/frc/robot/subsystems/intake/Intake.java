@@ -167,7 +167,7 @@ public class Intake extends SubsystemBase {
             }
         } else {
             // 21.21 ideal; 24.7 bottom; 16.8 top;
-            if (m_encoder.getPosition() <= 24.7 && m_encoder.getPosition() >= 16.8) {
+            if (m_encoder.getPosition() <= 22.7 && m_encoder.getPosition() >= 15.8) {
                 value = true;
             }
         }

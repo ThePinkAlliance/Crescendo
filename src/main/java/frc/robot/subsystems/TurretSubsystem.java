@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -49,7 +50,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_relEncoder = m_turretMotor.getEncoder();
         m_absEncoder = m_turretMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
-        m_relEncoder.setPosition(0);
+        m_relEncoder.setPosition(Constants.TurretConstants.REVERSE_STARTING_POS);
     }
 
     public void set(double speed) {
@@ -75,6 +76,21 @@ public class TurretSubsystem extends SubsystemBase {
         }
 
         return Commands.none();
+    }
+
+    public Command setTargetPositionRaw(double target) {
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    double effort = this.m_pidController.calculate(this.m_turretMotor.getEncoder().getPosition(),
+                            target);
+                    Logger.recordOutput("Turret/Effort", effort);
+                    this.m_turretMotor.set(effort);
+                },
+                (i) -> {
+                    this.m_turretMotor.set(0);
+                },
+                () -> this.m_pidController.atSetpoint(), this);
     }
 
     public Command goToHeading(double target_deg) {
