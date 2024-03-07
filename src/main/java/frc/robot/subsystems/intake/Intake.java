@@ -137,7 +137,7 @@ public class Intake extends SubsystemBase {
                 () -> this.moveCollector(-0.25),
                 (interrupted) -> {
                     this.moveCollector(0.0);
-                    this.collectMotor.set(0.85);
+                    this.collectMotor.set(0.65);
                 },
                 () -> canDeliver(),
                 this);
@@ -167,7 +167,7 @@ public class Intake extends SubsystemBase {
             }
         } else {
             // 21.21 ideal; 24.7 bottom; 16.8 top;
-            if (m_encoder.getPosition() <= 22.7 && m_encoder.getPosition() >= 15.8) {
+            if (m_encoder.getPosition() <= 21.3 && m_encoder.getPosition() >= 19) {
                 value = true;
             }
         }

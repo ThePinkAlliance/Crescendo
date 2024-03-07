@@ -269,6 +269,23 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    public Command loadNoteUntilFound2(double desiredVelocity) {
+
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    this.setVelocity(desiredVelocity);
+                    this.load(1);
+                },
+                (interrupted) -> {
+                    this.move(0);
+                    this.setSpeed(0);
+                },
+                () -> noteFound(),
+                this);
+
+    }
+
     public Command rampUp2(double desiredVelocity) {
 
         return new FunctionalCommand(() -> {

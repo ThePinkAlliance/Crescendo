@@ -7,6 +7,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.Encoder;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotConstants.RobotType;
+import org.littletonrobotics.junction.Logger;
 
 public class CollectorEncoder {
     private Encoder hexEncoder;
@@ -48,6 +49,8 @@ public class CollectorEncoder {
         } else {
             position = (this.canCoder.getAbsolutePosition().getValueAsDouble() + SENSOR_OFFSET) * 100;
         }
+
+        Logger.recordOutput("CollectorEncoder/offset", ADDITIONAL_SENSOR_OFFSET);
 
         return Math.abs(position + ADDITIONAL_SENSOR_OFFSET);
     }

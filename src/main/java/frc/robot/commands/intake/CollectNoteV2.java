@@ -22,7 +22,7 @@ public class CollectNoteV2 extends SequentialCommandGroup {
                                 .andThen(prepare_shooter)),
                 intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE),
                 intake.goToTransfer()
-                        .alongWith(shooter.loadNoteUntilFound(Constants.ShooterConstants.COLLECT_DUTY_CYCLE)),
+                        .alongWith(shooter.loadNoteUntilFound2(2000)),
                 intake.setCollectorPower(0), intake.setAnglePosition(5));
     }
 }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.function.DoubleSupplier;
+
 import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
@@ -39,12 +41,9 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
-import frc.robot.commands.shooter.AdjustAngle;
 import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
-import frc.robot.commands.shooter.TuneScoring;
-import frc.robot.commands.shooter.TuneShootAction;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Loader;
@@ -138,7 +137,7 @@ public class RobotContainer {
 
         var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
                 m_turret.setTargetPositionRaw(
-                        48.96).alongWith(
+                        52.46).alongWith(
                                 new ShootNoteAuto(41, -4500, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
@@ -155,7 +154,7 @@ public class RobotContainer {
                                         .alongWith(prepare_turret),
                                 m_intake.goToTransfer()
                                         .alongWith(m_shooter
-                                                .loadNoteUntilFound(Constants.ShooterConstants.COLLECT_DUTY_CYCLE)),
+                                                .loadNoteUntilFound2(2000)),
                                 m_intake.setCollectorPower(
                                         0))),
                         shoot_routine2,
@@ -188,7 +187,7 @@ public class RobotContainer {
         this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
 
         SmartDashboard.putData(chooser);
-        SmartDashboard.putNumber("shooter_angle", 2);
+        SmartDashboard.putNumber("shooter_angle", 5);
 
         // Configure the trigger bindings
         configureBindings();
@@ -230,6 +229,9 @@ public class RobotContainer {
      * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
      * joysticks}.
      */
+
+    double t = 45;
+
     private void configureBindings() {
         swerveSubsystem
                 .setDefaultCommand(
@@ -249,11 +251,20 @@ public class RobotContainer {
                         m_intake.setCollectorPower(0));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(Commands.runOnce(() -> m_shooter.setVelocity(-500))).onFalse(
-                        Commands.runOnce(() -> m_shooter.setSpeed(0)));
+                .whileTrue(m_shooter.loadNoteUntilFound(
+                        0.35))
+                .onFalse(
+                        Commands.sequence(
+                                Commands.runOnce(() -> {
+                                    t = SmartDashboard.getNumber("shooter_angle", 45);
+                                }),
+                                m_shooter.rampUp2(-4800),
+                                m_angle.GotoAngle(t),
+                                m_shooter.launchNote2(), Commands.runOnce(() -> m_shooter.setSpeed(0))));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(Commands.runOnce(() -> m_shooter.setVelocity(-4800))).onFalse(
-                        Commands.runOnce(() -> m_shooter.setSpeed(0)));
+                .whileTrue(m_intake.setCollectorPower(
+                        -1))
+                .onFalse(m_intake.setCollectorPower(0));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
                 .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
