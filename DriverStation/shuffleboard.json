@@ -11,10 +11,10 @@
         "vgap": 16.0,
         "titleType": 0,
         "tiles": {
-          "0,0": {
+          "0,3": {
             "size": [
-              2,
-              5
+              4,
+              2
             ],
             "content": {
               "_type": "Network Table Tree",
@@ -24,9 +24,9 @@
               "_showGlyph": false
             }
           },
-          "2,0": {
+          "0,0": {
             "size": [
-              8,
+              10,
               3
             ],
             "content": {
@@ -39,9 +39,9 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "2,4": {
+          "4,4": {
             "size": [
-              8,
+              6,
               1
             ],
             "content": {
@@ -57,9 +57,9 @@
               "Visuals/Number of tick marks": 16
             }
           },
-          "2,3": {
+          "4,3": {
             "size": [
-              8,
+              6,
               1
             ],
             "content": {

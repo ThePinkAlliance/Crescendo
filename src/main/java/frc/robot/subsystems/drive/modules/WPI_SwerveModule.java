@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.drive.modules;
 
+import javax.swing.text.html.HTMLDocument.RunElement;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -30,7 +32,7 @@ public class WPI_SwerveModule implements SwerveModule {
     private TalonFX driveMotor;
     private TalonFX steerMotor;
     private CANcoder canCoder;
-
+    public static final double WARNINGTEMP = 55.0;
     private double absoluteEncoderOffsetRad;
 
     public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
@@ -138,6 +140,20 @@ public class WPI_SwerveModule implements SwerveModule {
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerPosition()));
+    }
+
+    public double getMotorTemp() {
+        return driveMotor.getDeviceTemp().getValueAsDouble();
+    }
+
+    public boolean isMotorOverheated() {
+        boolean result = false;
+        
+        if (getMotorTemp() > WARNINGTEMP) {
+            result = true;
+        }
+
+        return result;
     }
 
     /**
