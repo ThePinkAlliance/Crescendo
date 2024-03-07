@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.subsystems.drive.SwerveModule;
@@ -223,6 +224,17 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Heading", getHeading());
         Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
         Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
+
+        Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemp());
+
+        Logger.recordOutput("Swerve/Front Right Temperature Overheat Warning", frontRightModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
+
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();
