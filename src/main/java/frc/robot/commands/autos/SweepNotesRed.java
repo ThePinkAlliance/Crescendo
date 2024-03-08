@@ -56,7 +56,7 @@ public class SweepNotesRed {
         var shoot_routine2 = new SequentialCommandGroup(target_command_2);
 
         var target_command_3 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
-                43.897),
+                45.638),
                 new ShootNoteAuto(40, -4000, m_shooter, m_angle,
                         m_visionSubsystem));
         var shoot_routine3 = new SequentialCommandGroup(target_command_3);
