@@ -43,6 +43,7 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
+import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootNote;
@@ -89,8 +90,6 @@ public class RobotContainer {
     private Intake m_intake = new Intake();
     private TurretSubsystem m_turret = new TurretSubsystem();
 
-    private double start_time;
-
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -101,34 +100,14 @@ public class RobotContainer {
         towerJoystick = new Joystick(1);
         this.chooser = new SendableChooser<>();
 
-        // var path_2 = Choreo.getTrajectory("move-1m");
-        // var path_2_inital_pose = path_2.getInitialPose();
-        // var e1 = Commands.sequence(Commands.runOnce(() -> {
-        // swerveSubsystem.resetPose(new Pose2d(path_2_inital_pose.getX(),
-        // path_2_inital_pose.getY(),
-        // path_2_inital_pose.getRotation()));
-        // start_time = Timer.getFPGATimestamp();
-        // }, swerveSubsystem), buildAutoFollower(path_2),
-        // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-        // swerveSubsystem));
-
-        // var path_3 = Choreo.getTrajectory("rotate-90");
-        // var path_3_inital_pose = path_3.getInitialPose();
-        // var e2 = Commands.sequence(Commands.runOnce(() -> {
-        // swerveSubsystem.resetPose(new Pose2d(path_3_inital_pose.getX(),
-        // path_3_inital_pose.getY(),
-        // path_3_inital_pose.getRotation()));
-        // start_time = Timer.getFPGATimestamp();
-        // }, swerveSubsystem), buildAutoFollower(path_3),
-        // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-        // swerveSubsystem));
-
         this.chooser.addOption("Red Two Note Left",
                 TwoNoteRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Two Note Center",
                 TwoNoteRed.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Two Note Right",
                 TwoNoteRed.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Sweep Left",
+                SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
 
