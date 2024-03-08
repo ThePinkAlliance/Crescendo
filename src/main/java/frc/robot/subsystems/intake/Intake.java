@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase {
     private CollectorEncoder m_encoder;
 
     private final CANSparkMax angleSparkMax;
-    private final TalonFX collectMotor;
+    private final CANSparkMax collectMotor;
     private DigitalInput m_noteSwitch;
 
     public final double angleFF;
@@ -37,11 +37,11 @@ public class Intake extends SubsystemBase {
     public Intake() {
 
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
-        this.collectMotor = new TalonFX(21);
+        this.collectMotor = new CANSparkMax(21, MotorType.kBrushless);
         this.m_noteSwitch = new DigitalInput(9);
 
         this.m_encoder = new CollectorEncoder();
-        this.collectMotor.setNeutralMode(NeutralModeValue.Brake);
+        this.collectMotor.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setInverted(true);
 
@@ -190,7 +190,7 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Angle Position",
                 this.m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Raw Encoder", this.m_encoder.getRawPosition());
-        Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getVelocity().getValueAsDouble());
+        Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getEncoder().getVelocity());
 
         boolean endstop_pressed = this.angleSparkMax.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
                 .isPressed();

@@ -47,15 +47,22 @@ public class Shooter extends SubsystemBase {
         // this.m_greenTalon.ramp
 
         // set slot 0 gains
-        var slot0Configs = new Slot0Configs();
-        slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
-        slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        slot0Configs.kI = 0; // An error of 1 rps increases output by 0.5 V each second
-        slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+        var slot0Configs_1 = new Slot0Configs();
+        slot0Configs_1.kS = 0.05; // Add 0.05 V output to overcome static friction
+        slot0Configs_1.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+        slot0Configs_1.kP = 0.15; // An error of 1 rps results in 0.11 V output
+        slot0Configs_1.kI = 0; // An error of 1 rps increases output by 0.5 V each second
+        slot0Configs_1.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
 
-        m_greenTalon.getConfigurator().apply(slot0Configs);
-        m_greyTalon.getConfigurator().apply(slot0Configs);
+        var slot0Configs_2 = new Slot0Configs();
+        slot0Configs_2.kS = 0.05; // Add 0.05 V output to overcome static friction
+        slot0Configs_2.kV = 0.12; // A velocity target of 1 rps results in 0.12 V
+        slot0Configs_2.kP = 0.11; // An error of 1 rps results in 0.11 V output
+        slot0Configs_2.kI = 0; // An error of 1 rps increases output by 0.5 V each second
+        slot0Configs_2.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+
+        m_greenTalon.getConfigurator().apply(slot0Configs_1);
+        m_greyTalon.getConfigurator().apply(slot0Configs_2);
 
         SmartDashboard.putNumber("RpmsShooter", 0.0);
 

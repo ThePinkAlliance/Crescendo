@@ -15,6 +15,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -41,9 +43,11 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
+import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
+import frc.robot.commands.shooter.ShooterTune;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Loader;
@@ -87,14 +91,6 @@ public class RobotContainer {
 
     private double start_time;
 
-    // i: 0.0045
-    public PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
-    // i: 0.005
-    public PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
-
-    // kP: 2, kI: 0.01;
-    public PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
-
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -105,95 +101,47 @@ public class RobotContainer {
         towerJoystick = new Joystick(1);
         this.chooser = new SendableChooser<>();
 
-        var path = Choreo.getTrajectory("red-left-two");
-        Pose2d path_pose = path.getInitialPose();
+        // var path_2 = Choreo.getTrajectory("move-1m");
+        // var path_2_inital_pose = path_2.getInitialPose();
+        // var e1 = Commands.sequence(Commands.runOnce(() -> {
+        // swerveSubsystem.resetPose(new Pose2d(path_2_inital_pose.getX(),
+        // path_2_inital_pose.getY(),
+        // path_2_inital_pose.getRotation()));
+        // start_time = Timer.getFPGATimestamp();
+        // }, swerveSubsystem), buildAutoFollower(path_2),
+        // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+        // swerveSubsystem));
 
-        var prepare_turret = m_turret.setTargetPosition(0).alongWith(m_angle.setAngleCommand(5));
+        // var path_3 = Choreo.getTrajectory("rotate-90");
+        // var path_3_inital_pose = path_3.getInitialPose();
+        // var e2 = Commands.sequence(Commands.runOnce(() -> {
+        // swerveSubsystem.resetPose(new Pose2d(path_3_inital_pose.getX(),
+        // path_3_inital_pose.getY(),
+        // path_3_inital_pose.getRotation()));
+        // start_time = Timer.getFPGATimestamp();
+        // }, swerveSubsystem), buildAutoFollower(path_3),
+        // Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
+        // swerveSubsystem));
 
-        Command p1 = ChoreoUtil.choreoEventCommand(new ChoreoEvent[] {},
-                ChoreoUtil.choreoSwerveCommand(path,
-                        swerveSubsystem::getCurrentPose,
-                        swerveController(
-                                new PIDController(translation_x_constants.kP,
-                                        translation_x_constants.kI,
-                                        translation_x_constants.kD,
-                                        0.02),
-                                new PIDController(
-                                        translation_y_constants.kP,
-                                        translation_y_constants.kI,
-                                        translation_y_constants.kD,
-                                        0.02),
-                                new PIDController(
-                                        rotation_constants.kP,
-                                        rotation_constants.kI,
-                                        rotation_constants.kD)),
-                        swerveSubsystem::setStates, () -> false,
-                        swerveSubsystem));
-
-        var shoot_routine = new SequentialCommandGroup(new WaitCommand(0.85),
-                m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_SHOOTING_POS).alongWith(
-                        new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
-                                m_visionSubsystem)));
-
-        var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
-                m_turret.setTargetPositionRaw(
-                        52.46).alongWith(
-                                new ShootNoteAuto(41, -4500, m_shooter, m_angle,
-                                        m_visionSubsystem)));
-
-        var command_one = Commands
-                .sequence(
-                        Commands.runOnce(() -> {
-                            swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
-                                    path_pose.getRotation()));
-                            start_time = Timer.getFPGATimestamp();
-                        }, swerveSubsystem),
-                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
-                        p1.alongWith(Commands.sequence(
-                                m_intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE)
-                                        .alongWith(prepare_turret),
-                                m_intake.goToTransfer()
-                                        .alongWith(m_shooter
-                                                .loadNoteUntilFound2(2000)),
-                                m_intake.setCollectorPower(
-                                        0))),
-                        shoot_routine2,
-                        Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-                                swerveSubsystem));
-
-        var path_2 = Choreo.getTrajectory("move-1m");
-        var path_2_inital_pose = path_2.getInitialPose();
-        var e1 = Commands.sequence(Commands.runOnce(() -> {
-            swerveSubsystem.resetPose(new Pose2d(path_2_inital_pose.getX(), path_2_inital_pose.getY(),
-                    path_2_inital_pose.getRotation()));
-            start_time = Timer.getFPGATimestamp();
-        }, swerveSubsystem), buildAutoFollower(path_2),
-                Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-                        swerveSubsystem));
-
-        var path_3 = Choreo.getTrajectory("rotate-90");
-        var path_3_inital_pose = path_3.getInitialPose();
-        var e2 = Commands.sequence(Commands.runOnce(() -> {
-            swerveSubsystem.resetPose(new Pose2d(path_3_inital_pose.getX(), path_3_inital_pose.getY(),
-                    path_3_inital_pose.getRotation()));
-            start_time = Timer.getFPGATimestamp();
-        }, swerveSubsystem), buildAutoFollower(path_3),
-                Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
-                        swerveSubsystem));
-
-        this.chooser.addOption("Test Command", command_one);
-        this.chooser.addOption("move-1m", e1);
-        this.chooser.addOption("rotate-90", e2);
-        this.chooser.addOption("Shoot Center Close", new ShootCenterClose(m_shooter, m_angle));
+        this.chooser.addOption("Red Two Note Left",
+                TwoNoteRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Two Note Center",
+                TwoNoteRed.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Two Note Right",
+                TwoNoteRed.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
-        SmartDashboard.putNumber("shooter_angle", 5);
 
         // Configure the trigger bindings
         configureBindings();
     }
 
-    public Command buildAutoFollower(ChoreoTrajectory path, ChoreoEvent... events) {
+    public static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
+            ChoreoEvent... events) {
+        PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
+        PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
+        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
+
         return ChoreoUtil.choreoEventCommand(events,
                 ChoreoUtil.choreoSwerveCommand(path,
                         swerveSubsystem::getCurrentPose,
@@ -230,8 +178,6 @@ public class RobotContainer {
      * joysticks}.
      */
 
-    double t = 45;
-
     private void configureBindings() {
         swerveSubsystem
                 .setDefaultCommand(
@@ -253,14 +199,7 @@ public class RobotContainer {
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(m_shooter.loadNoteUntilFound(
                         0.35))
-                .onFalse(
-                        Commands.sequence(
-                                Commands.runOnce(() -> {
-                                    t = SmartDashboard.getNumber("shooter_angle", 45);
-                                }),
-                                m_shooter.rampUp2(-4800),
-                                m_angle.GotoAngle(t),
-                                m_shooter.launchNote2(), Commands.runOnce(() -> m_shooter.setSpeed(0))));
+                .onFalse(new ShooterTune(m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(m_intake.setCollectorPower(
                         -1))

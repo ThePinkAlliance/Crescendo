@@ -4,6 +4,7 @@
 
 package frc.robot.commands.shooter;
 
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Shooter;
@@ -13,19 +14,19 @@ import frc.robot.subsystems.VisionSubsystem;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ShootNote extends SequentialCommandGroup {
+    double target_angle = 5;
+
     /** Creates a new ShootNote. */
     public ShootNote(Shooter shooter, Angle angle, VisionSubsystem visionSubsystem) {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
 
+        var g = new ParallelCommandGroup(shooter.rampUp2(-4800),
+                angle.GotoAngleVision(visionSubsystem.UncorrectedDistance()));
+
         addCommands(
-                shooter.rampUp2(-4800).alongWith(angle.GotoAngle(calculateAngle(visionSubsystem
-                        .getClosestTargetDistance()))),
+                g,
                 shooter.launchNote2(),
                 angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));
-    }
-
-    public double calculateAngle(double distance) {
-        return -0.1471 * distance + 59.912;
     }
 }

@@ -13,6 +13,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,6 +31,7 @@ public class TurretSubsystem extends SubsystemBase {
     // Max Clockwise (CW) and Max Counter Clockwise positions.
     private final double MAX_CW_POS;
     private final double MAX_CCW_POS;
+    private final double CONVERSION_RATIO;
 
     private PIDController m_pidController;
 
@@ -43,6 +45,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         this.MAX_CCW_POS = -35;
         this.MAX_CW_POS = 200;
+        this.CONVERSION_RATIO = 0.35;
 
         this.m_pidController = new PIDController(.1, 0.0, 0.0);
         this.m_pidController.setTolerance(.5);
@@ -57,8 +60,12 @@ public class TurretSubsystem extends SubsystemBase {
         this.m_turretMotor.set(speed);
     }
 
+    public Rotation2d getRotation() {
+        return Rotation2d.fromDegrees(this.m_turretMotor.getEncoder().getPosition() / CONVERSION_RATIO);
+    }
+
     public Command setTargetPosition(double target_deg) {
-        double target_pos = target_deg * 0.35;
+        double target_pos = target_deg * CONVERSION_RATIO;
 
         if (target_deg <= MAX_CW_POS && target_deg >= MAX_CCW_POS) {
             return new FunctionalCommand(() -> {

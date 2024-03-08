@@ -1,3 +1,5 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.controller.PIDController;
 import frc.robot.Constants;
@@ -16,8 +18,36 @@ public class CollectorTest {
         intake = new Intake();
     }
 
+    public void sam(double x, double a) {
+        // double r = 0.0005 * (x * x * x) - 0.1032 * (x * x) + 7.1735 * x - 112.4;
+        // double r = Math.pow(0.0005 * x, 3) - Math.pow(0.1032 * x, 2) + 7.1735 * x -
+        // 112.4;
+        // double r = 103.6 * Math.pow(Math.E, -0.014 * x);
+        // double r = 0.0019 * (x * x) - 0.7904 * x + 85.839;
+        double r = -0.4991 * x + 74.924;
+
+        assertEquals(a, r, .5);
+    }
+
     @Test
     public void testPID() {
+        double r = (103.6 * 2.7182);
+        double t = -0.014 * 89;
+        double e = Math.pow(281.60552, t);
+        double d = 60;
+
+        // 0.0005x3 - 0.1032x2 + 7.1735x - 112.4
+
+        double x1 = 0.0005 * (d * d * d) - 0.1032 * (d * d) + 7.1735 * d - 112.4;
+
+        // 0.0002x3 - 0.0441x2 + 2.6755x
+
+        double x2 = 0.0002 * (d * d * d) - 0.0441 * (d * d) + 2.6755 * d;
+
+        // double x3 = 103.6 * Math.E ^ (-0.014 * d);
+
+        System.out.println(e);
+        sam(84.4, 26);
     }
 
     @Test

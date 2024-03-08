@@ -132,4 +132,13 @@ public class Angle extends SubsystemBase {
         }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
     }
 
+    public Command GotoAngleVision(double distance) {
+        return new FunctionalCommand(() -> {
+            double target_angle = (-0.4991 * distance) + 74.924;
+            Logger.recordOutput("targetAngle", target_angle);
+            this.setAngleNew(target_angle);
+        }, () -> {
+        }, (i) -> {
+        }, () -> this.getControlError() <= 5 && this.getSpeed() <= 0.05, this);
+    }
 }
