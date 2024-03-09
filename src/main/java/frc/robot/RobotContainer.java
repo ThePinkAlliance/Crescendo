@@ -43,6 +43,7 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
+import frc.robot.commands.autos.StealMidRed;
 import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteRed;
@@ -111,6 +112,8 @@ public class RobotContainer {
                 SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Sweep Mini Left",
                 SweepNotesMiniRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Steal Mid",
+                StealMidRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
 

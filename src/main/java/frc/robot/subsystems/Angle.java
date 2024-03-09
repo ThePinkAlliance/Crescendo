@@ -75,7 +75,7 @@ public class Angle extends SubsystemBase {
         this.setAngle(targetRotation);
     }
 
-    private double getCancoderAngle() {
+    public double getCancoderAngle() {
         return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.138) * 360);
     }
 

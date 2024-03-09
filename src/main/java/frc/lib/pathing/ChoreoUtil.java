@@ -57,6 +57,36 @@ public class ChoreoUtil {
         return controller.alongWith(timed_commands);
     }
 
+    public static Command choreoSwerveCommandWithTriggers(
+            ChoreoTrajectory trajectory,
+            Supplier<Pose2d> poseSupplier,
+            ChoreoControlFunction controller,
+            Consumer<ChassisSpeeds> outputChassisSpeeds,
+            Consumer<Pose2d> trigger_handler,
+            BooleanSupplier mirrorTrajectory,
+            Subsystem... requirements) {
+        var timer = new Timer();
+        return new FunctionalCommand(
+                timer::restart,
+                () -> {
+                    ;
+                    trigger_handler.accept(poseSupplier.get());
+
+                    outputChassisSpeeds.accept(
+                            controller.apply(
+                                    poseSupplier.get(),
+                                    trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+                },
+                (interrupted) -> {
+                    timer.stop();
+                    if (interrupted) {
+                        outputChassisSpeeds.accept(new ChassisSpeeds());
+                    }
+                },
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .5),
+                requirements);
+    }
+
     public static Command choreoSwerveCommandWithEvents(
             ChoreoTrajectory trajectory,
             Supplier<Pose2d> poseSupplier,

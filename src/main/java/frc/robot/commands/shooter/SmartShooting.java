@@ -63,15 +63,21 @@ public class SmartShooting extends Command {
         Rotation2d turret_rotation = m_turret.getRotation();
 
         Rotation2d desired_turret_angle = speaker_rotation.minus(turret_rotation);
+
         double speaker_distance = speaker_pose2d.getTranslation()
                 .getDistance(robot_pose.getTranslation());
-        // double desired_angle = Math.sqrt(speaker_distance * speaker_distance + )
+        double future_pose_x = robot_pose.getX() + x_accel * 9.8;
+        double future_distance = Math.hypot(future_pose_x, speaker_distance);
+        double future_angle = (speaker_distance / future_distance) * (180 / Math.PI);
 
         Logger.recordOutput("Commands/SmartShooting/speaker_distance", speaker_distance);
         Logger.recordOutput("Commands/SmartShooting/speaker_id", speaker_id);
         Logger.recordOutput("Commands/SmartShooting/desired_rotation_deg", desired_turret_angle.getDegrees());
         Logger.recordOutput("Commands/SmartShooting/speaker_rotation_deg", speaker_rotation.getDegrees());
         Logger.recordOutput("Commands/SmartShooting/turret_rotation_deg", turret_rotation.getDegrees());
+        Logger.recordOutput("Commands/SmartShooting/future_pose_x", future_pose_x);
+        Logger.recordOutput("Commands/SmartShooting/future_pose_distance", future_distance);
+        Logger.recordOutput("Commands/SmartShooting/future_angle", future_angle);
     }
 
     // Called once the command ends or is interrupted.

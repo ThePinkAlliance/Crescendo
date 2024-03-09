@@ -4,6 +4,8 @@
 
 package frc.robot.commands.shooter;
 
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Angle;
@@ -24,6 +26,8 @@ public class ShootNote extends SequentialCommandGroup {
         var g = new ParallelCommandGroup(shooter.rampUp2(-4800), new LimelightAngle(angle, visionSubsystem));
 
         addCommands(
+                new ConditionalCommand(angle.setAngleCommandNew(20), Commands.none(),
+                        () -> angle.getCancoderAngle() >= 20),
                 g,
                 shooter.launchNote2(),
                 angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));

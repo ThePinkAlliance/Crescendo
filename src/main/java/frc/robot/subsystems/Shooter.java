@@ -340,6 +340,25 @@ public class Shooter extends SubsystemBase {
                 this);
     }
 
+    public Command launchNote3() {
+        Timer time = new Timer();
+        return new FunctionalCommand(() -> {
+            time.reset();
+            time.start();
+        },
+                () -> {
+                    this.launch(1);
+                },
+                (interrupted) -> {
+                    this.setSpeed(0);
+                    this.stop();
+                },
+                () -> {
+                    return time.hasElapsed(1);
+                },
+                this);
+    }
+
     public StatusSignal<Double> getBottomVelocity() {
         return this.m_greyTalon.getVelocity();
     }
