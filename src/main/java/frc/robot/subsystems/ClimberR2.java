@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Timer;
@@ -39,6 +40,8 @@ public class ClimberR2 extends SubsystemBase {
 
     leftClimber=new TalonFX(leftClimberID);
     rightClimber=new TalonFX(rightClimberID);
+    leftClimber.setNeutralMode(NeutralModeValue.Brake);
+    rightClimber.setNeutralMode(NeutralModeValue.Brake);
 
     //Innitial positions (Used for deltas)
     leftEncoder0=leftClimber.getPosition().getValueAsDouble(); 
@@ -85,6 +88,10 @@ public class ClimberR2 extends SubsystemBase {
   public void resetEncoder(){
     leftEncoder0=this.leftClimber.getPosition().getValueAsDouble();
     rightEncoder0=this.rightClimber.getPosition().getValueAsDouble();
+  }
+  public void testPower(double testSpeedR,double testSpeedL){
+    leftClimber.set(testSpeedL);
+    rightClimber.set(testSpeedR);
   }
   @Override
   public void periodic() {

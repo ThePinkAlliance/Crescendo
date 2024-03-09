@@ -207,7 +207,8 @@ public class RobotContainer {
                 */
         new JoystickButton(baseJoystick,JoystickMap.BUTTON_A).onTrue(m_climber.setTarget(0, 0));
         new JoystickButton(baseJoystick,JoystickMap.BUTTON_X).onTrue(new InstantCommand(()->m_climber.resetEncoder()));
-
+        new JoystickButton(baseJoystick,JoystickMap.BUTTON_Y).whileTrue(new InstantCommand(()->m_climber.testPower(0.1,-0.1)));
+        new JoystickButton(baseJoystick,JoystickMap.BUTTON_B).whileTrue(new InstantCommand(()->m_climber.testPower(0,0)));
     }
 
     /**
