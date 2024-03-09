@@ -20,6 +20,8 @@ import com.revrobotics.SparkRelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -230,6 +232,16 @@ public class Intake extends SubsystemBase {
                 this);
     }
 
+    public Command ampShot(){
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {timer.reset(); timer.start();
+        },
+                () ->  this.collectSparkFlex.set(-1),
+                (interrupted) -> this.stowCollector(),
+                () -> timer.hasElapsed(2),
+                this);
+    }
+
     public Command deployCollector() {
         return deployCollector(0.25);
     }
@@ -242,7 +254,6 @@ public class Intake extends SubsystemBase {
                 () -> isDeployed(),
                 this);
     }
-
     public Command transferNote() {
         return new FunctionalCommand(() -> {
             this.setAnglePosition(367);

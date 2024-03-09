@@ -196,6 +196,11 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.stowCollector());
+        new POVButton(baseJoystick, 270).onTrue(m_intake.ampShot());
+        new POVButton(baseJoystick, 180).whileTrue(m_intake.deployCollector(.25));
+        new POVButton(baseJoystick, 0).whileTrue(m_intake.stowCollector());
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).whileTrue(m_intake.collectUntilFound(1));
+
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
                 .whileTrue(new ConditionalCommand(new CollectTransferNote(m_intake, m_shooter, m_angle, m_turret),
                         new CollectNoteV2(m_intake, m_shooter, m_angle,
@@ -205,7 +210,7 @@ public class RobotContainer {
                         m_intake.setCollectorPower(0));
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(m_turret.setTargetPosition(180));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_turret.setTargetPosition(0));
+        //new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_turret.setTargetPosition(0));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
                 .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
