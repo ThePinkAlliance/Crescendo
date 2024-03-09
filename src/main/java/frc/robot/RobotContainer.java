@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -53,6 +54,7 @@ import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShooterTune;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
@@ -91,6 +93,7 @@ public class RobotContainer {
     // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private TurretSubsystem m_turret = new TurretSubsystem();
+    private ClimberR2 m_climber = new ClimberR2();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -171,6 +174,7 @@ public class RobotContainer {
                                 () -> baseJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
                                 () -> baseJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
 
+        /*
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
@@ -200,6 +204,9 @@ public class RobotContainer {
                 .onTrue(m_turret.setTargetPosition(0));
         m_turret.setDefaultCommand(
                 Commands.run(() -> m_turret.set(towerJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS)), m_turret));
+                */
+        new JoystickButton(baseJoystick,JoystickMap.BUTTON_A).onTrue(m_climber.setTarget(0, 0));
+        new JoystickButton(baseJoystick,JoystickMap.BUTTON_X).onTrue(new InstantCommand(()->m_climber.resetEncoder()));
 
     }
 
