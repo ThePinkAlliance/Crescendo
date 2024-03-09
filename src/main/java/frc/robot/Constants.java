@@ -54,8 +54,9 @@ public class Constants {
     public static final class IntakeConstants {
         public static final double COLLECT_FLOOR_POS = 37.1;
         public static final double COLLECT_MID_POS = 19.8;
+        public static final double COLLECT_MID_AUTO_POS = 20.67;
 
-        public static final double COLLECT_DUTY_CYCLE = 1;
+        public static final double DEFAULT_COLLECT_DUTY_CYCLE = 1;
     }
 
     public static final class ShooterConstants {

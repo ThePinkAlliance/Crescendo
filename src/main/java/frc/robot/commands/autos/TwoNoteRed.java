@@ -37,12 +37,12 @@ public class TwoNoteRed {
 
         var built_path = RobotContainer.buildAutoFollower(swerveSubsystem, path);
 
-        var shoot_routine = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_SHOOTING_POS).alongWith(
                         new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
                                 m_visionSubsystem)));
 
-        var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         52.46).alongWith(
                                 new ShootNoteAuto(41, -4500, m_shooter, m_angle,
@@ -56,11 +56,16 @@ public class TwoNoteRed {
                         }, swerveSubsystem),
                         m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
                         built_path.alongWith(Commands.sequence(
-                                m_intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE)
+                                m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret),
-                                m_intake.goToTransfer()
-                                        .alongWith(m_shooter
-                                                .loadNoteUntilFound2(2000)),
+                                new SequentialCommandGroup(
+                                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS),
+                                        m_intake.setCollectorPower(
+                                                Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
+                                        .alongWith(
+                                                m_shooter
+                                                        .loadNoteUntilFound2(
+                                                                2000)),
                                 m_intake.setCollectorPower(
                                         0))),
                         shoot_routine2,
@@ -78,13 +83,13 @@ public class TwoNoteRed {
 
         var built_path = RobotContainer.buildAutoFollower(swerveSubsystem, path);
 
-        var shoot_routine = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         80.66).alongWith(
                                 new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
-        var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         72.96).alongWith(
                                 new ShootNoteAuto(41, -4500, m_shooter, m_angle,
@@ -98,11 +103,16 @@ public class TwoNoteRed {
                         }, swerveSubsystem),
                         m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
                         built_path.alongWith(Commands.sequence(
-                                m_intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE)
+                                m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret),
-                                m_intake.goToTransfer()
-                                        .alongWith(m_shooter
-                                                .loadNoteUntilFound2(2000)),
+                                new SequentialCommandGroup(
+                                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS),
+                                        m_intake.setCollectorPower(
+                                                Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
+                                        .alongWith(
+                                                m_shooter
+                                                        .loadNoteUntilFound2(
+                                                                2000)),
                                 m_intake.setCollectorPower(
                                         0))),
                         shoot_routine2,
@@ -120,12 +130,12 @@ public class TwoNoteRed {
 
         var built_path = RobotContainer.buildAutoFollower(swerveSubsystem, path);
 
-        var shoot_routine = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_STARTING_POS).alongWith(
                         new ShootNoteAuto(56.52, -4500, m_shooter, m_angle,
                                 m_visionSubsystem)));
 
-        var shoot_routine2 = new SequentialCommandGroup(new WaitCommand(0.85),
+        var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         Constants.TurretConstants.REVERSE_STARTING_POS).alongWith(
                                 new ShootNoteAuto(41, -4500, m_shooter, m_angle,
@@ -139,11 +149,16 @@ public class TwoNoteRed {
                         }, swerveSubsystem),
                         m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
                         built_path.alongWith(Commands.sequence(
-                                m_intake.collectUntilFound(Constants.IntakeConstants.COLLECT_DUTY_CYCLE)
+                                m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret),
-                                m_intake.goToTransfer()
-                                        .alongWith(m_shooter
-                                                .loadNoteUntilFound2(2000)),
+                                new SequentialCommandGroup(
+                                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS),
+                                        m_intake.setCollectorPower(
+                                                Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
+                                        .alongWith(
+                                                m_shooter
+                                                        .loadNoteUntilFound2(
+                                                                2000)),
                                 m_intake.setCollectorPower(
                                         0))),
                         shoot_routine2,

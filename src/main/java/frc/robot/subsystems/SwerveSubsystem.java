@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
@@ -122,6 +123,14 @@ public class SwerveSubsystem extends SubsystemBase {
         };
     }
 
+    public StatusSignal<Double> getAccelX() {
+        return gyro.getAccelerationX();
+    }
+
+    public StatusSignal<Double> verticalAccel() {
+        return gyro.getAccelerationY();
+    }
+
     public Rotation2d getRotation2d() {
         return gyro.getRotation2d();
     }
@@ -234,7 +243,6 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());
         Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
         Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
-
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();

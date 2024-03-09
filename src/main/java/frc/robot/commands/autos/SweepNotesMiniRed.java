@@ -23,40 +23,34 @@ import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
 
 /** Add your docs here. */
-public class SweepNotesRed {
+public class SweepNotesMiniRed {
     public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
             Angle m_angle,
             VisionSubsystem m_visionSubsystem, Shooter m_shooter) {
         var path_1 = Choreo.getTrajectory("sweep-red.1");
         var path_2 = Choreo.getTrajectory("sweep-red.2");
-        var path_3 = Choreo.getTrajectory("sweep-red.3");
         Pose2d path_pose_1 = path_1.getInitialPose();
 
         var prepare_turret_1 = m_turret.setTargetPosition(0).alongWith(m_angle.setAngleCommand(5));
         var prepare_turret_2 = m_turret.setTargetPosition(0).alongWith(m_angle.setAngleCommand(5));
-        var prepare_turret_3 = m_turret.setTargetPosition(0).alongWith(m_angle.setAngleCommand(5));
 
         var built_path_1 = RobotContainer.buildAutoFollower(swerveSubsystem, path_1);
         var built_path_2 = RobotContainer.buildAutoFollower(swerveSubsystem, path_2);
-        var built_path_3 = RobotContainer.buildAutoFollower(swerveSubsystem, path_3);
         var shoot_routine_1 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_SHOOTING_POS).alongWith(
-                        new ShootNoteAuto(47.52, -3500, m_shooter, m_angle,
+                        new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
                                 m_visionSubsystem)));
         var target_command_1 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
                 34.838),
-                new ShootNoteAuto(40, -3500, m_shooter, m_angle,
+                new ShootNoteAuto(40, -4000, m_shooter, m_angle,
                         m_visionSubsystem));
+        var shoot_routine1 = new SequentialCommandGroup(target_command_1);
 
         var target_command_2 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
                 42.503),
-                new ShootNoteAuto(40, -3500, m_shooter, m_angle,
+                new ShootNoteAuto(40, -4000, m_shooter, m_angle,
                         m_visionSubsystem));
-
-        var target_command_3 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
-                45.638),
-                new ShootNoteAuto(38, -3500, m_shooter, m_angle,
-                        m_visionSubsystem));
+        var shoot_routine2 = new SequentialCommandGroup(target_command_2);
 
         return Commands
                 .sequence(
@@ -70,8 +64,7 @@ public class SweepNotesRed {
                                 m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret_1),
                                 new SequentialCommandGroup(
-                                        m_intake.setAnglePosition(
-                                                19.95),
+                                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS),
                                         m_intake.setCollectorPower(
                                                 Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
                                         .alongWith(
@@ -80,14 +73,13 @@ public class SweepNotesRed {
                                                                 2000)),
                                 m_intake.setCollectorPower(
                                         0))),
-                        target_command_1,
+                        shoot_routine1,
                         m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                         built_path_2.alongWith(Commands.sequence(
                                 m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret_2),
                                 new SequentialCommandGroup(
-                                        m_intake.setAnglePosition(
-                                                19.95),
+                                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS),
                                         m_intake.setCollectorPower(
                                                 Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
                                         .alongWith(
@@ -96,23 +88,7 @@ public class SweepNotesRed {
                                                                 2000)),
                                 m_intake.setCollectorPower(
                                         0))),
-                        target_command_2,
-                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
-                        built_path_3.alongWith(Commands.sequence(
-                                m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
-                                        .alongWith(prepare_turret_3),
-                                new SequentialCommandGroup(
-                                        m_intake.setAnglePosition(
-                                                19.95),
-                                        m_intake.setCollectorPower(
-                                                Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE))
-                                        .alongWith(
-                                                m_shooter
-                                                        .loadNoteUntilFound2(
-                                                                2000)),
-                                m_intake.setCollectorPower(
-                                        0))),
-                        target_command_3,
+                        shoot_routine2,
                         Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()),
                                 swerveSubsystem));
     }

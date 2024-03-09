@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkLimitSwitch;
 import edu.wpi.first.math.controller.PIDController;
@@ -24,10 +25,10 @@ import frc.robot.Constants.RobotConstants.RobotType;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
-    private CollectorEncoder m_encoder;
+    private CollectorEncoderv2 m_encoder;
 
     private final CANSparkMax angleSparkMax;
-    private final CANSparkMax collectMotor;
+    private final CANSparkFlex collectMotor;
     private DigitalInput m_noteSwitch;
 
     public final double angleFF;
@@ -37,17 +38,17 @@ public class Intake extends SubsystemBase {
     public Intake() {
 
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
-        this.collectMotor = new CANSparkMax(21, MotorType.kBrushless);
+        this.collectMotor = new CANSparkFlex(21, MotorType.kBrushless);
         this.m_noteSwitch = new DigitalInput(9);
 
-        this.m_encoder = new CollectorEncoder();
+        this.m_encoder = new CollectorEncoderv2();
         this.collectMotor.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setInverted(true);
 
-        this.anglePidController = new PIDController(.5, 0, 0);
+        this.anglePidController = new PIDController(1, 0.2, 0);
         this.anglePidController.setTolerance(2);
-        this.angleFF = 0.1;
+        this.angleFF = 0;
         this.CANCODER_ROTATIONS_TO_MOTOR_TICKS = 0.0268456376;
     }
 
@@ -137,7 +138,7 @@ public class Intake extends SubsystemBase {
                 () -> this.moveCollector(-0.25),
                 (interrupted) -> {
                     this.moveCollector(0.0);
-                    this.collectMotor.set(0.65);
+                    this.collectMotor.set(0.85);
                 },
                 () -> canDeliver(),
                 this);
@@ -191,12 +192,5 @@ public class Intake extends SubsystemBase {
                 this.m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Raw Encoder", this.m_encoder.getRawPosition());
         Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getEncoder().getVelocity());
-
-        boolean endstop_pressed = this.angleSparkMax.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
-                .isPressed();
-
-        if (endstop_pressed && m_encoder.getPosition() >= 1) {
-            this.m_encoder.setOffset(-m_encoder.getPosition());
-        }
     }
 }

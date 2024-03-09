@@ -21,8 +21,7 @@ public class ShootNote extends SequentialCommandGroup {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
 
-        var g = new ParallelCommandGroup(shooter.rampUp2(-4800),
-                angle.GotoAngleVision(visionSubsystem.UncorrectedDistance()));
+        var g = new ParallelCommandGroup(shooter.rampUp2(-4800), new LimelightAngle(angle, visionSubsystem));
 
         addCommands(
                 g,

@@ -31,10 +31,9 @@ public class CollectorTest {
 
     @Test
     public void testPID() {
-        double r = (103.6 * 2.7182);
         double t = -0.014 * 89;
         double e = Math.pow(281.60552, t);
-        double d = 60;
+        double d = 77.3;
 
         // 0.0005x3 - 0.1032x2 + 7.1735x - 112.4
 
@@ -46,8 +45,12 @@ public class CollectorTest {
 
         // double x3 = 103.6 * Math.E ^ (-0.014 * d);
 
+        double target_angle = 0.0145 * Math.pow(d, 2) - 2.5546 * d + 143.1;
+
+        assertEquals(32, target_angle, .5);
+
         System.out.println(e);
-        sam(84.4, 26);
+        // sam(84.4, 26);
     }
 
     @Test

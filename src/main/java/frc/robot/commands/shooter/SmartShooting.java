@@ -54,6 +54,8 @@ public class SmartShooting extends Command {
         Pose3d speaker_pose = Constants.FieldConstants.layout.getTagPose(speaker_id).get();
         Pose2d speaker_pose2d = new Pose2d(speaker_pose.getX(), speaker_pose.getY(),
                 speaker_pose.getRotation().toRotation2d());
+        double turret_heading = m_turret.getRotation().getDegrees();
+        double x_accel = this.m_swerve.getAccelX().getValueAsDouble();
         // Placeholder for now until limelight tag shooting is ready.
         Pose2d robot_pose = this.m_swerve.getCurrentPose();
 
@@ -63,6 +65,7 @@ public class SmartShooting extends Command {
         Rotation2d desired_turret_angle = speaker_rotation.minus(turret_rotation);
         double speaker_distance = speaker_pose2d.getTranslation()
                 .getDistance(robot_pose.getTranslation());
+        // double desired_angle = Math.sqrt(speaker_distance * speaker_distance + )
 
         Logger.recordOutput("Commands/SmartShooting/speaker_distance", speaker_distance);
         Logger.recordOutput("Commands/SmartShooting/speaker_id", speaker_id);

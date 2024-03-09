@@ -29,6 +29,7 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder m_encoder;
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
     public double velocity_ff;
+    public double top_desired_vel, bottom_desired_vel;
     DigitalInput m_noteSwitch;
 
     public enum ShooterMove {
@@ -43,6 +44,9 @@ public class Shooter extends SubsystemBase {
 
         this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);
+
+        this.bottom_desired_vel = 0;
+        this.top_desired_vel = 0;
 
         // this.m_greenTalon.ramp
 
@@ -163,15 +167,18 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setVelocity(double top, double bottom) {
-        double topRpm = top / 60;
-        double bottomRpm = bottom / 60;
+        double topRps = top / 60;
+        double bottomRps = bottom / 60;
 
         // create a velocity closed-loop request, voltage output, slot 0 configs
         var request = new VelocityVoltage(0).withSlot(0);
 
         // set velocity rps, add 0.5 V to overcome gravity
-        m_greenTalon.setControl(request.withVelocity(topRpm).withFeedForward(0.5));
-        m_greyTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
+        m_greenTalon.setControl(request.withVelocity(topRps).withFeedForward(0.5));
+        m_greyTalon.setControl(request.withVelocity(bottomRps).withFeedForward(0.5));
+
+        this.top_desired_vel = top;
+        this.bottom_desired_vel = bottom;
     }
 
     @Deprecated
@@ -331,6 +338,22 @@ public class Shooter extends SubsystemBase {
                     return time.hasElapsed(1.5);
                 },
                 this);
+    }
+
+    public StatusSignal<Double> getBottomVelocity() {
+        return this.m_greyTalon.getVelocity();
+    }
+
+    public StatusSignal<Double> getTopVelocity() {
+        return this.m_greenTalon.getVelocity();
+    }
+
+    public double getBottomDesiredVelocity() {
+        return this.bottom_desired_vel;
+    }
+
+    public double getTopDesiredVelocity() {
+        return this.top_desired_vel;
     }
 
     public Command stopShooter() {

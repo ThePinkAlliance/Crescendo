@@ -43,6 +43,7 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
+import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.shooter.AlignShoot;
@@ -108,6 +109,8 @@ public class RobotContainer {
                 TwoNoteRed.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Sweep Left",
                 SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Sweep Mini Left",
+                SweepNotesMiniRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
 
@@ -181,7 +184,7 @@ public class RobotContainer {
                 .onFalse(new ShooterTune(m_shooter, m_angle));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(m_intake.setCollectorPower(
-                        -1))
+                        -0.95))
                 .onFalse(m_intake.setCollectorPower(0));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
