@@ -14,6 +14,11 @@ public interface SwerveModule {
 
   public double getSteerError();
 
+  public double getMotorTemps();
+
+  public boolean isMotorOverheating();
+
+
   /**
    * Reset the drive & steer encoders.
    */

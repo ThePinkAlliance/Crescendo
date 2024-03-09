@@ -140,6 +140,21 @@ public class WPI_SwerveModule implements SwerveModule {
         return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerPosition()));
     }
 
+    @Override
+    public double getMotorTemps() {
+        double temp = driveMotor.getDeviceTemp().getValueAsDouble();
+        return temp;
+    }
+
+    @Override
+    public boolean isMotorOverheating() {
+        if (getMotorTemps() > 70) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Sets the current module state to the desired one.
      * 

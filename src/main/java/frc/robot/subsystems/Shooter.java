@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
     public Shooter() {
         this.m_greenTalon = new TalonFX(42, "rio");
         this.m_greyTalon = new TalonFX(43, "rio");
-        this.m_motor = new CANSparkMax(44, CANSparkLowLevel.MotorType.kBrushless);
+        this.m_motor = new CANSparkMax(44, CANSparkLowLevel.MotorType.kBrushless); // rename this at some point please
 
         this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);

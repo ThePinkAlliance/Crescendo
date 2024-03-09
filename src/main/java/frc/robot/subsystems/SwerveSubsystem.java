@@ -222,6 +222,16 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Heading", getHeading());
         Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
 
+        Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemps());
+        Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemps());
+        Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemps());
+        Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemps());
+
+        SmartDashboard.putBoolean("FR Temp Warning", frontRightModule.isMotorOverheating());
+        SmartDashboard.putBoolean("BL Temp Warning", backLeftModule.isMotorOverheating());
+        SmartDashboard.putBoolean("BR Temp Warning", backRightModule.isMotorOverheating());
+        SmartDashboard.putBoolean("FL Temp Warning", frontLeftModule.isMotorOverheating());
+
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();
             Logger.recordOutput("Base/Angular Vel Rads",

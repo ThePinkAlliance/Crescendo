@@ -201,6 +201,7 @@ public class RobotContainer {
         new POVButton(baseJoystick, 0).whileTrue(m_intake.stowCollector());
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).whileTrue(m_intake.collectUntilFound(1));
 
+        
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
                 .whileTrue(new ConditionalCommand(new CollectTransferNote(m_intake, m_shooter, m_angle, m_turret),
                         new CollectNoteV2(m_intake, m_shooter, m_angle,

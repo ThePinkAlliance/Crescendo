@@ -38,8 +38,8 @@ public class PickupAndLoadNote extends SequentialCommandGroup {
 
         addCommands(
                 Commands.runOnce(() -> angle.setAngleNew(0)),
-                intake.collectUntilFound(.85),
-                intake.goToTransfer().alongWith(shooter.loadNoteUntilFound(0.30)),
+                intake.collectUntilFound(.85));
+                intake.goToTransfer().alongWith(shooter.loadNoteUntilFound(0.30),
                 intake.setCollectorPower(0),
                 intake.stowCollector(),
                 // shooter.rampUp2(-4200),

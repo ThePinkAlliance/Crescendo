@@ -19,12 +19,14 @@ public class CollectTransferNote extends SequentialCommandGroup {
         Command intake_command = intake.setAnglePosition(734).alongWith(
                 new WaitUntilCommand(() -> intake.getAngleSupplier().getAsDouble() >= 362)
                         .andThen(prepare_shooter));
-
         addCommands(
                 new ConditionalCommand(intake_command,
-                        Commands.none(), () -> intake.noteFound() || intake.getAngleSupplier().getAsDouble() <= 50),
-                intake.transferNote()
-                        .alongWith(shooter.loadNoteUntilFound(0.35)),
-                intake.setCollectorPower(0), intake.setAnglePosition(5));
+                        Commands.none(), () -> intake.noteFound() || intake.getAngleSupplier().getAsDouble() <= 50));
+        // addCommands(
+        //         new ConditionalCommand(intake_command,
+        //                 Commands.none(), () -> intake.noteFound() || intake.getAngleSupplier().getAsDouble() <= 50),
+        //         intake.transferNote()
+        //                 .alongWith(shooter.loadNoteUntilFound(0.35)),
+        //         intake.setCollectorPower(0), intake.setAnglePosition(5));
     }
 }

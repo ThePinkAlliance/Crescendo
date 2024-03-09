@@ -314,6 +314,8 @@ public class Intake extends SubsystemBase {
         double currentVortexSpeed = collectEncoder.getVelocity();
         SmartDashboard.putNumber("Vortex Speed", currentVortexSpeed);
 
+        SmartDashboard.putNumber("new intake Angle", hexEncoder.get());
+
         // This method will be called once per scheduler run
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
