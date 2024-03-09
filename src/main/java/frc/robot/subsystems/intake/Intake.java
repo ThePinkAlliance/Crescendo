@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -54,6 +55,10 @@ public class Intake extends SubsystemBase {
 
     public boolean noteFound() {
         return !m_noteSwitch.get();
+    }
+
+    public BooleanSupplier noteFoundSupplier() {
+        return () -> !m_noteSwitch.get();
     }
 
     private void moveCollector(double speed) {
@@ -99,6 +104,10 @@ public class Intake extends SubsystemBase {
                     this.angleSparkMax.set(0);
                 },
                 () -> this.anglePidController.atSetpoint(), this);
+    }
+
+    public double getControlError() {
+        return this.anglePidController.getPositionError();
     }
 
     public Command stowCollector() {
@@ -178,6 +187,10 @@ public class Intake extends SubsystemBase {
 
     public Command setCollectorPower(double speed) {
         return runOnce(() -> this.collectMotor.set(speed));
+    }
+
+    public void setCollectorPowerRaw(double power) {
+        this.collectMotor.set(power);
     }
 
     public double getCollectorPosition() {

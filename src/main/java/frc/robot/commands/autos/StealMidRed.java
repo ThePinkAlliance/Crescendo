@@ -27,6 +27,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
+import org.littletonrobotics.junction.Logger;
 
 public class StealMidRed {
     private static Shooter s_shooter;
@@ -34,10 +35,13 @@ public class StealMidRed {
     private static TurretSubsystem s_turret;
     private static Intake s_intake;
     private static Timer timer = new Timer();
+    private static Pose2d starting_pose = new Pose2d();
 
     enum ActionSteps {
         START,
+        PREP_COLLECT_1,
         COLLECT_1,
+        TRANSFER_1
     }
 
     enum ActionState {
@@ -64,13 +68,17 @@ public class StealMidRed {
             }
 
             if (actionState == ActionState.EXEC) {
-                if (s_shooter.isAtLeastRpm(-3800) && timer.hasElapsed(0.50)) {
+                double starting_delta = Math.abs(pose.getX() - starting_pose.getX());
+
+                if (starting_delta >= .5) {
                     s_shooter.launch(1);
                 }
 
                 if (!s_shooter.noteFound()) {
                     actionState = ActionState.TERM;
                 }
+
+                Logger.recordOutput("StealMid/distance", starting_delta);
             }
 
             if (actionState == ActionState.TERM) {
@@ -78,19 +86,87 @@ public class StealMidRed {
                 s_shooter.setSpeed(0);
                 timer.stop();
                 timer.reset();
-                actionStep = ActionSteps.COLLECT_1;
+                actionStep = ActionSteps.PREP_COLLECT_1;
                 actionState = ActionState.INIT;
             }
         }
 
-        // if (pose_x <= 1.75 && actionStep == ActionSteps.COLLECT_1) {
-        // if (actionState == ActionState.INIT) {
-        // s_intake.setCollectorPower(1);
+        if (actionStep == ActionSteps.PREP_COLLECT_1) {
+            var target_pos_command = s_turret.setTargetPosition(0);
 
-        // actionState = ActionState.EXEC;
-        // }
+            if (actionState == ActionState.INIT) {
+                target_pos_command.initialize();
 
-        // }
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                target_pos_command.execute();
+
+                if (target_pos_command.isFinished()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                target_pos_command.end(false);
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.COLLECT_1;
+            }
+        }
+
+        if (actionStep == ActionSteps.COLLECT_1) {
+            if (actionState == ActionState.INIT) {
+                s_intake.setCollectorPowerRaw(1);
+                s_angle.setAngleNew(5);
+
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                if (s_intake.noteFoundSupplier().getAsBoolean()) {
+                    Logger.recordOutput("StealMid/NoteFound", true);
+                    s_intake.setCollectorPowerRaw(0);
+                    actionState = ActionState.INIT;
+                    actionStep = ActionSteps.TRANSFER_1;
+                }
+
+                Logger.recordOutput("StealMid/NoteFound2", s_intake.noteFoundSupplier().getAsBoolean());
+                Logger.recordOutput("StealMid/NoteFound3", s_intake.noteFound());
+            }
+        }
+
+        if (actionStep == ActionSteps.TRANSFER_1) {
+            var mid_collector_command = s_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS);
+
+            if (actionState == ActionState.INIT) {
+                s_shooter.setVelocity(1500);
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                mid_collector_command.execute();
+
+                if (mid_collector_command.isFinished() || s_intake.getControlError() <= 2) {
+                    timer.start();
+                }
+
+                if (timer.hasElapsed(.3)) {
+                    s_intake.setCollectorPowerRaw(1);
+                    s_shooter.load(1);
+                }
+
+                if (s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_intake.setCollectorPowerRaw(0);
+                s_shooter.load(0);
+                s_shooter.stop();
+            }
+        }
     }
 
     public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
@@ -110,7 +186,7 @@ public class StealMidRed {
         var path_sequence_1 = new SequentialCommandGroup(
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
-                        m_turret.setTargetPosition(135), m_angle.setAngleCommandNew(42)),
+                        m_turret.setTargetPosition(135), m_angle.setAngleCommandNew(35)),
                 built_path_1);
         var prepare_shooter_1 = new ParallelCommandGroup(m_shooter.rampUp2(-4800), m_angle.setAngleCommandNew(30));
         var shoot_note_1 = new SequentialCommandGroup(m_turret.setTargetPosition(180).alongWith(prepare_shooter_1),
@@ -121,6 +197,8 @@ public class StealMidRed {
                     swerveSubsystem.resetPose(new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
                             path_pose_1.getRotation()));
                     m_shooter.setVelocity(-3800);
+                    starting_pose = new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
+                            path_pose_1.getRotation());
                 }, swerveSubsystem),
                 path_sequence_1,
                 Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()), swerveSubsystem));
