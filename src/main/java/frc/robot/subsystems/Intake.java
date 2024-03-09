@@ -11,6 +11,8 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import java.util.function.DoubleSupplier;
 
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -28,7 +30,8 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase {
 
     private final CANSparkMax angleSparkMax;
-    private final CANSparkMax collectSparkMax;
+    //private final CANSparkMax collectSparkFlex;
+    private final CANSparkFlex collectSparkFlex;
 
     private final SparkPIDController collectPIDController;
     private final RelativeEncoder collectEncoder;
@@ -44,17 +47,20 @@ public class Intake extends SubsystemBase {
 
     public Intake() {
         this.angleSparkMax = new CANSparkMax(22, MotorType.kBrushless);
-        this.collectSparkMax = new CANSparkMax(21, MotorType.kBrushless);
+        //this.collectSparkFlex = new CANSparkMax(21, MotorType.kBrushless);
+        this.collectSparkFlex = new CANSparkFlex(21, MotorType.kBrushless);
         this.m_noteSwitch = new DigitalInput(9);
 
         this.hexEncoder = new Encoder(HEX_ENCODER_IDS[0], HEX_ENCODER_IDS[1]);
-        this.collectEncoder = collectSparkMax.getEncoder();
+        this.collectEncoder = collectSparkFlex.getEncoder();
 
-        this.collectSparkMax.setIdleMode(IdleMode.kBrake);
+        this.collectSparkFlex.setIdleMode(IdleMode.kBrake);
+
         this.angleSparkMax.setIdleMode(IdleMode.kBrake);
         this.angleSparkMax.setInverted(true);
 
-        this.collectPIDController = collectSparkMax.getPIDController();
+        this.collectPIDController = collectSparkFlex.getPIDController();
+
         this.collectPIDController.setP(.1);
 
         this.anglePidController = new PIDController(.5, 0.02, 0.0);
@@ -64,6 +70,11 @@ public class Intake extends SubsystemBase {
         this.angleFF = 0.2;
 
         SetupHexEncoder(hexEncoder, true);
+
+        SmartDashboard.putNumber("Vortex Target", 0);
+        //SmartDashboard.putBoolean("set Vortex Speed", false);
+        SmartDashboard.putBoolean("stop Vortex", true);
+
     }
 
     private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
@@ -90,8 +101,8 @@ public class Intake extends SubsystemBase {
     public Command collectUntilFound(double power) {
         return new FunctionalCommand(() -> {
         },
-                () -> this.collectSparkMax.set(power),
-                (interrupted) -> this.collectSparkMax.set(0),
+                () -> this.collectSparkFlex.set(power),
+                (interrupted) -> this.collectSparkFlex.set(0),
                 () -> noteFound(),
                 this);
     }
@@ -101,7 +112,7 @@ public class Intake extends SubsystemBase {
         },
                 () -> {
                 },
-                (interrupted) -> this.collectSparkMax.set(0),
+                (interrupted) -> this.collectSparkFlex.set(0),
                 () -> noteFound(),
                 this);
     }
@@ -162,7 +173,7 @@ public class Intake extends SubsystemBase {
                     Logger.recordOutput("Intake/Setpoint", pos);
                     Logger.recordOutput("Intake/FF", applied_ff);
 
-                    this.collectSparkMax.set(speed);
+                    this.collectSparkFlex.set(speed);
                     this.angleSparkMax.setVoltage(effort * 12);
                 },
                 (interrupt) -> {
@@ -237,7 +248,7 @@ public class Intake extends SubsystemBase {
             this.setAnglePosition(367);
         }, () -> {
         }, (i) -> {
-            this.collectSparkMax.set(0.85);
+            this.collectSparkFlex.set(0.85);
         }, () -> canDeliver(), this);
     }
 
@@ -247,7 +258,7 @@ public class Intake extends SubsystemBase {
                 () -> this.moveCollector(-0.25),
                 (interrupted) -> {
                     this.moveCollector(0.0);
-                    this.collectSparkMax.set(0.85);
+                    this.collectSparkFlex.set(0.85);
                 },
                 () -> canDeliver(),
                 this);
@@ -279,11 +290,27 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setCollectorPower(double speed) {
-        return runOnce(() -> this.collectSparkMax.set(speed));
+        return runOnce(() -> this.collectSparkFlex.set(speed));
     }
 
     @Override
     public void periodic() {
+
+        double vortexTestSpeedAsRPM = SmartDashboard.getNumber("Vortex Target", 0);
+        //boolean setVortexSpeed = SmartDashboard.getBoolean("set Vortex Speed", false);
+        boolean vortexStopped = SmartDashboard.getBoolean("stop Vortex", true);
+
+
+        if (!vortexStopped) {
+            //collectPIDController.setReference(vortexTestSpeedAsRPM, CANSparkBase.ControlType.kVelocity);
+            collectSparkFlex.set(vortexTestSpeedAsRPM);
+        } else {
+            collectSparkFlex.set(0);
+        }
+
+        double currentVortexSpeed = collectEncoder.getVelocity();
+        SmartDashboard.putNumber("Vortex Speed", currentVortexSpeed);
+
         // This method will be called once per scheduler run
         Logger.recordOutput("Intake/Sensor Far", noteFound());
         Logger.recordOutput("Intake/Angle Position",
