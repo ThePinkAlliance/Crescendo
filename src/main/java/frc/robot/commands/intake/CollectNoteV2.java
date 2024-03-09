@@ -18,7 +18,7 @@ public class CollectNoteV2 extends SequentialCommandGroup {
                 intake.setAnglePosition(734).alongWith(
                         new WaitUntilCommand(() -> intake.getAngleSupplier().getAsDouble() >= 362)
                                 .andThen(prepare_shooter)),
-                intake.collectUntilFound(.85), intake.goToTransfer()
+                intake.collectUntilFound(1), intake.goToTransfer()
                         .alongWith(shooter.loadNoteUntilFound(0.35)),
                 intake.setCollectorPower(0), intake.setAnglePosition(5));
     }

@@ -72,11 +72,6 @@ public class Intake extends SubsystemBase {
         this.angleFF = 0.2;
 
         SetupHexEncoder(hexEncoder, true);
-
-        SmartDashboard.putNumber("Vortex Target", 0);
-        //SmartDashboard.putBoolean("set Vortex Speed", false);
-        SmartDashboard.putBoolean("stop Vortex", true);
-
     }
 
     private void SetupHexEncoder(Encoder enc, boolean reverseDirection) {
@@ -237,7 +232,7 @@ public class Intake extends SubsystemBase {
         return new FunctionalCommand(() -> {timer.reset(); timer.start();
         },
                 () ->  this.collectSparkFlex.set(-1),
-                (interrupted) -> this.stowCollector(),
+                (interrupted) -> this.collectSparkFlex.set(0),
                 () -> timer.hasElapsed(2),
                 this);
     }
@@ -245,7 +240,16 @@ public class Intake extends SubsystemBase {
     public Command deployCollector() {
         return deployCollector(0.25);
     }
+    public Command runIntake(){
+        return new FunctionalCommand(() -> {
+        },
+                () -> this.collectSparkFlex.set(1),
+                (interrupted) -> this.collectSparkFlex.set(0.0),
+                () -> false,
+                this);
+    }
 
+    
     public Command deployCollector(double speed) {
         return new FunctionalCommand(() -> {
         },
@@ -259,7 +263,7 @@ public class Intake extends SubsystemBase {
             this.setAnglePosition(367);
         }, () -> {
         }, (i) -> {
-            this.collectSparkFlex.set(0.85);
+            this.collectSparkFlex.set(1);
         }, () -> canDeliver(), this);
     }
 
@@ -306,18 +310,6 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-
-        double vortexTestSpeedAsRPM = SmartDashboard.getNumber("Vortex Target", 0);
-        //boolean setVortexSpeed = SmartDashboard.getBoolean("set Vortex Speed", false);
-        boolean vortexStopped = SmartDashboard.getBoolean("stop Vortex", true);
-
-
-        if (!vortexStopped) {
-            //collectPIDController.setReference(vortexTestSpeedAsRPM, CANSparkBase.ControlType.kVelocity);
-            collectSparkFlex.set(vortexTestSpeedAsRPM);
-        } else {
-            collectSparkFlex.set(0);
-        }
 
         double currentVortexSpeed = collectEncoder.getVelocity();
         SmartDashboard.putNumber("Vortex Speed", currentVortexSpeed);

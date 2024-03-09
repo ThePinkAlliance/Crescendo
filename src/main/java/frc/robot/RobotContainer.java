@@ -208,7 +208,7 @@ public class RobotContainer {
                         () -> m_intake.noteFound()))
                 .onFalse(
                         m_intake.setCollectorPower(0));
-
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_X).whileTrue(m_intake.runIntake());
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(m_turret.setTargetPosition(180));
         //new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y).onTrue(m_turret.setTargetPosition(0));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
