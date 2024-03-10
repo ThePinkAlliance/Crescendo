@@ -38,8 +38,8 @@ public class ClimberR2 extends SubsystemBase {
         SmartDashboard.putNumber("Left Target", 0);
         SmartDashboard.putNumber("Right Target", 0);
 
-        leftClimber = new TalonFX(leftClimberID, "rio");
-        rightClimber = new TalonFX(rightClimberID, "base");
+        leftClimber = new TalonFX(leftClimberID, "base");
+        rightClimber = new TalonFX(rightClimberID, "rio");
         leftClimber.setNeutralMode(NeutralModeValue.Brake);
         rightClimber.setNeutralMode(NeutralModeValue.Brake);
 
@@ -102,7 +102,9 @@ public class ClimberR2 extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Right position", this.rightPos);
-        SmartDashboard.putNumber("Left position", this.leftPos);
+        SmartDashboard.putNumber("Climber Right position", this.rightPos);
+        SmartDashboard.putNumber("Climber Left position", this.leftPos);
+        SmartDashboard.putNumber("Climber Right position - Actual", this.rightClimber.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Climber Left position - Actual", this.leftClimber.getPosition().getValueAsDouble());
     }
 }

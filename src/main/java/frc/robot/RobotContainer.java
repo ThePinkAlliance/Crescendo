@@ -53,6 +53,7 @@ import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShooterTune;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR1;
+import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
@@ -91,6 +92,7 @@ public class RobotContainer {
     // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private TurretSubsystem m_turret = new TurretSubsystem();
+    private ClimberR2 m_climber = new ClimberR2();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
