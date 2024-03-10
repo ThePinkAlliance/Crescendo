@@ -54,7 +54,8 @@ public class TwoNoteRed {
                             swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
                                     path_pose.getRotation()));
                         }, swerveSubsystem),
-                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
+                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
+                        shoot_routine,
                         built_path.alongWith(Commands.sequence(
                                 m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret),

@@ -52,7 +52,7 @@ import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShooterTune;
 import frc.robot.subsystems.Angle;
-import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.ClimberR1;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
@@ -63,7 +63,7 @@ import frc.robot.commands.intake.CollectTransferNote;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.Climber.ClimberSide;
+import frc.robot.subsystems.ClimberR1.ClimberSide;
 import frc.robot.subsystems.intake.Intake;
 import org.littletonrobotics.junction.Logger;
 

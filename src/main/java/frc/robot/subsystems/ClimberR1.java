@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-public class Climber extends SubsystemBase {
+public class ClimberR1 extends SubsystemBase {
 
     public enum ClimberSide {
         LEFT,
@@ -43,7 +43,7 @@ public class Climber extends SubsystemBase {
 
     // private AbsoluteEncoder m_absEncoder;
 
-    public Climber() {
+    public ClimberR1() {
         SmartDashboard.putBoolean("use Shuffleboard", false);
         SmartDashboard.putNumber("Left Target", 0);
         SmartDashboard.putNumber("Right Target", 0);
