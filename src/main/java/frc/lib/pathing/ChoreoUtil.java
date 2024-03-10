@@ -65,6 +65,19 @@ public class ChoreoUtil {
             Consumer<Pose2d> trigger_handler,
             BooleanSupplier mirrorTrajectory,
             Subsystem... requirements) {
+        return choreoSwerveCommandWithTriggers(trajectory, poseSupplier, controller, outputChassisSpeeds,
+                trigger_handler, 0, mirrorTrajectory, requirements);
+    }
+
+    public static Command choreoSwerveCommandWithTriggers(
+            ChoreoTrajectory trajectory,
+            Supplier<Pose2d> poseSupplier,
+            ChoreoControlFunction controller,
+            Consumer<ChassisSpeeds> outputChassisSpeeds,
+            Consumer<Pose2d> trigger_handler,
+            double extraTime,
+            BooleanSupplier mirrorTrajectory,
+            Subsystem... requirements) {
         var timer = new Timer();
         return new FunctionalCommand(
                 timer::restart,
@@ -83,7 +96,7 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + .5),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .5 + extraTime),
                 requirements);
     }
 

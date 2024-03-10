@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.lib.PinkPIDConstants;
@@ -28,6 +29,7 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import org.littletonrobotics.junction.Logger;
+import java.util.function.Consumer;
 
 public class StealMidRed {
     private static Shooter s_shooter;
@@ -41,7 +43,16 @@ public class StealMidRed {
         START,
         PREP_COLLECT_1,
         COLLECT_1,
-        TRANSFER_1
+        TRANSFER_1,
+        SHOOT_1,
+        COLLECT_2,
+        TRANSFER_2,
+        SHOOT_2,
+        COLLECT_3,
+        TRANSFER_3,
+        SHOOT_3,
+        STOP,
+        KILL,
     }
 
     enum ActionState {
@@ -53,13 +64,85 @@ public class StealMidRed {
     private static ActionSteps actionStep = ActionSteps.START;
     private static ActionState actionState = ActionState.INIT;
 
-    private static void pathObserver(Pose2d pose) {
+    public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
+            Angle m_angle,
+            VisionSubsystem m_visionSubsystem, Shooter m_shooter) {
+        StealMidRed.s_angle = m_angle;
+        StealMidRed.s_shooter = m_shooter;
+        StealMidRed.s_turret = m_turret;
+        StealMidRed.s_intake = m_intake;
+
+        var path_1 = Choreo.getTrajectory("steal-mid.1");
+        var path_2 = Choreo.getTrajectory("steal-mid.2");
+        var path_3 = Choreo.getTrajectory("steal-mid.3");
+        Pose2d path_pose_1 = path_1.getInitialPose();
+
+        var built_path_1 = StealMidRed.buildAutoFollower(swerveSubsystem, path_1, StealMidRed::pathObserver1);
+        var built_path_2 = StealMidRed.buildAutoFollower(swerveSubsystem, path_2, StealMidRed::pathObserver2, .5);
+        var built_path_3 = StealMidRed.buildAutoFollower(swerveSubsystem, path_3, StealMidRed::pathObserver3);
+        var path_sequence_1 = new SequentialCommandGroup(
+                m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
+                new ParallelCommandGroup(
+                        m_turret.setTargetPosition(135), m_angle.setAngleCommandNew(35)),
+                built_path_1);
+
+        return Commands.sequence(
+                Commands.runOnce(() -> {
+                    swerveSubsystem.resetPose(new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
+                            path_pose_1.getRotation()));
+                    m_shooter.setVelocity(-3900);
+                    starting_pose = new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
+                            path_pose_1.getRotation());
+                }, swerveSubsystem),
+                path_sequence_1,
+                m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
+                m_turret.setTargetPosition(0).alongWith(
+                        built_path_2),
+                m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
+                m_turret.setTargetPosition(
+                        0).alongWith(built_path_3),
+                Commands.runOnce(() -> {
+                    swerveSubsystem.setStates(new ChassisSpeeds());
+                    m_shooter.stop();
+                    m_intake.stop();
+                }, swerveSubsystem));
+    }
+
+    private static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
+            Consumer<Pose2d> pathObserver) {
+        return buildAutoFollower(swerveSubsystem, path, pathObserver, 0);
+    }
+
+    private static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
+            Consumer<Pose2d> pathObserver, double extraTime) {
+        PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
+        PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
+        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
+
+        return ChoreoUtil.choreoSwerveCommandWithTriggers(path,
+                swerveSubsystem::getCurrentPose,
+                RobotContainer.swerveController(
+                        new PIDController(translation_x_constants.kP,
+                                translation_x_constants.kI,
+                                translation_x_constants.kD,
+                                0.02),
+                        new PIDController(
+                                translation_y_constants.kP,
+                                translation_y_constants.kI,
+                                translation_y_constants.kD,
+                                0.02),
+                        new PIDController(
+                                rotation_constants.kP,
+                                rotation_constants.kI,
+                                rotation_constants.kD)),
+                swerveSubsystem::setStates, pathObserver, extraTime, () -> false,
+                swerveSubsystem);
+    }
+
+    private static void pathObserver1(Pose2d pose) {
         if (s_shooter == null || s_angle == null || s_turret == null) {
             return;
         }
-
-        double pose_x = pose.getX();
-        double pose_y = pose.getY();
 
         if (actionStep == ActionSteps.START) {
             if (actionState == ActionState.INIT) {
@@ -165,68 +248,249 @@ public class StealMidRed {
                 s_intake.setCollectorPowerRaw(0);
                 s_shooter.load(0);
                 s_shooter.stop();
+                timer.reset();
+                timer.stop();
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.SHOOT_1;
+            }
+        }
+
+        if (actionStep == ActionSteps.SHOOT_1) {
+            var set_turret_cmd = s_turret.setTargetPosition(145);
+
+            if (actionState == ActionState.INIT) {
+                s_shooter.setVelocity(-3000);
+                timer.start();
+                set_turret_cmd.initialize();
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                if ((s_shooter.isAtLeastRpm(-3000) && set_turret_cmd.isFinished()) || timer.hasElapsed(1)) {
+                    s_shooter.launch(1);
+                    set_turret_cmd.end(false);
+                }
+
+                if (!s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+
+                set_turret_cmd.execute();
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_shooter.stop();
+                s_shooter.launch(0);
+                timer.reset();
+                timer.stop();
+
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.COLLECT_2;
             }
         }
     }
 
-    public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
-            Angle m_angle,
-            VisionSubsystem m_visionSubsystem, Shooter m_shooter) {
-        StealMidRed.s_angle = m_angle;
-        StealMidRed.s_shooter = m_shooter;
-        StealMidRed.s_turret = m_turret;
-        StealMidRed.s_intake = m_intake;
+    public static void pathObserver2(Pose2d pose) {
+        if (s_shooter == null || s_angle == null || s_turret == null) {
+            return;
+        }
 
-        var path_1 = Choreo.getTrajectory("steal-mid.1");
-        var path_2 = Choreo.getTrajectory("steal-mid.2");
-        var path_3 = Choreo.getTrajectory("steal-mid.3");
-        Pose2d path_pose_1 = path_1.getInitialPose();
+        if (actionStep == ActionSteps.COLLECT_2) {
+            if (actionState == ActionState.INIT) {
+                s_intake.setCollectorPowerRaw(1);
+                s_angle.setAngleNew(5);
 
-        var built_path_1 = StealMidRed.buildAutoFollower(swerveSubsystem, path_1);
-        var path_sequence_1 = new SequentialCommandGroup(
-                m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
-                new ParallelCommandGroup(
-                        m_turret.setTargetPosition(135), m_angle.setAngleCommandNew(35)),
-                built_path_1);
-        var prepare_shooter_1 = new ParallelCommandGroup(m_shooter.rampUp2(-4800), m_angle.setAngleCommandNew(30));
-        var shoot_note_1 = new SequentialCommandGroup(m_turret.setTargetPosition(180).alongWith(prepare_shooter_1),
-                m_shooter.launchNote3());
+                actionState = ActionState.EXEC;
+            }
 
-        return Commands.sequence(
-                Commands.runOnce(() -> {
-                    swerveSubsystem.resetPose(new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
-                            path_pose_1.getRotation()));
-                    m_shooter.setVelocity(-3800);
-                    starting_pose = new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
-                            path_pose_1.getRotation());
-                }, swerveSubsystem),
-                path_sequence_1,
-                Commands.runOnce(() -> swerveSubsystem.setStates(new ChassisSpeeds()), swerveSubsystem));
+            if (actionState == ActionState.EXEC) {
+                if (s_intake.noteFoundSupplier().getAsBoolean()) {
+                    Logger.recordOutput("StealMid/NoteFound", true);
+                    s_intake.setCollectorPowerRaw(0);
+                    actionState = ActionState.INIT;
+                    actionStep = ActionSteps.TRANSFER_2;
+
+                    // transfer
+                    s_shooter.setVelocity(2000);
+                }
+
+                Logger.recordOutput("StealMid/NoteFound2", s_intake.noteFoundSupplier().getAsBoolean());
+                Logger.recordOutput("StealMid/NoteFound3", s_intake.noteFound());
+            }
+        }
+
+        if (actionStep == ActionSteps.TRANSFER_2) {
+            var mid_collector_command = s_intake.setAnglePosition(19.09);
+
+            if (actionState == ActionState.INIT) {
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                mid_collector_command.execute();
+
+                if (mid_collector_command.isFinished() || s_intake.getControlError() <= 2) {
+                    timer.start();
+                }
+
+                if (timer.hasElapsed(.3)) {
+                    s_intake.setCollectorPowerRaw(1);
+                    s_shooter.load(1);
+                }
+
+                if (s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_intake.setCollectorPowerRaw(0);
+                s_shooter.load(0);
+                s_shooter.stop();
+                timer.reset();
+                timer.stop();
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.SHOOT_2;
+            }
+        }
+
+        if (actionStep == ActionSteps.SHOOT_2) {
+            var turret_rotate = s_turret.setTargetPosition(160);
+
+            if (actionState == ActionState.INIT) {
+                s_shooter.setVelocity(-2000);
+                timer.start();
+                turret_rotate.initialize();
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                turret_rotate.execute();
+
+                if ((s_shooter.isAtLeastRpm(-2000) && turret_rotate.isFinished()) || timer.hasElapsed(1)) {
+                    s_shooter.launch(1);
+                    turret_rotate.end(false);
+                }
+
+                if (!s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_shooter.stop();
+                s_shooter.launch(0);
+                timer.reset();
+                timer.stop();
+
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.COLLECT_3;
+            }
+        }
     }
 
-    private static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
-            ChoreoEvent... events) {
-        PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
-        PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
-        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
+    public static void pathObserver3(Pose2d pose) {
+        if (s_shooter == null || s_angle == null || s_turret == null) {
+            return;
+        }
 
-        return ChoreoUtil.choreoSwerveCommandWithTriggers(path,
-                swerveSubsystem::getCurrentPose,
-                RobotContainer.swerveController(
-                        new PIDController(translation_x_constants.kP,
-                                translation_x_constants.kI,
-                                translation_x_constants.kD,
-                                0.02),
-                        new PIDController(
-                                translation_y_constants.kP,
-                                translation_y_constants.kI,
-                                translation_y_constants.kD,
-                                0.02),
-                        new PIDController(
-                                rotation_constants.kP,
-                                rotation_constants.kI,
-                                rotation_constants.kD)),
-                swerveSubsystem::setStates, StealMidRed::pathObserver, () -> false,
-                swerveSubsystem);
+        if (actionStep == ActionSteps.COLLECT_3) {
+            if (actionState == ActionState.INIT) {
+                s_intake.setCollectorPowerRaw(1);
+                s_angle.setAngleNew(5);
+
+                if (s_shooter.noteFound()) {
+                    actionStep = ActionSteps.KILL;
+                } else {
+                    actionState = ActionState.EXEC;
+                }
+            }
+
+            if (actionState == ActionState.EXEC) {
+                if (s_shooter.noteFound()) {
+                    actionStep = ActionSteps.KILL;
+                }
+
+                if (s_intake.noteFoundSupplier().getAsBoolean()) {
+                    Logger.recordOutput("StealMid/NoteFound", true);
+                    s_intake.setCollectorPowerRaw(0);
+                    actionState = ActionState.INIT;
+                    actionStep = ActionSteps.TRANSFER_3;
+                }
+
+                Logger.recordOutput("StealMid/NoteFound2", s_intake.noteFoundSupplier().getAsBoolean());
+                Logger.recordOutput("StealMid/NoteFound3", s_intake.noteFound());
+            }
+        }
+
+        if (actionStep == ActionSteps.TRANSFER_3) {
+            var mid_collector_command = s_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_MID_AUTO_POS);
+
+            if (actionState == ActionState.INIT) {
+                s_shooter.setVelocity(1500);
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                mid_collector_command.execute();
+
+                if (mid_collector_command.isFinished() || s_intake.getControlError() <= 2) {
+                    timer.start();
+                }
+
+                if (timer.hasElapsed(.3)) {
+                    s_intake.setCollectorPowerRaw(1);
+                    s_shooter.load(1);
+                }
+
+                if (s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_intake.setCollectorPowerRaw(0);
+                s_shooter.load(0);
+                s_shooter.stop();
+                timer.reset();
+                timer.stop();
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.SHOOT_3;
+            }
+        }
+
+        if (actionStep == ActionSteps.SHOOT_3) {
+            var turret_rotate = s_turret.setTargetPosition(160);
+
+            if (actionState == ActionState.INIT) {
+                s_shooter.setVelocity(-2000);
+                timer.start();
+                turret_rotate.initialize();
+                actionState = ActionState.EXEC;
+            }
+
+            if (actionState == ActionState.EXEC) {
+                turret_rotate.execute();
+
+                if ((s_shooter.isAtLeastRpm(-2000) && turret_rotate.isFinished()) || timer.hasElapsed(1)) {
+                    s_shooter.launch(1);
+                    turret_rotate.end(false);
+                }
+
+                if (!s_shooter.noteFound()) {
+                    actionState = ActionState.TERM;
+                }
+            }
+
+            if (actionState == ActionState.TERM) {
+                s_shooter.stop();
+                s_shooter.launch(0);
+                timer.reset();
+                timer.stop();
+
+                actionState = ActionState.INIT;
+                actionStep = ActionSteps.STOP;
+            }
+        }
     }
 }

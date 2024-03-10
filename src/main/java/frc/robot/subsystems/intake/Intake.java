@@ -106,6 +106,10 @@ public class Intake extends SubsystemBase {
                 () -> this.anglePidController.atSetpoint(), this);
     }
 
+    public void stop() {
+        this.collectMotor.set(0);
+    }
+
     public double getControlError() {
         return this.anglePidController.getPositionError();
     }
