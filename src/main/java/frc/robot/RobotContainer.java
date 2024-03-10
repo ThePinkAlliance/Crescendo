@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.choreo.lib.Choreo;
@@ -17,9 +18,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,6 +49,7 @@ import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.autos.StealMidRed;
 import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
+import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootNote;
@@ -53,9 +57,11 @@ import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShooterTune;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR1;
+import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.commands.intake.AmpShot;
 import frc.robot.commands.intake.CollectNote;
 import frc.robot.commands.intake.CollectNoteAuto;
 import frc.robot.commands.intake.CollectNoteV2;
@@ -84,13 +90,14 @@ public class RobotContainer {
     public VisionSubsystem m_visionSubsystem;
 
     public ChoreoTrajectory selectedTrajectory;
-    public SendableChooser<Command> chooser;
 
     private Shooter m_shooter = new Shooter();
     private Angle m_angle = new Angle();
     // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private TurretSubsystem m_turret = new TurretSubsystem();
+    private ClimberR2 climber_r2 = new ClimberR2();
+    private SendableChooser<Command> chooser;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -108,6 +115,14 @@ public class RobotContainer {
                 TwoNoteRed.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Two Note Right",
                 TwoNoteRed.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
+        this.chooser.addOption("Blue Two Note Left",
+                TwoNoteBlue.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Blue Two Note Center",
+                TwoNoteBlue.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Blue Two Note Right",
+                TwoNoteBlue.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
         this.chooser.addOption("Red Sweep Left",
                 SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Sweep Mini Left",
@@ -122,6 +137,12 @@ public class RobotContainer {
     }
 
     public static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
+            ChoreoEvent... events) {
+        return buildAutoFollower(swerveSubsystem, path, () -> false, events);
+    }
+
+    public static Command buildAutoFollower(SwerveSubsystem swerveSubsystem, ChoreoTrajectory path,
+            BooleanSupplier mirror,
             ChoreoEvent... events) {
         PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
         PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
@@ -144,7 +165,7 @@ public class RobotContainer {
                                         rotation_constants.kP,
                                         rotation_constants.kI,
                                         rotation_constants.kD)),
-                        swerveSubsystem::setStates, () -> false,
+                        swerveSubsystem::setStates, mirror,
                         swerveSubsystem));
     }
 
@@ -174,33 +195,38 @@ public class RobotContainer {
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
 
-        new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).whileTrue(m_intake.setAnglePosition(0));
-        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
-                .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle,
-                        m_turret))
-                .onFalse(
-                        m_intake.setCollectorPower(0));
-
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(m_shooter.loadNoteUntilFound(
-                        0.35))
-                .onFalse(new ShooterTune(m_shooter, m_angle));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B)
+        new Trigger(() -> baseJoystick.getRawAxis(JoystickMap.RIGHT_TRIGGER) > 0.05)
                 .whileTrue(m_intake.setCollectorPower(
                         -0.95))
                 .onFalse(m_intake.setCollectorPower(0));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
-                .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
-                .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
 
         // Tower
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
-                .onTrue(m_turret.setTargetPosition(180));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-                .onTrue(m_turret.setTargetPosition(0));
+                .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
+                .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
+                .whileTrue(new ShootNoteAuto(30, -4200, m_shooter, m_angle, m_visionSubsystem));
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
+                .whileTrue(new ShootNoteAuto(5, 0, m_shooter, m_angle, m_visionSubsystem));
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
+                .whileTrue(new ShootNoteAuto(5, 0, m_shooter, m_angle, m_visionSubsystem));
+
+        new POVButton(baseJoystick, JoystickMap.POV_UP)
+                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(49, 49)));
+        // new POVButton(baseJoystick,
+        // JoystickMap.POV_LEFT).onTrue(climber_r2.setTarget(20, 20));
+        // new POVButton(baseJoystick,
+        // JoystickMap.POV_RIGHT).onTrue(climber_r2.setTarget(0, 0));
+        new POVButton(baseJoystick, JoystickMap.POV_DOWN)
+                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(0, 0)));
+
         m_turret.setDefaultCommand(
                 Commands.run(() -> m_turret.set(towerJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS)), m_turret));
 
+    }
+
+    public void setupTeleop() {
+        swerveSubsystem.resetGyro();
     }
 
     /**

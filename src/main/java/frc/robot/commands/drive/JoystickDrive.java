@@ -38,7 +38,7 @@ public class JoystickDrive extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        swerveSubsystem.resetGyro();
+
     }
 
     private double throttleLimiter(double input) {

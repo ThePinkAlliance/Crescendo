@@ -4,7 +4,10 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -13,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class ClimberR2 extends SubsystemBase {
     /** Creates a new ClimberR2. */
@@ -24,7 +28,7 @@ public class ClimberR2 extends SubsystemBase {
     private TalonFX leftClimber;
     private TalonFX rightClimber;
 
-    private double kP = 0.1;
+    private double kP = 0.3;
     private double kI = 0.0;
     private double kD = 0.0;
     private PIDController leftController = new PIDController(kP, kI, kD);
@@ -38,14 +42,33 @@ public class ClimberR2 extends SubsystemBase {
         SmartDashboard.putNumber("Left Target", 0);
         SmartDashboard.putNumber("Right Target", 0);
 
-        leftClimber = new TalonFX(leftClimberID, "rio");
-        rightClimber = new TalonFX(rightClimberID, "base");
+        leftClimber = new TalonFX(leftClimberID, "base");
+        rightClimber = new TalonFX(rightClimberID, "rio");
         leftClimber.setNeutralMode(NeutralModeValue.Brake);
         rightClimber.setNeutralMode(NeutralModeValue.Brake);
+        rightClimber.setInverted(true);
+
+        var rightConfigs = new Slot0Configs();
+        var leftConfigs = new Slot0Configs();
+
+        rightConfigs.kP = 0.3;
+        leftConfigs.kP = 0.3;
+
+        leftClimber.getConfigurator().apply(leftConfigs);
+        rightClimber.getConfigurator().apply(rightConfigs);
 
         // Innitial positions (Used for deltas)
         leftEncoder0 = leftClimber.getPosition().getValueAsDouble();
         rightEncoder0 = rightClimber.getPosition().getValueAsDouble();
+        resetEncoders();
+    }
+
+    public void setClimberPos(double left, double right) {
+        var right_control = new PositionVoltage(right);
+        var left_control = new PositionVoltage(left);
+
+        this.leftClimber.setControl(left_control);
+        this.rightClimber.setControl(right_control);
     }
 
     public Command setTarget(double leftT, double rightT) {
@@ -71,14 +94,18 @@ public class ClimberR2 extends SubsystemBase {
                     this.rightArrived = Math.abs(rightPos - rightTarget) <= posTolerance;
                     // Handle different directions
                     if (!this.leftArrived) {
-                        double leftPower = this.leftController.calculate(leftPos);
+                        double leftPower = this.leftController.calculate(leftPos) * 0.02;
                         System.out.println("Left Motor Power: " + leftPower);
                         this.leftClimber.set(leftPower);
+                    } else {
+                        this.leftClimber.set(0);
                     }
                     if (!this.rightArrived) {
-                        double rightPower = this.rightController.calculate(rightPos);
+                        double rightPower = this.rightController.calculate(rightPos) * 0.02;
                         System.out.println("Right Motor Power: " + rightPower + "\n");
                         this.rightClimber.set(rightPower);
+                    } else {
+                        this.rightClimber.set(0);
                     }
                 },
                 (i) -> { // On End
@@ -94,6 +121,16 @@ public class ClimberR2 extends SubsystemBase {
         rightEncoder0 = this.rightClimber.getPosition().getValueAsDouble();
     }
 
+    public void resetEncoders() {
+        this.rightClimber.setPosition(0);
+        this.leftClimber.setPosition(0);
+    }
+
+    public void stop() {
+        leftClimber.stopMotor();
+        rightClimber.stopMotor();
+    }
+
     public void testPower(double testSpeedR, double testSpeedL) {
         leftClimber.set(testSpeedL);
         rightClimber.set(testSpeedR);
@@ -104,5 +141,8 @@ public class ClimberR2 extends SubsystemBase {
         // This method will be called once per scheduler run
         SmartDashboard.putNumber("Right position", this.rightPos);
         SmartDashboard.putNumber("Left position", this.leftPos);
+
+        Logger.recordOutput("Climber/Right Position", this.rightClimber.getRotorPosition().getValueAsDouble());
+        Logger.recordOutput("Climber/Left Position", this.leftClimber.getRotorPosition().getValueAsDouble());
     }
 }

@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;

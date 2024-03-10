@@ -13,6 +13,7 @@ import frc.lib.Gains;
 
 /** Add your docs here. */
 public class Constants {
+    public static boolean is_red = false;
 
     public static final class RobotConstants {
         public enum RobotType {
@@ -42,7 +43,8 @@ public class Constants {
     }
 
     public static final class TurretConstants {
-        public static final double REVERSE_STARTING_POS = 62.71;
+        // public static final double REVERSE_STARTING_POS = 62.71;
+        public static final double REVERSE_STARTING_POS = 0;
         public static final double REVERSE_SHOOTING_POS = 44.76;
     }
 
