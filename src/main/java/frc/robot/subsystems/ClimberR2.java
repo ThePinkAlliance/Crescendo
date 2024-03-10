@@ -38,8 +38,8 @@ public class ClimberR2 extends SubsystemBase {
     SmartDashboard.putNumber("Left Target", 0);
     SmartDashboard.putNumber("Right Target",0);
 
-    leftClimber=new TalonFX(leftClimberID);
-    rightClimber=new TalonFX(rightClimberID);
+    leftClimber = new TalonFX(leftClimberID, "rio");
+    rightClimber = new TalonFX(rightClimberID, "base");
     leftClimber.setNeutralMode(NeutralModeValue.Brake);
     rightClimber.setNeutralMode(NeutralModeValue.Brake);
 
