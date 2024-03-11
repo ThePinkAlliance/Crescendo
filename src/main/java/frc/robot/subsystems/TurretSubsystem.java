@@ -40,7 +40,7 @@ public class TurretSubsystem extends SubsystemBase {
         /* Systems */
         m_turretMotor = new CANSparkMax(31, MotorType.kBrushless);
         m_turretMotor.restoreFactoryDefaults();
-        m_turretMotor.setIdleMode(IdleMode.kCoast);
+        m_turretMotor.setIdleMode(IdleMode.kBrake);
         m_turretMotor.setInverted(true);
 
         this.MAX_CCW_POS = -35;
@@ -58,6 +58,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void set(double speed) {
         this.m_turretMotor.set(speed);
+    }
+
+    public double getPosition() {
+        return this.m_turretMotor.getEncoder().getPosition();
     }
 
     public Rotation2d getRotation() {

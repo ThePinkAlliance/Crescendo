@@ -27,7 +27,7 @@ public class LimelightAngle extends Command {
     @Override
     public void initialize() {
         double distance = visionSubsystem.UncorrectedDistance();
-        double target_angle = 0.0145 * Math.pow(distance, 2) - 2.5546 * distance + 143.1;
+        double target_angle = (0.0145 * 0.98 * Math.pow(distance, 2) - 2.5546 * distance + 143.1) * 1.15;
         Logger.recordOutput("targetAngle", target_angle);
         Logger.recordOutput("distance", distance);
         this.angle.setAngleNew(target_angle);

@@ -51,8 +51,8 @@ public class ClimberR2 extends SubsystemBase {
         var rightConfigs = new Slot0Configs();
         var leftConfigs = new Slot0Configs();
 
-        rightConfigs.kP = 0.3;
-        leftConfigs.kP = 0.3;
+        rightConfigs.kP = 0.5;
+        leftConfigs.kP = 0.5;
 
         leftClimber.getConfigurator().apply(leftConfigs);
         rightClimber.getConfigurator().apply(rightConfigs);

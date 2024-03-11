@@ -202,11 +202,20 @@ public class RobotContainer {
 
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
-
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(new AmpShot(m_intake, swerveSubsystem));
+        new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
+                .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle, m_turret)).onFalse(
+                        m_intake.setCollectorPower(0));
+        new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).onTrue(m_intake.setAnglePosition(0));
         new Trigger(() -> baseJoystick.getRawAxis(JoystickMap.RIGHT_TRIGGER) > 0.05)
                 .whileTrue(m_intake.setCollectorPower(
                         -0.95))
                 .onFalse(m_intake.setCollectorPower(0));
+
+        new POVButton(baseJoystick, JoystickMap.POV_UP)
+                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(49, 49)));
+        new POVButton(baseJoystick, JoystickMap.POV_DOWN)
+                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(0, 0)));
 
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
@@ -219,18 +228,13 @@ public class RobotContainer {
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(new ShootNoteAuto(5, 0, m_shooter, m_angle, m_visionSubsystem));
 
-        new POVButton(baseJoystick, JoystickMap.POV_UP)
-                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(49, 49)));
-        // new POVButton(baseJoystick,
-        // JoystickMap.POV_LEFT).onTrue(climber_r2.setTarget(20, 20));
-        // new POVButton(baseJoystick,
-        // JoystickMap.POV_RIGHT).onTrue(climber_r2.setTarget(0, 0));
-        new POVButton(baseJoystick, JoystickMap.POV_DOWN)
-                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(0, 0)));
+        climber_r2.setDefaultCommand(Commands.run(() -> {
+            this.climber_r2.testPower(towerJoystick.getRawAxis(JoystickMap.RIGHT_Y_AXIS),
+                    towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS));
+        }, climber_r2));
 
-        m_turret.setDefaultCommand(
-                Commands.run(() -> m_turret.set(towerJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS)), m_turret));
-
+        new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
+        new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
     }
 
     public void setupTeleop() {
