@@ -321,5 +321,7 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Angle Position",
                 hexEncoder.get());
         Logger.recordOutput("Intake/Collect Velocity", this.collectEncoder.getVelocity());
+
+        Logger.recordOutput("Intake/Vortex Temp", collectSparkFlex.getMotorTemperature());
     }
 }

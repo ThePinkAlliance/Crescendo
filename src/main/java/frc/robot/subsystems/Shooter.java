@@ -164,6 +164,11 @@ public class Shooter extends SubsystemBase {
         m_greyTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
     }
 
+    public double getMotorTemp(TalonFX m_motor) {
+        double temp = m_motor.getDeviceTemp().getValueAsDouble();
+        return temp;
+    }
+
     @Deprecated
     public void adjustPID() {
         double proportional = SmartDashboard.getNumber("P", 0);
@@ -319,5 +324,9 @@ public class Shooter extends SubsystemBase {
 
         Logger.recordOutput("Shooter/Top Velocity", this.m_greenTalon.getVelocity().getValueAsDouble() * 60);
         Logger.recordOutput("Shooter/Bottom Velocity", this.m_greyTalon.getVelocity().getValueAsDouble() * 60);
+
+        Logger.recordOutput("Shooter/Top Motor Temperature", getMotorTemp(m_greenTalon));
+        Logger.recordOutput("Shooter/Bottom Motor Temperature", getMotorTemp(m_greyTalon));
+
     }
 }
