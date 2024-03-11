@@ -21,6 +21,7 @@ import frc.lib.pathing.events.ChoreoEvent;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.commands.intake.IntakeActions;
+import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.SmartLuanch;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Shooter;
@@ -31,7 +32,7 @@ import frc.robot.subsystems.intake.Intake;
 import org.littletonrobotics.junction.Logger;
 import java.util.function.Consumer;
 
-public class StealMidRed {
+public class StealMidBlueStatic {
     private static Shooter s_shooter;
     private static Angle s_angle;
     private static TurretSubsystem s_turret;
@@ -61,36 +62,39 @@ public class StealMidRed {
         TERM,
     }
 
-    private static ActionSteps actionStep = ActionSteps.START;
+    private static ActionSteps actionStep = ActionSteps.PREP_COLLECT_1;
     private static ActionState actionState = ActionState.INIT;
 
     public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
             Angle m_angle,
             VisionSubsystem m_visionSubsystem, Shooter m_shooter) {
-        StealMidRed.s_angle = m_angle;
-        StealMidRed.s_shooter = m_shooter;
-        StealMidRed.s_turret = m_turret;
-        StealMidRed.s_intake = m_intake;
+        StealMidBlueStatic.s_angle = m_angle;
+        StealMidBlueStatic.s_shooter = m_shooter;
+        StealMidBlueStatic.s_turret = m_turret;
+        StealMidBlueStatic.s_intake = m_intake;
 
-        var path_1 = Choreo.getTrajectory("steal-mid.1");
-        var path_2 = Choreo.getTrajectory("steal-mid.2");
-        var path_3 = Choreo.getTrajectory("steal-mid.3");
+        var path_1 = Choreo.getTrajectory("steal-mid2b.1");
+        var path_2 = Choreo.getTrajectory("steal-mid2b.2");
+        var path_3 = Choreo.getTrajectory("steal-mid2b.3");
         Pose2d path_pose_1 = path_1.getInitialPose();
 
-        var built_path_1 = StealMidRed.buildAutoFollower(swerveSubsystem, path_1, StealMidRed::pathObserver1);
-        var built_path_2 = StealMidRed.buildAutoFollower(swerveSubsystem, path_2, StealMidRed::pathObserver2, .5);
-        var built_path_3 = StealMidRed.buildAutoFollower(swerveSubsystem, path_3, StealMidRed::pathObserver3);
+        var built_path_1 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_1,
+                StealMidBlueStatic::pathObserver1, .75);
+        var built_path_2 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_2,
+                StealMidBlueStatic::pathObserver2, .85);
+        var built_path_3 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_3,
+                StealMidBlueStatic::pathObserver3, .85);
         var path_sequence_1 = new SequentialCommandGroup(
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
-                        m_turret.setTargetPosition(135), m_angle.setAngleCommandNew(35)),
+                        m_turret.setTargetPosition(112), new ShootNoteAuto(40, -3800, m_shooter, m_angle,
+                                m_visionSubsystem)),
                 built_path_1);
 
         return Commands.sequence(
                 Commands.runOnce(() -> {
                     swerveSubsystem.resetPose(new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
                             path_pose_1.getRotation()));
-                    m_shooter.setVelocity(-3900);
                     starting_pose = new Pose2d(path_pose_1.getX(), path_pose_1.getY(),
                             path_pose_1.getRotation());
                 }, swerveSubsystem),
@@ -117,7 +121,7 @@ public class StealMidRed {
             Consumer<Pose2d> pathObserver, double extraTime) {
         PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
         PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
-        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
+        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.4, 0);
 
         return ChoreoUtil.choreoSwerveCommandWithTriggers(path,
                 swerveSubsystem::getCurrentPose,
@@ -153,7 +157,7 @@ public class StealMidRed {
             if (actionState == ActionState.EXEC) {
                 double starting_delta = Math.abs(pose.getX() - starting_pose.getX());
 
-                if (starting_delta >= .5) {
+                if (starting_delta >= .4) {
                     s_shooter.launch(1);
                 }
 

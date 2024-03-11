@@ -43,8 +43,8 @@ public class Constants {
     }
 
     public static final class TurretConstants {
-        // public static final double REVERSE_STARTING_POS = 62.71;
-        public static final double REVERSE_STARTING_POS = 0;
+        public static final double REVERSE_STARTING_POS = 62.71;
+        // public static final double REVERSE_STARTING_POS = 0;
         public static final double REVERSE_SHOOTING_POS = 44.76;
     }
 

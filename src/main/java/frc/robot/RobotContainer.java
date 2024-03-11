@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -46,7 +47,9 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
-import frc.robot.commands.autos.StealMidRed;
+import frc.robot.commands.autos.StealMidRedMoving;
+import frc.robot.commands.autos.StealMidRedStatic;
+import frc.robot.commands.autos.SweepNotesBlue;
 import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
@@ -125,10 +128,15 @@ public class RobotContainer {
 
         this.chooser.addOption("Red Sweep Left",
                 SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Blue Sweep Left",
+                SweepNotesBlue.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
         this.chooser.addOption("Red Sweep Mini Left",
                 SweepNotesMiniRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Red Steal Mid",
-                StealMidRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Steal Mid Shoot Static",
+                StealMidRedStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Red Steal Mid Shoot Moving",
+                StealMidRedMoving.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
 
@@ -146,7 +154,7 @@ public class RobotContainer {
             ChoreoEvent... events) {
         PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
         PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
-        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.1, 0);
+        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.3, 0);
 
         return ChoreoUtil.choreoEventCommand(events,
                 ChoreoUtil.choreoSwerveCommand(path,
@@ -235,7 +243,10 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return chooser.getSelected();
+        return chooser.getSelected().andThen(Commands.runOnce(() -> {
+            m_shooter.stop();
+            m_intake.stop();
+        })).andThen(m_shooter.stopShooter());
     }
 
     public static ChoreoControlFunction swerveController(
