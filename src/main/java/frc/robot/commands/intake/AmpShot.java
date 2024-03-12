@@ -25,7 +25,7 @@ public class AmpShot extends SequentialCommandGroup {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
         addCommands(intake.setAnglePosition(0).alongWith(
-                driveForSeconds(-1, 0, .15, swerveSubsystem)),
+                driveForSeconds(1, 0, .15, swerveSubsystem)),
                 new WaitCommand(.15),
                 intake.setCollectorPower(-1).alongWith(new WaitCommand(
                         .5)),

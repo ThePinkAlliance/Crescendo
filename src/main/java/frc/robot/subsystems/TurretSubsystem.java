@@ -56,12 +56,20 @@ public class TurretSubsystem extends SubsystemBase {
         m_relEncoder.setPosition(Constants.TurretConstants.REVERSE_STARTING_POS);
     }
 
+    public void setBrakeMode(IdleMode mode) {
+        this.m_turretMotor.setIdleMode(mode);
+    }
+
     public void set(double speed) {
         this.m_turretMotor.set(speed);
     }
 
     public double getPosition() {
         return this.m_turretMotor.getEncoder().getPosition();
+    }
+
+    public double getPositionDeg() {
+        return this.m_turretMotor.getEncoder().getPosition() / CONVERSION_RATIO;
     }
 
     public Rotation2d getRotation() {

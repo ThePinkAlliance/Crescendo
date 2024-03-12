@@ -49,8 +49,8 @@ public class Constants {
     }
 
     public static final class AngleConstants {
-        public static final double IDLE_ANGLE = 5;
-        public static final double MIN_ANGLE = 2;
+        public static final double IDLE_ANGLE = 1;
+        public static final double MIN_ANGLE = 1;
     }
 
     public static final class IntakeConstants {

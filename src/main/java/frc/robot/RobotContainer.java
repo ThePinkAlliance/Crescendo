@@ -10,6 +10,7 @@ import java.util.function.DoubleSupplier;
 import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
 import com.choreo.lib.ChoreoTrajectory;
+import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -58,6 +59,7 @@ import frc.robot.commands.shooter.AlignShoot;
 import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShooterTune;
+import frc.robot.commands.turret.TurretVectoring;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR1;
 import frc.robot.subsystems.ClimberR2;
@@ -219,7 +221,8 @@ public class RobotContainer {
 
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-                .whileTrue(new ShootNote(m_shooter, m_angle, m_visionSubsystem))
+                .whileTrue(new ShootNote(m_shooter, m_angle,
+                        m_visionSubsystem))
                 .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(new ShootNoteAuto(30, -4200, m_shooter, m_angle, m_visionSubsystem));
@@ -237,7 +240,12 @@ public class RobotContainer {
         new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
     }
 
+    public void onDisabled() {
+        this.m_turret.setBrakeMode(IdleMode.kCoast);
+    }
+
     public void setupTeleop() {
+        this.m_turret.setBrakeMode(IdleMode.kBrake);
         swerveSubsystem.resetGyro();
     }
 

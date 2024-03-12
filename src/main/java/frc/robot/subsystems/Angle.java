@@ -31,6 +31,7 @@ public class Angle extends SubsystemBase {
 
         var cancoderConfig = new CANcoderConfiguration();
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+        cancoderConfig.MagnetSensor.MagnetOffset = -0.158;
 
         this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 
@@ -76,7 +77,7 @@ public class Angle extends SubsystemBase {
     }
 
     public double getCancoderAngle() {
-        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble() - 0.138) * 360);
+        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble()) * 360) + 1;
     }
 
     public void setAngleNew(double angle) {
