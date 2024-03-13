@@ -48,9 +48,11 @@ import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
 import frc.robot.commands.autos.ShootCenterClose;
+import frc.robot.commands.autos.StealMidBlueStatic;
 import frc.robot.commands.autos.StealMidRedMoving;
 import frc.robot.commands.autos.StealMidRedStatic;
 import frc.robot.commands.autos.SweepNotesBlue;
+import frc.robot.commands.autos.SweepNotesMiniBlue;
 import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
@@ -135,10 +137,16 @@ public class RobotContainer {
 
         this.chooser.addOption("Red Sweep Mini Left",
                 SweepNotesMiniRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
         this.chooser.addOption("Red Steal Mid Shoot Static",
                 StealMidRedStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Red Steal Mid Shoot Moving",
                 StealMidRedMoving.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
+        this.chooser.addOption("Blue Sweep Mini Left",
+                SweepNotesMiniBlue.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("Blue Steal Mid Shoot Static",
+                StealMidBlueStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
 
         SmartDashboard.putData(chooser);
 
@@ -221,9 +229,10 @@ public class RobotContainer {
 
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-                .whileTrue(new ShootNote(m_shooter, m_angle,
-                        m_visionSubsystem))
-                .onFalse(Commands.runOnce(() -> m_shooter.setSpeed(0)));
+                .onTrue(new ParallelCommandGroup(
+                        new ShootNote(m_shooter, m_angle, m_turret,
+                                () -> m_visionSubsystem.UncorrectedDistance()),
+                        new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading())));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(new ShootNoteAuto(30, -4200, m_shooter, m_angle, m_visionSubsystem));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
@@ -255,10 +264,11 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return chooser.getSelected().andThen(Commands.runOnce(() -> {
+        return chooser.getSelected().handleInterrupt(() -> {
             m_shooter.stop();
             m_intake.stop();
-        })).andThen(m_shooter.stopShooter());
+            m_shooter.stopShooter().initialize();
+        });
     }
 
     public static ChoreoControlFunction swerveController(

@@ -133,7 +133,7 @@ public class TwoNoteRed {
 
         var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_STARTING_POS).alongWith(
-                        new ShootNoteAuto(56.52, -4500, m_shooter, m_angle,
+                        new ShootNoteAuto(47, -4500, m_shooter, m_angle,
                                 m_visionSubsystem)));
 
         var shoot_routine2 = new SequentialCommandGroup(

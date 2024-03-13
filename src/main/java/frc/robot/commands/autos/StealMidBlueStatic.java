@@ -64,6 +64,7 @@ public class StealMidBlueStatic {
 
     private static ActionSteps actionStep = ActionSteps.PREP_COLLECT_1;
     private static ActionState actionState = ActionState.INIT;
+    private static Timer actionTimer = new Timer();
 
     public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
             Angle m_angle,
@@ -87,7 +88,9 @@ public class StealMidBlueStatic {
         var path_sequence_1 = new SequentialCommandGroup(
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
-                        m_turret.setTargetPosition(112), new ShootNoteAuto(40, -3800, m_shooter, m_angle,
+                        m_turret.setTargetPositionRaw(
+                                87.5),
+                        new ShootNoteAuto(36, -3800, m_shooter, m_angle,
                                 m_visionSubsystem)),
                 built_path_1);
 
@@ -121,7 +124,7 @@ public class StealMidBlueStatic {
             Consumer<Pose2d> pathObserver, double extraTime) {
         PinkPIDConstants translation_y_constants = new PinkPIDConstants(5, 0.0, 0.0);
         PinkPIDConstants translation_x_constants = new PinkPIDConstants(5, 0.0, 0.0);
-        PinkPIDConstants rotation_constants = new PinkPIDConstants(3, 0.4, 0);
+        PinkPIDConstants rotation_constants = new PinkPIDConstants(5, 0.4, 0);
 
         return ChoreoUtil.choreoSwerveCommandWithTriggers(path,
                 swerveSubsystem::getCurrentPose,
@@ -260,7 +263,7 @@ public class StealMidBlueStatic {
         }
 
         if (actionStep == ActionSteps.SHOOT_1) {
-            var set_turret_cmd = s_turret.setTargetPosition(145);
+            var set_turret_cmd = s_turret.setTargetPositionRaw(-50.75);
 
             if (actionState == ActionState.INIT) {
                 s_shooter.setVelocity(-3000);
@@ -386,6 +389,7 @@ public class StealMidBlueStatic {
                 s_shooter.launch(0);
                 timer.reset();
                 timer.stop();
+                turret_rotate.end(true);
 
                 actionState = ActionState.INIT;
                 actionStep = ActionSteps.COLLECT_3;

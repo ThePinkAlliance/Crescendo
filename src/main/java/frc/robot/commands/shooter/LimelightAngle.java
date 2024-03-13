@@ -8,17 +8,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.VisionSubsystem;
 import org.littletonrobotics.junction.Logger;
+import java.util.function.DoubleSupplier;
 
 public class LimelightAngle extends Command {
     Angle angle;
-    VisionSubsystem visionSubsystem;
+    DoubleSupplier supplier;
 
     /** Creates a new LimelightAngle. */
-    public LimelightAngle(Angle angle, VisionSubsystem visionSubsystem) {
+    public LimelightAngle(Angle angle, DoubleSupplier supplier) {
         // Use addRequirements() here to declare subsystem dependencies.
 
         this.angle = angle;
-        this.visionSubsystem = visionSubsystem;
+        this.supplier = supplier;
 
         addRequirements(angle);
     }
@@ -26,11 +27,14 @@ public class LimelightAngle extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        double distance = visionSubsystem.UncorrectedDistance();
-        double target_angle = (0.0145 * Math.pow(distance, 2) - 2.5546 * distance + 143.1) * 1.10;
+        double distance = supplier.getAsDouble();
+        double target_angle = (0.0145 * 0.95 * Math.pow(distance, 2) - 2.5546 * distance + 143.1) * 1.10;
         Logger.recordOutput("targetAngle", target_angle);
         Logger.recordOutput("distance", distance);
-        this.angle.setAngleNew(target_angle);
+
+        if (distance != 135) {
+            this.angle.setAngleNew(target_angle);
+        }
     }
 
     // Called every time the scheduler runs while the command is scheduled.
