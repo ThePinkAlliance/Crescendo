@@ -46,13 +46,13 @@ public class SweepNotesBlue {
                                 new ShootNoteAuto(45, -3900, m_shooter, m_angle,
                                         m_visionSubsystem)));
         var target_command_1 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
-                -48.42),
-                new ShootNoteAuto(42, -3900, m_shooter, m_angle,
+                -50),
+                new ShootNoteAuto(36, -3900, m_shooter, m_angle,
                         m_visionSubsystem));
 
         var target_command_2 = new ParallelCommandGroup(m_turret.setTargetPositionRaw(
                 62.71),
-                new ShootNoteAuto(41, -3800, m_shooter, m_angle,
+                new ShootNoteAuto(36, -3800, m_shooter, m_angle,
                         m_visionSubsystem));
 
         // var target_command_3 = new
