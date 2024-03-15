@@ -223,9 +223,9 @@ public class RobotContainer {
                 .onFalse(m_intake.setCollectorPower(0));
 
         new POVButton(baseJoystick, JoystickMap.POV_UP)
-                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(49, 49)));
+                .onTrue(climber_r2.travelToClimberPos(49, 49));
         new POVButton(baseJoystick, JoystickMap.POV_DOWN)
-                .onTrue(Commands.runOnce(() -> climber_r2.setClimberPos(0, 0)));
+                .onTrue(climber_r2.travelToClimberPos(0, 0));
 
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
@@ -233,16 +233,29 @@ public class RobotContainer {
                         new ShootNote(m_shooter, m_angle, m_turret,
                                 () -> m_visionSubsystem.UncorrectedDistance()),
                         new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading())));
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(new ShootNoteAuto(30, -4200, m_shooter, m_angle, m_visionSubsystem));
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
-                .whileTrue(new ShootNoteAuto(5, 0, m_shooter, m_angle, m_visionSubsystem));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(new ShootNoteAuto(5, 0, m_shooter, m_angle, m_visionSubsystem));
+                .whileTrue(new ShootNoteAuto(16.6, -4200, m_shooter, m_angle,
+                        m_visionSubsystem).compose());
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
+                .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
+                        m_visionSubsystem).compose());
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
+                .whileTrue(new ShootNoteAuto(48, -3800, m_shooter, m_angle,
+                        m_visionSubsystem).compose());
 
         climber_r2.setDefaultCommand(Commands.run(() -> {
-            this.climber_r2.testPower(towerJoystick.getRawAxis(JoystickMap.RIGHT_Y_AXIS),
-                    towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS));
+            double left = towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS) * -1;
+            double right = towerJoystick.getRawAxis(JoystickMap.RIGHT_Y_AXIS) * -1;
+
+            if (Math.abs(right) > 0.5) {
+                right = 0.5;
+            }
+
+            if (Math.abs(left) > 0.5) {
+                left = 0.5;
+            }
+
+            this.climber_r2.testPower(left, right);
         }, climber_r2));
 
         new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));

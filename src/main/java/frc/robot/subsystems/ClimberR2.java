@@ -46,7 +46,7 @@ public class ClimberR2 extends SubsystemBase {
         rightClimber = new TalonFX(rightClimberID, "rio");
         leftClimber.setNeutralMode(NeutralModeValue.Brake);
         rightClimber.setNeutralMode(NeutralModeValue.Brake);
-        rightClimber.setInverted(true);
+        leftClimber.setInverted(true);
 
         var rightConfigs = new Slot0Configs();
         var leftConfigs = new Slot0Configs();
@@ -69,6 +69,18 @@ public class ClimberR2 extends SubsystemBase {
 
         this.leftClimber.setControl(left_control);
         this.rightClimber.setControl(right_control);
+    }
+
+    public Command travelToClimberPos(double left, double right) {
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {
+            timer.reset();
+            timer.start();
+            this.setClimberPos(left, right);
+        }, () -> {
+        }, (i) -> {
+        }, () -> (Math.abs((left - this.getLeftPosition())) <= 2 && Math
+                .abs((right - this.getRightPosition())) <= 2) || timer.hasElapsed(4), this);
     }
 
     public Command setTarget(double leftT, double rightT) {
@@ -114,6 +126,14 @@ public class ClimberR2 extends SubsystemBase {
                 },
                 () -> (/* Is it done? */ (this.leftArrived && this.rightArrived) || w.get() >= timeToleranceSec),
                 this);
+    }
+
+    public double getRightPosition() {
+        return this.rightClimber.getRotorPosition().getValueAsDouble();
+    }
+
+    public double getLeftPosition() {
+        return this.leftClimber.getRotorPosition().getValueAsDouble();
     }
 
     public void resetEncoder() {

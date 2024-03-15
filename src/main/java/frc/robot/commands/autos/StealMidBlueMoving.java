@@ -32,7 +32,7 @@ import frc.robot.subsystems.intake.Intake;
 import org.littletonrobotics.junction.Logger;
 import java.util.function.Consumer;
 
-public class StealMidBlueStatic {
+public class StealMidBlueMoving {
     private static Shooter s_shooter;
     private static Angle s_angle;
     private static TurretSubsystem s_turret;
@@ -69,28 +69,28 @@ public class StealMidBlueStatic {
     public static Command getLeft(SwerveSubsystem swerveSubsystem, TurretSubsystem m_turret, Intake m_intake,
             Angle m_angle,
             VisionSubsystem m_visionSubsystem, Shooter m_shooter) {
-        StealMidBlueStatic.s_angle = m_angle;
-        StealMidBlueStatic.s_shooter = m_shooter;
-        StealMidBlueStatic.s_turret = m_turret;
-        StealMidBlueStatic.s_intake = m_intake;
+        StealMidBlueMoving.s_angle = m_angle;
+        StealMidBlueMoving.s_shooter = m_shooter;
+        StealMidBlueMoving.s_turret = m_turret;
+        StealMidBlueMoving.s_intake = m_intake;
 
         var path_1 = Choreo.getTrajectory("steal-mid2b.1");
         var path_2 = Choreo.getTrajectory("steal-mid2b.2");
         var path_3 = Choreo.getTrajectory("steal-mid2b.3");
         Pose2d path_pose_1 = path_1.getInitialPose();
 
-        var built_path_1 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_1,
-                StealMidBlueStatic::pathObserver1, .75);
-        var built_path_2 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_2,
-                StealMidBlueStatic::pathObserver2, .85);
-        var built_path_3 = StealMidBlueStatic.buildAutoFollower(swerveSubsystem, path_3,
-                StealMidBlueStatic::pathObserver3, .85);
+        var built_path_1 = StealMidBlueMoving.buildAutoFollower(swerveSubsystem, path_1,
+                StealMidBlueMoving::pathObserver1, .75);
+        var built_path_2 = StealMidBlueMoving.buildAutoFollower(swerveSubsystem, path_2,
+                StealMidBlueMoving::pathObserver2, .85);
+        var built_path_3 = StealMidBlueMoving.buildAutoFollower(swerveSubsystem, path_3,
+                StealMidBlueMoving::pathObserver3, .85);
         var path_sequence_1 = new SequentialCommandGroup(
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
                         m_turret.setTargetPositionRaw(
                                 87.5),
-                        new ShootNoteAuto(34, -3800, m_shooter, m_angle,
+                        new ShootNoteAuto(36, -3800, m_shooter, m_angle,
                                 m_visionSubsystem)),
                 built_path_1);
 

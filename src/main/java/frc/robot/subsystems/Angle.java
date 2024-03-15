@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,12 +27,16 @@ public class Angle extends SubsystemBase {
 
     public Angle() {
         this.m_motor = new CANSparkMax(41, MotorType.kBrushless);
+        this.m_motor.setSmartCurrentLimit(40);
+
         this.m_angleCancoder = new CANcoder(20);
         this.target_rotations = 0;
 
         var cancoderConfig = new CANcoderConfiguration();
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-        cancoderConfig.MagnetSensor.MagnetOffset = -0.158;
+        // 11:38 AM, 1.55 was reporting -359 position due to system drift. readjust as
+        // needed.
+        cancoderConfig.MagnetSensor.MagnetOffset = -0.145;
 
         this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 
@@ -77,18 +82,30 @@ public class Angle extends SubsystemBase {
     }
 
     public double getCancoderAngle() {
-        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble()) * 360) + 1;
+        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360);
+    }
+
+    public void setPower(double power) {
+        this.m_motor.set(power);
     }
 
     public void setAngleNew(double angle) {
         double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
+        // boolean hasSpace = getCancoderAngle() - (desired_rotations / 1.0069619029) >
+        // 0;
 
-        this.m_motor.getPIDController().setReference(desired_rotations,
-                ControlType.kPosition);
-        this.target_rotations = desired_rotations;
+        if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 52) {
+            this.m_motor.getPIDController().setReference(desired_rotations,
+                    ControlType.kPosition);
+
+            this.target_rotations = desired_rotations;
+        }
         Logger.recordOutput("Shooter/Angle Setpoint", desired_rotations);
         Logger.recordOutput("Shooter/Angle Ref", angle);
+        Logger.recordOutput("Shooter/rotationDiff", rotationDiff);
+        Logger.recordOutput("Shooter/diff", angle - getCancoderAngle());
+        // Logger.recordOutput("Shooter/hasSpace", hasSpace);
     }
 
     public void setAngle(double angle) {
@@ -128,8 +145,14 @@ public class Angle extends SubsystemBase {
     }
 
     public Command GotoAngle(double setpoint) {
-        return new FunctionalCommand(() -> this.setAngleNew(setpoint), () -> {
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {
+            this.setAngleNew(setpoint);
+            timer.start();
+        }, () -> {
         }, (i) -> {
-        }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
+            timer.stop();
+            timer.reset();
+        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);
     }
 }

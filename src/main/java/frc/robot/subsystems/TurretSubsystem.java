@@ -120,6 +120,7 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         Logger.recordOutput("Turret/Current Pos", this.m_relEncoder.getPosition());
+        Logger.recordOutput("Turret/Current Pos Real", this.m_relEncoder.getPosition() / 0.35);
         Logger.recordOutput("Turret/Current Absolute Pos", this.m_absEncoder.getPosition());
         Logger.recordOutput("Turret/Target Pos", this.m_pidController.getSetpoint());
         Logger.recordOutput("Turret/At Setpoint", this.m_pidController.atSetpoint());

@@ -28,11 +28,15 @@ public class LimelightAngle extends Command {
     @Override
     public void initialize() {
         double distance = supplier.getAsDouble();
-        double target_angle = (0.0145 * 0.95 * Math.pow(distance, 2) - 2.5546 * distance + 143.1) * 1.10;
-        Logger.recordOutput("targetAngle", target_angle);
-        Logger.recordOutput("distance", distance);
+        double target_angle = (0.0016 * 1.05 * Math.pow(distance, 2) - 0.8857 * 0.95 * distance + 84.774 + 2.5);
 
-        if (distance != 135) {
+        if (distance <= 100 && distance >= 0) {
+            if (target_angle <= 0) {
+                target_angle = 0;
+            }
+
+            Logger.recordOutput("targetAngle", target_angle);
+            Logger.recordOutput("distance", distance);
             this.angle.setAngleNew(target_angle);
         }
     }
