@@ -36,7 +36,7 @@ public class Angle extends SubsystemBase {
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
         // 11:38 AM, 1.55 was reporting -359 position due to system drift. readjust as
         // needed.
-        cancoderConfig.MagnetSensor.MagnetOffset = -0.145;
+        cancoderConfig.MagnetSensor.MagnetOffset = -0.138;
 
         this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 

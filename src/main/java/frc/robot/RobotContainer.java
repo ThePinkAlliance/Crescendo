@@ -47,6 +47,7 @@ import frc.robot.commands.AdjustIntakeAngle;
 import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
+import frc.robot.commands.autos.LeaveZone;
 import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.autos.StealMidBlueStatic;
 import frc.robot.commands.autos.StealMidRedMoving;
@@ -100,7 +101,6 @@ public class RobotContainer {
 
     private Shooter m_shooter = new Shooter();
     private Angle m_angle = new Angle();
-    // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
     private TurretSubsystem m_turret = new TurretSubsystem();
     private ClimberR2 climber_r2 = new ClimberR2();
@@ -147,6 +147,9 @@ public class RobotContainer {
                 SweepNotesMiniBlue.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
         this.chooser.addOption("Blue Steal Mid Shoot Static",
                 StealMidBlueStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+
+        this.chooser.addOption("None", Commands.none());
+        this.chooser.addOption("Leave Zone Left", LeaveZone.leftZone(swerveSubsystem));
 
         SmartDashboard.putData(chooser);
 
@@ -234,8 +237,7 @@ public class RobotContainer {
                                 () -> m_visionSubsystem.UncorrectedDistance()),
                         new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading())));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(new ShootNoteAuto(16.6, -4200, m_shooter, m_angle,
-                        m_visionSubsystem).compose());
+                .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
                 .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
@@ -255,7 +257,7 @@ public class RobotContainer {
                 left = 0.5;
             }
 
-            this.climber_r2.testPower(left, right);
+            this.climber_r2.testPower(right, left);
         }, climber_r2));
 
         new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));

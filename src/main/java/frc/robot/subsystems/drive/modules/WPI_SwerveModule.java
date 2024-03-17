@@ -7,6 +7,7 @@ package frc.robot.subsystems.drive.modules;
 import javax.swing.text.html.HTMLDocument.RunElement;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -41,6 +42,13 @@ public class WPI_SwerveModule implements SwerveModule {
         this.canCoder = new CANcoder(canCoderId, network);
         this.steerMotor = new TalonFX(steerId, network);
         this.driveMotor = new TalonFX(driveId, network);
+
+        CurrentLimitsConfigs currentLimit = new CurrentLimitsConfigs();
+
+        currentLimit.SupplyCurrentLimit = 45;
+        currentLimit.SupplyCurrentLimitEnable = true;
+
+        this.driveMotor.getConfigurator().apply(currentLimit);
 
         this.absoluteEncoderOffsetRad = absoluteEncoderOffsetRad;
 
@@ -148,7 +156,7 @@ public class WPI_SwerveModule implements SwerveModule {
 
     public boolean isMotorOverheated() {
         boolean result = false;
-        
+
         if (getMotorTemp() > WARNINGTEMP) {
             result = true;
         }
