@@ -10,10 +10,8 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.intake.Intake;
 
 public class CollectNoteV2 extends SequentialCommandGroup {
-    public CollectNoteV2(Intake intake, Shooter shooter, Angle angle, TurretSubsystem turretSubsystem) {
-        var prepare_shooter = new ParallelCommandGroup(angle.setAngleCommand(Constants.AngleConstants.IDLE_ANGLE),
-                turretSubsystem.setTargetPosition(
-                        0));
+    public CollectNoteV2(Intake intake, Shooter shooter, Angle angle) {
+        var prepare_shooter = new ParallelCommandGroup(angle.setAngleCommand(Constants.AngleConstants.IDLE_ANGLE));
 
         addCommands(
                 intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(

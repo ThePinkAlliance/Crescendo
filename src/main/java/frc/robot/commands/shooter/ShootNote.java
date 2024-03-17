@@ -23,7 +23,7 @@ public class ShootNote extends SequentialCommandGroup {
     double target_angle = 5;
 
     /** Creates a new ShootNote. */
-    public ShootNote(Shooter shooter, Angle angle, TurretSubsystem m_turret,
+    public ShootNote(Shooter shooter, Angle angle,
             DoubleSupplier angleSupplier) {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());

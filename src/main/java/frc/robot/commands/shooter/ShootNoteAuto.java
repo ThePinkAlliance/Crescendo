@@ -28,7 +28,7 @@ public class ShootNoteAuto extends SequentialCommandGroup {
                 shooter.rampUp2(desired_rpm).alongWith(angle.GotoAngle(
                         desired_angle)),
                 new SmartLuanch(shooter),
-                shooter.stopShooter());
+                shooter.stopShooter(), angle.setAngleCommandNew(5));
     }
 
     public Command compose() {

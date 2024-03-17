@@ -53,7 +53,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_relEncoder = m_turretMotor.getEncoder();
         m_absEncoder = m_turretMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
-        m_relEncoder.setPosition(Constants.TurretConstants.REVERSE_STARTING_POS);
+        m_relEncoder.setPosition(0);
     }
 
     public void setBrakeMode(IdleMode mode) {

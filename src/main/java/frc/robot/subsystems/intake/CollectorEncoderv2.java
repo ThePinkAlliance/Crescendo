@@ -30,7 +30,8 @@ public class CollectorEncoderv2 {
             var cancoderConfig = new CANcoderConfiguration();
             cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
             cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-            cancoderConfig.MagnetSensor.MagnetOffset = 0.120;
+            // cancoderConfig.MagnetSensor.MagnetOffset = 0.120;
+            cancoderConfig.MagnetSensor.MagnetOffset = -0.878;
             this.canCoder.getConfigurator().apply(cancoderConfig);
             this.SENSOR_OFFSET = 0;// -0.893;
         } else {

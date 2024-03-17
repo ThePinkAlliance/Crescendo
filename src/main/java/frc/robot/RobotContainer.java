@@ -47,6 +47,7 @@ import frc.robot.commands.AdjustIntakeAngle;
 import frc.robot.commands.PickupAndLoadNote;
 import frc.robot.commands.ResetClimber;
 import frc.robot.commands.SetClimber;
+import frc.robot.commands.autos.LeaveZone;
 import frc.robot.commands.autos.ShootCenterClose;
 import frc.robot.commands.autos.StealMidBlueStatic;
 import frc.robot.commands.autos.StealMidRedMoving;
@@ -95,15 +96,14 @@ public class RobotContainer {
     public Joystick baseJoystick;
     public Joystick towerJoystick;
     public VisionSubsystem m_visionSubsystem;
-
     public ChoreoTrajectory selectedTrajectory;
 
     private Shooter m_shooter = new Shooter();
     private Angle m_angle = new Angle();
     // private Loader m_loader = new Loader();
     private Intake m_intake = new Intake();
-    private TurretSubsystem m_turret = new TurretSubsystem();
-    private ClimberR2 climber_r2 = new ClimberR2();
+    // private TurretSubsystem m_turret = new TurretSubsystem();
+    // private ClimberR2 climber_r2 = new ClimberR2();
     private SendableChooser<Command> chooser;
 
     /**
@@ -116,37 +116,8 @@ public class RobotContainer {
         towerJoystick = new Joystick(1);
         this.chooser = new SendableChooser<>();
 
-        this.chooser.addOption("Red Two Note Left",
-                TwoNoteRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Red Two Note Center",
-                TwoNoteRed.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Red Two Note Right",
-                TwoNoteRed.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-
-        this.chooser.addOption("Blue Two Note Left",
-                TwoNoteBlue.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Blue Two Note Center",
-                TwoNoteBlue.getCenter(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Blue Two Note Right",
-                TwoNoteBlue.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-
-        this.chooser.addOption("Red Sweep Left",
-                SweepNotesRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Blue Sweep Left",
-                SweepNotesBlue.getRight(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-
-        this.chooser.addOption("Red Sweep Mini Left",
-                SweepNotesMiniRed.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-
-        this.chooser.addOption("Red Steal Mid Shoot Static",
-                StealMidRedStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Red Steal Mid Shoot Moving",
-                StealMidRedMoving.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-
-        this.chooser.addOption("Blue Sweep Mini Left",
-                SweepNotesMiniBlue.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
-        this.chooser.addOption("Blue Steal Mid Shoot Static",
-                StealMidBlueStatic.getLeft(swerveSubsystem, m_turret, m_intake, m_angle, m_visionSubsystem, m_shooter));
+        this.chooser.addOption("None", Commands.none());
+        this.chooser.addOption("Leave Zone Left", LeaveZone.leftZone(swerveSubsystem));
 
         SmartDashboard.putData(chooser);
 
@@ -214,60 +185,39 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(new AmpShot(m_intake, swerveSubsystem));
         new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
-                .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle, m_turret)).onFalse(
+                .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle)).onFalse(
                         m_intake.setCollectorPower(0));
         new JoystickButton(baseJoystick, JoystickMap.LEFT_BUMPER).onTrue(m_intake.setAnglePosition(0));
         new Trigger(() -> baseJoystick.getRawAxis(JoystickMap.RIGHT_TRIGGER) > 0.05)
                 .whileTrue(m_intake.setCollectorPower(
+                        -1))
+                .onFalse(m_intake.setCollectorPower(0));
+        new Trigger(() -> baseJoystick.getRawAxis(JoystickMap.LEFT_TRIGGER) > 0.05)
+                .whileTrue(m_intake.setCollectorPower(
                         -0.95))
                 .onFalse(m_intake.setCollectorPower(0));
-
-        new POVButton(baseJoystick, JoystickMap.POV_UP)
-                .onTrue(climber_r2.travelToClimberPos(49, 49));
-        new POVButton(baseJoystick, JoystickMap.POV_DOWN)
-                .onTrue(climber_r2.travelToClimberPos(0, 0));
 
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
                 .onTrue(new ParallelCommandGroup(
-                        new ShootNote(m_shooter, m_angle, m_turret,
-                                () -> m_visionSubsystem.UncorrectedDistance()),
-                        new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading())));
+                        new ShootNote(m_shooter, m_angle,
+                                () -> m_visionSubsystem.UncorrectedDistance())));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(new ShootNoteAuto(16.6, -4200, m_shooter, m_angle,
-                        m_visionSubsystem).compose());
+                .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
                 .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(new ShootNoteAuto(48, -3800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
-
-        climber_r2.setDefaultCommand(Commands.run(() -> {
-            double left = towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS) * -1;
-            double right = towerJoystick.getRawAxis(JoystickMap.RIGHT_Y_AXIS) * -1;
-
-            if (Math.abs(right) > 0.5) {
-                right = 0.5;
-            }
-
-            if (Math.abs(left) > 0.5) {
-                left = 0.5;
-            }
-
-            this.climber_r2.testPower(left, right);
-        }, climber_r2));
-
-        new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
-        new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
     }
 
     public void onDisabled() {
-        this.m_turret.setBrakeMode(IdleMode.kCoast);
+        // this.m_turret.setBrakeMode(IdleMode.kCoast);
     }
 
     public void setupTeleop() {
-        this.m_turret.setBrakeMode(IdleMode.kBrake);
+        // this.m_turret.setBrakeMode(IdleMode.kBrake);
         swerveSubsystem.resetGyro();
     }
 

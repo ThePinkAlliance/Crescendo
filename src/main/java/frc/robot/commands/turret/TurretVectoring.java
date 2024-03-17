@@ -37,7 +37,7 @@ public class TurretVectoring extends Command {
         double turret_angle = turret.getPositionDeg();
         double target_pos = turret_angle - tag_angle;
 
-        double effort = pidController.calculate(tag_angle, 0) * -1;
+        double effort = pidController.calculate(tag_angle, -5) * -1;
         double power2 = (effort / 15) + kF;
 
         Logger.recordOutput("AutoLock/Effort", power2);

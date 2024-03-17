@@ -36,7 +36,8 @@ public class Angle extends SubsystemBase {
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
         // 11:38 AM, 1.55 was reporting -359 position due to system drift. readjust as
         // needed.
-        cancoderConfig.MagnetSensor.MagnetOffset = -0.145;
+        // cancoderConfig.MagnetSensor.MagnetOffset = -0.145;
+        cancoderConfig.MagnetSensor.MagnetOffset = -0.138;
 
         this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 
@@ -68,6 +69,11 @@ public class Angle extends SubsystemBase {
         Logger.recordOutput("Shooter/CANcoder Angle Real",
                 getCancoderAngle());
 
+        var pos_1 = this.m_angleCancoder.getPosition().getValueAsDouble();
+        var pos_2 = this.m_angleCancoder.getAbsolutePosition().getValueAsDouble();
+
+        Logger.recordOutput("Shooter/CANCODER1", pos_1);
+        Logger.recordOutput("Shooter/CANCODER2", pos_2);
         Logger.recordOutput("Shooter/Foward Switch", fowardSwitch.isPressed());
     }
 
@@ -92,8 +98,6 @@ public class Angle extends SubsystemBase {
     public void setAngleNew(double angle) {
         double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
-        // boolean hasSpace = getCancoderAngle() - (desired_rotations / 1.0069619029) >
-        // 0;
 
         if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 52) {
             this.m_motor.getPIDController().setReference(desired_rotations,
@@ -105,7 +109,6 @@ public class Angle extends SubsystemBase {
         Logger.recordOutput("Shooter/Angle Ref", angle);
         Logger.recordOutput("Shooter/rotationDiff", rotationDiff);
         Logger.recordOutput("Shooter/diff", angle - getCancoderAngle());
-        // Logger.recordOutput("Shooter/hasSpace", hasSpace);
     }
 
     public void setAngle(double angle) {
@@ -119,13 +122,7 @@ public class Angle extends SubsystemBase {
     }
 
     public Command setAngleCommand(double angle) {
-        double position = this.getCancoderAngle();
-
-        if (position >= Constants.AngleConstants.MIN_ANGLE) {
-            return runOnce(() -> this.setAngleNew(angle));
-        } else {
-            return Commands.none();
-        }
+        return runOnce(() -> this.setAngleNew(angle));
     }
 
     public double getControlError() {
