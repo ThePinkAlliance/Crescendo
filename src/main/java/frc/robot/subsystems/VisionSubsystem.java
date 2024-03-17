@@ -12,6 +12,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,6 +38,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
+    private final DoubleSubscriber target_area_subscriber;
     private Matrix<N3, N1> correction_matrix;
 
     private final double mounted_angle;
@@ -51,6 +53,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
+        this.target_area_subscriber = table.getDoubleTopic("ta").subscribe(0);
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
         this.mounted_angle = 22.5;
@@ -86,14 +89,25 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public Optional<Double> getTagDistance(int id) {
-        Optional<Pose3d> pose = Constants.FieldConstants.layout.getTagPose(id);
+        Optional<Double> distance = getUncorrectedTagDistance(id);
 
-        if (pose.isPresent()) {
+        if (distance.isPresent()) {
+            return Optional.of(correctLimelightDistance(distance.get()));
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<Double> getUncorrectedTagDistance(int id) {
+        Optional<Pose3d> pose = Constants.FieldConstants.layout.getTagPose(id);
+        double visible_tag_id = this.target_id_subscriber.get();
+
+        if (pose.isPresent() && visible_tag_id == id) {
             Pose3d pose3d = pose.get();
             double height = Units.metersToInches(pose3d.getZ());
             double distance = height / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
 
-            return Optional.of(correctLimelightDistance(distance));
+            return Optional.of(distance);
         }
 
         return Optional.empty();
@@ -106,6 +120,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     public double getVisionLatency() {
         return (target_latency_subscriber.get() / 1000) - (capture_latency_subscriber.get() / 1000);
+    }
+
+    public double getTargetX() {
+        return this.target_x_subscriber.get();
     }
 
     @Override

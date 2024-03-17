@@ -9,7 +9,10 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.lib.pathing.events.ChoreoEvent;
 import frc.lib.pathing.events.ChoreoEventHandler;
 
@@ -40,7 +43,60 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime() + .1),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + 1),
+                requirements);
+    }
+
+    public static Command choreoEventCommand(ChoreoEvent[] events, Command controller) {
+        SequentialCommandGroup timed_commands = new SequentialCommandGroup();
+
+        for (ChoreoEvent event : events) {
+            timed_commands.addCommands(new WaitCommand(event.getExecTime()), event.getCommand());
+        }
+
+        return controller.alongWith(timed_commands);
+    }
+
+    public static Command choreoSwerveCommandWithTriggers(
+            ChoreoTrajectory trajectory,
+            Supplier<Pose2d> poseSupplier,
+            ChoreoControlFunction controller,
+            Consumer<ChassisSpeeds> outputChassisSpeeds,
+            Consumer<Pose2d> trigger_handler,
+            BooleanSupplier mirrorTrajectory,
+            Subsystem... requirements) {
+        return choreoSwerveCommandWithTriggers(trajectory, poseSupplier, controller, outputChassisSpeeds,
+                trigger_handler, 0, mirrorTrajectory, requirements);
+    }
+
+    public static Command choreoSwerveCommandWithTriggers(
+            ChoreoTrajectory trajectory,
+            Supplier<Pose2d> poseSupplier,
+            ChoreoControlFunction controller,
+            Consumer<ChassisSpeeds> outputChassisSpeeds,
+            Consumer<Pose2d> trigger_handler,
+            double extraTime,
+            BooleanSupplier mirrorTrajectory,
+            Subsystem... requirements) {
+        var timer = new Timer();
+        return new FunctionalCommand(
+                timer::restart,
+                () -> {
+                    ;
+                    trigger_handler.accept(poseSupplier.get());
+
+                    outputChassisSpeeds.accept(
+                            controller.apply(
+                                    poseSupplier.get(),
+                                    trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+                },
+                (interrupted) -> {
+                    timer.stop();
+                    if (interrupted) {
+                        outputChassisSpeeds.accept(new ChassisSpeeds());
+                    }
+                },
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .5 + extraTime),
                 requirements);
     }
 
@@ -58,7 +114,7 @@ public class ChoreoUtil {
                 () -> {
                     ;
                     // Does optional slow down robot loops?
-                    Optional<ChoreoEvent> event = handler.compute(poseSupplier.get());
+                    Optional<ChoreoEvent> event = handler.compute(poseSupplier.get(), timer.get());
 
                     // This might benefit from using a parallel command.
                     if (event.isPresent()) {
@@ -76,7 +132,7 @@ public class ChoreoUtil {
                         outputChassisSpeeds.accept(new ChassisSpeeds());
                     }
                 },
-                () -> timer.hasElapsed(trajectory.getTotalTime()),
+                () -> timer.hasElapsed(trajectory.getTotalTime() + .5),
                 requirements);
     }
 }

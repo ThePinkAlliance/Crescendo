@@ -5,47 +5,49 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Climber.ClimberSide;
+import frc.robot.subsystems.ClimberR1;
+import frc.robot.subsystems.ClimberR1.ClimberSide;
 
 public class SetClimber extends Command {
-  /** Creates a new ResetClimber. */
-  private int m_lposition;
-  private int m_rposition;
-  private Climber m_climber;
-  private Climber.ClimberSide m_side;
-  public SetClimber(Climber climber, int lposition,int rposition) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    m_lposition = lposition;
-    m_rposition = rposition;
-    m_climber = climber;
-    addRequirements(m_climber);
-  }
+    /** Creates a new ResetClimber. */
+    private int m_lposition;
+    private int m_rposition;
+    private ClimberR1 m_climber;
+    private ClimberR1.ClimberSide m_side;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+    public SetClimber(ClimberR1 climber, int lposition, int rposition) {
+        // Use addRequirements() here to declare subsystem dependencies.
+        m_lposition = lposition;
+        m_rposition = rposition;
+        m_climber = climber;
+        addRequirements(m_climber);
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    
-    m_climber.setLeftTargetPosition2(m_lposition);
-    System.out.println("left set position " + m_lposition);
-  
-    m_climber.setRightTargetPosition2(m_rposition);
-    System.out.println("right set position " + m_rposition);
-  }
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
 
-  }
+        m_climber.setLeftTargetPosition2(m_lposition);
+        System.out.println("left set position " + m_lposition);
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return true;
-  }
+        m_climber.setRightTargetPosition2(m_rposition);
+        System.out.println("right set position " + m_rposition);
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }

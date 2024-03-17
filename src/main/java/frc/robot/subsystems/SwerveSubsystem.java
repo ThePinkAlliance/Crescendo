@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -21,6 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.subsystems.drive.SwerveModule;
@@ -92,7 +95,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         frontLeftModule.getPosition(), backRightModule.getPosition(),
                         backLeftModule
                                 .getPosition() },
-                new Pose2d(), VecBuilder.fill(0.0, 0.0, 0.0),
+                new Pose2d(0, 0, new Rotation2d()), VecBuilder.fill(0.0, 0.0, 0.0),
                 VecBuilder.fill(0.9, 0.9, 0.9));
         this.modules = new SwerveModule[] { frontRightModule, frontLeftModule, backRightModule, backLeftModule };
         this.lastModulePositionsMeters = getPositions();
@@ -120,12 +123,24 @@ public class SwerveSubsystem extends SubsystemBase {
         };
     }
 
+    public StatusSignal<Double> getAccelX() {
+        return gyro.getAccelerationX();
+    }
+
+    public StatusSignal<Double> verticalAccel() {
+        return gyro.getAccelerationY();
+    }
+
     public Rotation2d getRotation2d() {
         return gyro.getRotation2d();
     }
 
     public double getHeading() {
         return Math.IEEEremainder(gyro.getAngle() * -1, 360);
+    }
+
+    public double getYaw() {
+        return gyro.getYaw().getValueAsDouble();
     }
 
     public Rotation2d getRotation() {
@@ -178,6 +193,8 @@ public class SwerveSubsystem extends SubsystemBase {
                 twist_vel.dy / looper,
                 twist_vel.dtheta);
 
+        Logger.recordOutput("Base/Pose", currentPose);
+
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
         frontRightModule.setDesiredState(states[3]);
@@ -200,6 +217,10 @@ public class SwerveSubsystem extends SubsystemBase {
         return estimator.getEstimatedPosition();
     }
 
+    public Pose2d getDifferentPose() {
+        return new Pose2d(getCurrentPose().getX(), getCurrentPose().getY(), getRotation2d());
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
@@ -208,7 +229,24 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Swerve/Back Left Absolute", backLeftModule.getRawAbsoluteAngularPosition());
         Logger.recordOutput("Swerve/Back Right Absolute", backRightModule.getRawAbsoluteAngularPosition());
         Logger.recordOutput("Swerve/Front Left Absolute", frontLeftModule.getRawAbsoluteAngularPosition());
+
+        Logger.recordOutput("Swerve/Front Right Position", frontRightModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Back Left Position", backLeftModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Back Right Position", backRightModule.getDrivePosition());
+        Logger.recordOutput("Swerve/Front Left Position", frontLeftModule.getDrivePosition());
         Logger.recordOutput("Swerve/Heading", getHeading());
+        Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
+        Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
+
+        Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemp());
+        Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemp());
+
+        Logger.recordOutput("Swerve/Front Right Temperature Overheat Warning", frontRightModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
+        Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
 
         if (lastEpoch != 0) {
             double currentAngularPos = gyro.getAngle();

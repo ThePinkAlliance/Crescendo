@@ -28,6 +28,8 @@ public class Shooter extends SubsystemBase {
     SparkPIDController m_pidController;
     private RelativeEncoder m_encoder;
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+    public double velocity_ff;
+    public double top_desired_vel, bottom_desired_vel;
     DigitalInput m_noteSwitch;
 
     public enum ShooterMove {
@@ -43,16 +45,28 @@ public class Shooter extends SubsystemBase {
         this.m_noteSwitch = new DigitalInput(0);
         this.m_greyTalon.setInverted(true);
 
-        // set slot 0 gains
-        var slot0Configs = new Slot0Configs();
-        slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
-        slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        slot0Configs.kI = 0.5; // An error of 1 rps increases output by 0.5 V each second
-        slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+        this.bottom_desired_vel = 0;
+        this.top_desired_vel = 0;
 
-        m_greenTalon.getConfigurator().apply(slot0Configs);
-        m_greyTalon.getConfigurator().apply(slot0Configs);
+        // this.m_greenTalon.ramp
+
+        // set slot 0 gains
+        var slot0Configs_1 = new Slot0Configs();
+        slot0Configs_1.kS = 0.05; // Add 0.05 V output to overcome static friction
+        slot0Configs_1.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+        slot0Configs_1.kP = 0.15; // An error of 1 rps results in 0.11 V output
+        slot0Configs_1.kI = 0; // An error of 1 rps increases output by 0.5 V each second
+        slot0Configs_1.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+
+        var slot0Configs_2 = new Slot0Configs();
+        slot0Configs_2.kS = 0.05; // Add 0.05 V output to overcome static friction
+        slot0Configs_2.kV = 0.12; // A velocity target of 1 rps results in 0.12 V
+        slot0Configs_2.kP = 0.11; // An error of 1 rps results in 0.11 V output
+        slot0Configs_2.kI = 0; // An error of 1 rps increases output by 0.5 V each second
+        slot0Configs_2.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+
+        m_greenTalon.getConfigurator().apply(slot0Configs_1);
+        m_greyTalon.getConfigurator().apply(slot0Configs_2);
 
         SmartDashboard.putNumber("RpmsShooter", 0.0);
 
@@ -132,12 +146,12 @@ public class Shooter extends SubsystemBase {
         var request = new VelocityVoltage(0).withSlot(0);
 
         if (!controlIndividual) {
-            m_greenTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(0.5));
-            m_greyTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(0.5));
+            m_greenTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
+            m_greyTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
         } else if (controlIndividual) {
-            // set velocity rps, add 0.5 V to overcome gravity
-            m_greenTalon.setControl(request.withVelocity(greenToRpm).withFeedForward(0.5));
-            m_greyTalon.setControl(request.withVelocity(greyToRpm).withFeedForward(0.5));
+            // set velocity rps, add velocity_ff V to overcome gravity
+            m_greenTalon.setControl(request.withVelocity(greenToRpm).withFeedForward(velocity_ff));
+            m_greyTalon.setControl(request.withVelocity(greyToRpm).withFeedForward(velocity_ff));
         } else {
             DriverStation.reportWarning("!cannot determine motor control! (shooter.java, 95)", true);
         }
@@ -153,15 +167,18 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setVelocity(double top, double bottom) {
-        double topRpm = top / 60;
-        double bottomRpm = bottom / 60;
+        double topRps = top / 60;
+        double bottomRps = bottom / 60;
 
         // create a velocity closed-loop request, voltage output, slot 0 configs
         var request = new VelocityVoltage(0).withSlot(0);
 
         // set velocity rps, add 0.5 V to overcome gravity
-        m_greenTalon.setControl(request.withVelocity(topRpm).withFeedForward(0.5));
-        m_greyTalon.setControl(request.withVelocity(bottomRpm).withFeedForward(0.5));
+        m_greenTalon.setControl(request.withVelocity(topRps).withFeedForward(0.5));
+        m_greyTalon.setControl(request.withVelocity(bottomRps).withFeedForward(0.5));
+
+        this.top_desired_vel = top;
+        this.bottom_desired_vel = bottom;
     }
 
     @Deprecated
@@ -266,6 +283,23 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    public Command loadNoteUntilFound2(double desiredVelocity) {
+
+        return new FunctionalCommand(() -> {
+        },
+                () -> {
+                    this.setVelocity(desiredVelocity);
+                    this.load(1);
+                },
+                (interrupted) -> {
+                    this.move(0);
+                    this.setSpeed(0);
+                },
+                () -> noteFound(),
+                this);
+
+    }
+
     public Command rampUp2(double desiredVelocity) {
 
         return new FunctionalCommand(() -> {
@@ -304,6 +338,41 @@ public class Shooter extends SubsystemBase {
                     return time.hasElapsed(1.5);
                 },
                 this);
+    }
+
+    public Command launchNote3() {
+        Timer time = new Timer();
+        return new FunctionalCommand(() -> {
+            time.reset();
+            time.start();
+        },
+                () -> {
+                    this.launch(1);
+                },
+                (interrupted) -> {
+                    this.setSpeed(0);
+                    this.stop();
+                },
+                () -> {
+                    return time.hasElapsed(1);
+                },
+                this);
+    }
+
+    public StatusSignal<Double> getBottomVelocity() {
+        return this.m_greyTalon.getVelocity();
+    }
+
+    public StatusSignal<Double> getTopVelocity() {
+        return this.m_greenTalon.getVelocity();
+    }
+
+    public double getBottomDesiredVelocity() {
+        return this.bottom_desired_vel;
+    }
+
+    public double getTopDesiredVelocity() {
+        return this.top_desired_vel;
     }
 
     public Command stopShooter() {

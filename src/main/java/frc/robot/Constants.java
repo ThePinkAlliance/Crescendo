@@ -13,6 +13,17 @@ import frc.lib.Gains;
 
 /** Add your docs here. */
 public class Constants {
+    public static boolean is_red = false;
+
+    public static final class RobotConstants {
+        public enum RobotType {
+            ROBOT_ONE,
+            ROBOT_TWO
+        }
+
+        public static RobotType CURRENT_ROBOT = RobotType.ROBOT_TWO;
+    }
+
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(3.80);
         public static final double kDriveMotorGearRatio = 0.1633986928;
@@ -24,11 +35,34 @@ public class Constants {
         public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
         public static final double kPTurning = 0.47;
 
-        public static final Gains kBackLeftSteerGains = new Gains(.35, 0.00, 0);
-        public static final Gains kBackRightSteerGains = new Gains(.35, 0.0, 0);
-        public static final Gains kFrontRightSteerGains = new Gains(.35, 0.0, 0);
-        public static final Gains kFrontLeftSteerGains = new Gains(.35, 0.0, 0);
+        public static final Gains kBackLeftSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kBackRightSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kFrontRightSteerGains = new Gains(.34, 0.0, 0);
+        public static final Gains kFrontLeftSteerGains = new Gains(.34, 0.0, 0);
 
+    }
+
+    public static final class TurretConstants {
+        public static final double REVERSE_STARTING_POS = 62.71;
+        // public static final double REVERSE_STARTING_POS = 0;
+        public static final double REVERSE_SHOOTING_POS = 44.76;
+    }
+
+    public static final class AngleConstants {
+        public static final double IDLE_ANGLE = 1;
+        public static final double MIN_ANGLE = 1;
+    }
+
+    public static final class IntakeConstants {
+        public static final double COLLECT_FLOOR_POS = 37.1;
+        public static final double COLLECT_MID_POS = 19.8;
+        public static final double COLLECT_MID_AUTO_POS = 20.67;
+
+        public static final double DEFAULT_COLLECT_DUTY_CYCLE = 1;
+    }
+
+    public static final class ShooterConstants {
+        public static final double COLLECT_DUTY_CYCLE = 0.35;
     }
 
     public static final class OIConstants {
@@ -87,10 +121,10 @@ public class Constants {
          * These values where determined by lining up all the wheels and recording the
          * outputed positions.
          */
-        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 1.42;// 2.688;
-        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -0.46;// -1.7185;
-        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 0.62;// 0.182;
-        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -2.95;// -2.519;
+        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = -1.52;// 2.688;
+        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = 2.47;// -1.7185;
+        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 0.97;// 0.182;
+        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 1.92;// -2.519;
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 4.437;// 2.91;
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 18; // 18 rad/sec
@@ -98,7 +132,7 @@ public class Constants {
         public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1; // 0.96
         public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond;
         public static double kTeleDriveSpeedReduction = 1;
-        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 0.55;
+        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3.5;
     }
 }

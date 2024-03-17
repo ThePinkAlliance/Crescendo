@@ -4,26 +4,46 @@
 
 package frc.robot.commands.intake;
 
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Angle;
-import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.intake.Intake;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class CollectNote extends SequentialCommandGroup {
+    Intake intake;
+    Shooter shooter;
+    Angle angle;
+
     /** Creates a new CollectNote. */
-    public CollectNote(Intake intake, Shooter shooter, Angle angle) {
+    public CollectNote(Intake intake, Shooter shooter, Angle angle, TurretSubsystem turretSubsystem) {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
-        addCommands(
-                // Set turret zero here.
-                intake.deployCollector(),
-                intake.collectUntilFound(.85),
-                angle.setAngleCommand(0),
-                intake.goToTransfer().alongWith(shooter.loadNoteUntilFound(0.3)),
-                intake.setCollectorPower(0),
-                intake.stowCollector());
+
+        var prepare_shooter = new ParallelCommandGroup(angle.setAngleCommand(4), turretSubsystem.setTargetPosition(
+                0));
+
+        boolean note_present = intake.noteFound();
+
+        if (note_present) {
+            addCommands(
+                    // Set turret zero here.
+                    intake.goToTransfer()
+                            .alongWith(shooter.loadNoteUntilFound(0.35)),
+                    intake.setCollectorPower(0), intake.stowCollector());
+        } else {
+            addCommands(
+                    // Set turret zero here.
+                    intake.deployCollector(),
+                    intake.collectUntilFound(.85).alongWith(prepare_shooter),
+                    intake.goToTransfer()
+                            .alongWith(shooter.loadNoteUntilFound(0.35)),
+                    intake.setCollectorPower(0), intake.stowCollector());
+        }
+
     }
 }
