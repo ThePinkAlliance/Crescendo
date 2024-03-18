@@ -45,6 +45,7 @@ public class WPI_SwerveModule implements SwerveModule {
 
         CurrentLimitsConfigs currentLimit = new CurrentLimitsConfigs();
 
+        // This could be increased to 60 probably
         currentLimit.SupplyCurrentLimit = 45;
         currentLimit.SupplyCurrentLimitEnable = true;
 
