@@ -4,21 +4,15 @@
 
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -38,7 +32,6 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
-    private final DoubleSubscriber target_area_subscriber;
     private Matrix<N3, N1> correction_matrix;
 
     private final double mounted_angle;
@@ -53,9 +46,11 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
-        this.target_area_subscriber = table.getDoubleTopic("ta").subscribe(0);
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
+
+        // Limelight mounted at 0 but equations use 22.5 so its fine just dont change
+        // it. or things will break
         this.mounted_angle = 22.5;
     }
 
@@ -72,27 +67,6 @@ public class VisionSubsystem extends SubsystemBase {
             double corrected_z = botpose_z - (botpose_z * correction_matrix.get(2, 0));
 
             return Optional.of(new Translation3d(corrected_x, corrected_y, corrected_z));
-        }
-
-        return Optional.empty();
-    }
-
-    private double correctLimelightDistance(double uncorrected_distance) {
-        return (1.0002 * uncorrected_distance) - 38.217;
-    }
-
-    public double getClosestTargetDistance() {
-        // Using tag 4 height (56)
-        double distance = 56 / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
-
-        return correctLimelightDistance(distance);
-    }
-
-    public Optional<Double> getTagDistance(int id) {
-        Optional<Double> distance = getUncorrectedTagDistance(id);
-
-        if (distance.isPresent()) {
-            return Optional.of(correctLimelightDistance(distance.get()));
         }
 
         return Optional.empty();
@@ -139,10 +113,9 @@ public class VisionSubsystem extends SubsystemBase {
             Logger.recordOutput("Robot-Translation", translation2d);
             Logger.recordOutput("Speaker-Red-Tag", tag_pose.toPose2d());
             Logger.recordOutput("Robot-Pose",
-                    new Pose2d(getTranslation().get().toTranslation2d(), Rotation2d.fromDegrees(0)));
+                    new Pose2d(translation2d, Rotation2d.fromDegrees(0)));
         }
 
-        Logger.recordOutput("Closest Target Distance", getClosestTargetDistance());
         Logger.recordOutput("Uncorrected Distance", UncorrectedDistance());
     }
 }

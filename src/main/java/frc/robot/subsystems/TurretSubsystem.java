@@ -4,17 +4,12 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -24,9 +19,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
     private CANSparkMax m_turretMotor;
-    private SparkPIDController m_turretPID;
     private RelativeEncoder m_relEncoder;
-    private AbsoluteEncoder m_absEncoder;
 
     // Max Clockwise (CW) and Max Counter Clockwise positions.
     private final double MAX_CW_POS;
@@ -51,7 +44,6 @@ public class TurretSubsystem extends SubsystemBase {
         this.m_pidController.setTolerance(.5);
 
         m_relEncoder = m_turretMotor.getEncoder();
-        m_absEncoder = m_turretMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
         m_relEncoder.setPosition(Constants.TurretConstants.REVERSE_STARTING_POS);
     }
@@ -121,7 +113,6 @@ public class TurretSubsystem extends SubsystemBase {
         // This method will be called once per scheduler run
         Logger.recordOutput("Turret/Current Pos", this.m_relEncoder.getPosition());
         Logger.recordOutput("Turret/Current Pos Real", this.m_relEncoder.getPosition() / 0.35);
-        Logger.recordOutput("Turret/Current Absolute Pos", this.m_absEncoder.getPosition());
         Logger.recordOutput("Turret/Target Pos", this.m_pidController.getSetpoint());
         Logger.recordOutput("Turret/At Setpoint", this.m_pidController.atSetpoint());
     }

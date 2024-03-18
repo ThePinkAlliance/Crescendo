@@ -22,11 +22,9 @@ import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
 
-    TalonFX m_greenTalon;
-    TalonFX m_greyTalon;
+    TalonFX m_topTalon;
+    TalonFX m_bottomTalon;
     CANSparkMax m_motor;
-    SparkPIDController m_pidController;
-    private RelativeEncoder m_encoder;
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
     public double velocity_ff;
     public double top_desired_vel, bottom_desired_vel;
@@ -38,12 +36,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public Shooter() {
-        this.m_greenTalon = new TalonFX(42, "rio");
-        this.m_greyTalon = new TalonFX(43, "rio");
+        this.m_topTalon = new TalonFX(42, "rio");
+        this.m_bottomTalon = new TalonFX(43, "rio");
         this.m_motor = new CANSparkMax(44, CANSparkLowLevel.MotorType.kBrushless);
 
         this.m_noteSwitch = new DigitalInput(0);
-        this.m_greyTalon.setInverted(true);
+        this.m_bottomTalon.setInverted(true);
 
         this.bottom_desired_vel = 0;
         this.top_desired_vel = 0;
@@ -65,10 +63,8 @@ public class Shooter extends SubsystemBase {
         slot0Configs_2.kI = 0; // An error of 1 rps increases output by 0.5 V each second
         slot0Configs_2.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
 
-        m_greenTalon.getConfigurator().apply(slot0Configs_1);
-        m_greyTalon.getConfigurator().apply(slot0Configs_2);
-
-        SmartDashboard.putNumber("RpmsShooter", 0.0);
+        m_topTalon.getConfigurator().apply(slot0Configs_1);
+        m_bottomTalon.getConfigurator().apply(slot0Configs_2);
 
         setupLoaderMotor();
     }
@@ -76,23 +72,6 @@ public class Shooter extends SubsystemBase {
     public void setupLoaderMotor() {
         m_motor.restoreFactoryDefaults();
         m_motor.setIdleMode(IdleMode.kCoast);
-        m_pidController = m_motor.getPIDController();
-        m_encoder = m_motor.getEncoder();
-        kP = 6e-5;
-        kI = 0;
-        kD = 0;
-        kIz = 0;
-        kFF = 0.000015;
-        kMaxOutput = 1;
-        kMinOutput = -1;
-        maxRPM = 5700;
-        // set PID coefficients
-        m_pidController.setP(kP);
-        m_pidController.setI(kI);
-        m_pidController.setD(kD);
-        m_pidController.setIZone(kIz);
-        m_pidController.setFF(kFF);
-        m_pidController.setOutputRange(kMinOutput, kMaxOutput);
     }
 
     public void setupLoaderDashboardInputs() {
@@ -131,35 +110,13 @@ public class Shooter extends SubsystemBase {
         boolean greenInvert = SmartDashboard.getBoolean("Green isInverted", false);
         boolean greyInvert = SmartDashboard.getBoolean("Grey isInverted", false);
 
-        m_greenTalon.setInverted(greenInvert);
-        m_greyTalon.setInverted(greyInvert);
-    }
-
-    public void setMotionMagicRps(double grey, double green, double both) {
-        boolean controlIndividual = SmartDashboard.getBoolean("individual", false);
-
-        double greenToRpm = green / 60;
-        double greyToRpm = grey / 60;
-        double bothToRpm = both / 60;
-
-        // create a velocity closed-loop request, voltage output, slot 0 configs
-        var request = new VelocityVoltage(0).withSlot(0);
-
-        if (!controlIndividual) {
-            m_greenTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
-            m_greyTalon.setControl(request.withVelocity(bothToRpm).withFeedForward(velocity_ff));
-        } else if (controlIndividual) {
-            // set velocity rps, add velocity_ff V to overcome gravity
-            m_greenTalon.setControl(request.withVelocity(greenToRpm).withFeedForward(velocity_ff));
-            m_greyTalon.setControl(request.withVelocity(greyToRpm).withFeedForward(velocity_ff));
-        } else {
-            DriverStation.reportWarning("!cannot determine motor control! (shooter.java, 95)", true);
-        }
+        m_topTalon.setInverted(greenInvert);
+        m_bottomTalon.setInverted(greyInvert);
     }
 
     public void setSpeed(double speed) {
-        this.m_greenTalon.set(speed);
-        this.m_greyTalon.set(speed);
+        this.m_topTalon.set(speed);
+        this.m_bottomTalon.set(speed);
     }
 
     public void setVelocity(double vel) {
@@ -174,63 +131,23 @@ public class Shooter extends SubsystemBase {
         var request = new VelocityVoltage(0).withSlot(0);
 
         // set velocity rps, add 0.5 V to overcome gravity
-        m_greenTalon.setControl(request.withVelocity(topRps).withFeedForward(0.5));
-        m_greyTalon.setControl(request.withVelocity(bottomRps).withFeedForward(0.5));
+        m_topTalon.setControl(request.withVelocity(topRps).withFeedForward(0.5));
+        m_bottomTalon.setControl(request.withVelocity(bottomRps).withFeedForward(0.5));
 
         this.top_desired_vel = top;
         this.bottom_desired_vel = bottom;
     }
 
-    @Deprecated
-    public void adjustPID() {
-        double proportional = SmartDashboard.getNumber("P", 0);
-        double intergral = SmartDashboard.getNumber("I", 0);
-        double derivitive = SmartDashboard.getNumber("D", 0);
-
-        var pidConfigs = new Slot0Configs();
-        pidConfigs.kS = 0.5; // 0.5 // Add 0.05 V output to overcome static friction
-        pidConfigs.kV = 0.12; // 0.12 // A velocity target of 1 rps results in 0.12 V output
-        pidConfigs.kP = proportional;
-        pidConfigs.kI = intergral;
-        pidConfigs.kD = derivitive;
-
-        m_greenTalon.getConfigurator().apply(pidConfigs);
-        m_greyTalon.getConfigurator().apply(pidConfigs);
-
-    }
-
-    @Deprecated
-    public void putValues() {
-
-        StatusSignal<Double> m_greyFXTickVelocity = m_greyTalon.getRotorVelocity();
-        StatusSignal<Double> m_greenFXTickVelocity = m_greenTalon.getRotorVelocity();
-
-        double m_greyFXToRPM = m_greyFXTickVelocity.getValueAsDouble() * 60;
-        double m_greenFXToRPM = m_greenFXTickVelocity.getValueAsDouble() * 60;
-
-        // add values for actual RPM of motors
-        SmartDashboard.putNumber("grey real", m_greyFXToRPM);
-        SmartDashboard.putNumber("green real", m_greenFXToRPM);
-
-        double rpmAverage = (m_greenFXToRPM + m_greyFXToRPM) / 2;
-        SmartDashboard.putNumber("average", rpmAverage);
-
-        // add values for graphing
-        SmartDashboard.putNumber("grey real graph", m_greyFXToRPM);
-        SmartDashboard.putNumber("green real graph", m_greenFXToRPM);
-
-    }
-
     public boolean isAtLeastRpm(double target) {
         boolean result = false;
-        StatusSignal<Double> m_greyFXTickVelocity = m_greyTalon.getRotorVelocity();
-        StatusSignal<Double> m_greenFXTickVelocity = m_greenTalon.getRotorVelocity();
-        double m_greyFXToRPM = m_greyFXTickVelocity.getValueAsDouble() * 60;
-        double m_greenFXToRPM = m_greenFXTickVelocity.getValueAsDouble() * 60;
+        StatusSignal<Double> m_bottomVelocity = m_bottomTalon.getRotorVelocity();
+        StatusSignal<Double> m_topVelocity = m_topTalon.getRotorVelocity();
+        double m_bottomRPM = m_bottomVelocity.getValueAsDouble() * 60;
+        double m_topRPM = m_topVelocity.getValueAsDouble() * 60;
         double minimumRpm = 100;
         double t = Math.abs(target);
-        double rpm1 = Math.abs(m_greyFXToRPM);
-        double rpm2 = Math.abs(m_greenFXToRPM);
+        double rpm1 = Math.abs(m_bottomRPM);
+        double rpm2 = Math.abs(m_topRPM);
         double error = 0.05;
         t = t - (t * error);
 
@@ -267,7 +184,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command loadNoteUntilFound(double desiredVelocity) {
-
         return new FunctionalCommand(() -> {
         },
                 () -> {
@@ -280,7 +196,6 @@ public class Shooter extends SubsystemBase {
                 },
                 () -> noteFound(),
                 this);
-
     }
 
     public Command loadNoteUntilFound2(double desiredVelocity) {
@@ -360,11 +275,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public StatusSignal<Double> getBottomVelocity() {
-        return this.m_greyTalon.getVelocity();
+        return this.m_bottomTalon.getVelocity();
     }
 
     public StatusSignal<Double> getTopVelocity() {
-        return this.m_greenTalon.getVelocity();
+        return this.m_topTalon.getVelocity();
     }
 
     public double getBottomDesiredVelocity() {
@@ -386,7 +301,7 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putBoolean("Note Loaded", m_noteSwitch.get());
 
-        Logger.recordOutput("Shooter/Top Velocity", this.m_greenTalon.getVelocity().getValueAsDouble() * 60);
-        Logger.recordOutput("Shooter/Bottom Velocity", this.m_greyTalon.getVelocity().getValueAsDouble() * 60);
+        Logger.recordOutput("Shooter/Top Velocity", this.m_topTalon.getVelocity().getValueAsDouble() * 60);
+        Logger.recordOutput("Shooter/Bottom Velocity", this.m_bottomTalon.getVelocity().getValueAsDouble() * 60);
     }
 }
