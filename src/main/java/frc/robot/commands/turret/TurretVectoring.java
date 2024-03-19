@@ -35,7 +35,9 @@ public class TurretVectoring extends Command {
         double kF = 0.0;
         double tag_angle = vision.getTargetX();
         double turret_angle = turret.getPositionDeg();
+        double distance = vision.UncorrectedDistance();
         double target_pos = turret_angle - tag_angle;
+        double angle_compensation = distance * 5 / 91;
 
         double effort = pidController.calculate(tag_angle, 0) * -1;
         double power2 = (effort / 15) + kF;
@@ -44,6 +46,7 @@ public class TurretVectoring extends Command {
         Logger.recordOutput("AutoLock/Pos", target_pos);
         Logger.recordOutput("AutoLock/TagAngle", tag_angle);
         Logger.recordOutput("AutoLock/TurretPos", turret_angle);
+        Logger.recordOutput("AutoLock/angle_compensation", angle_compensation);
 
         this.turret.set(power2);
     }

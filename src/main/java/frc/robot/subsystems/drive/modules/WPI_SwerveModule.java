@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.Gains;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Swerve module based off of the swerve drive specialties pod. A Falcon 500 is
@@ -43,13 +44,20 @@ public class WPI_SwerveModule implements SwerveModule {
         this.steerMotor = new TalonFX(steerId, network);
         this.driveMotor = new TalonFX(driveId, network);
 
-        CurrentLimitsConfigs currentLimit = new CurrentLimitsConfigs();
+        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+        CurrentLimitsConfigs driveCurrentLimit = new CurrentLimitsConfigs();
+        OpenLoopRampsConfigs driveOpenloopConfig = new OpenLoopRampsConfigs();
 
         // This could be increased to 60 probably
-        currentLimit.SupplyCurrentLimit = 45;
-        currentLimit.SupplyCurrentLimitEnable = true;
+        driveCurrentLimit.SupplyCurrentLimit = 45;
+        driveCurrentLimit.SupplyCurrentLimitEnable = true;
 
-        this.driveMotor.getConfigurator().apply(currentLimit);
+        driveOpenloopConfig.DutyCycleOpenLoopRampPeriod = 0.5;
+
+        driveConfig.OpenLoopRamps = driveOpenloopConfig;
+        driveConfig.CurrentLimits = driveCurrentLimit;
+
+        this.driveMotor.getConfigurator().apply(driveConfig);
 
         this.absoluteEncoderOffsetRad = absoluteEncoderOffsetRad;
 
@@ -178,7 +186,8 @@ public class WPI_SwerveModule implements SwerveModule {
                         (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
         double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
-        SmartDashboard.putNumber("steer: " + this.steerMotor.getDeviceID(), output);
+        Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
+                this.driveMotor.getRotorVelocity().getValueAsDouble());
         steerMotor.set(output);
     }
 

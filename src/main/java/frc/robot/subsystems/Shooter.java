@@ -74,46 +74,6 @@ public class Shooter extends SubsystemBase {
         m_motor.setIdleMode(IdleMode.kCoast);
     }
 
-    public void setupLoaderDashboardInputs() {
-
-        // display PID coefficients on SmartDashboard
-        SmartDashboard.putNumber("Spark P Gain", kP);
-        SmartDashboard.putNumber("Spark I Gain", kI);
-        SmartDashboard.putNumber("Spark D Gain", kD);
-        SmartDashboard.putNumber("Spark I Zone", kIz);
-        SmartDashboard.putNumber("Spark Feed Forward", kFF);
-        SmartDashboard.putNumber("Spark Max Output", kMaxOutput);
-        SmartDashboard.putNumber("Spark Min Output", kMinOutput);
-    }
-
-    public void setupDashboardInputs() {
-        // add values for PID config
-        SmartDashboard.putNumber("P", 0.11); // 0.11
-        SmartDashboard.putNumber("I", 0.5); // 0.5
-        SmartDashboard.putNumber("D", 0.01); // 0.01
-
-        SmartDashboard.putNumber("grey Target", 0);
-        SmartDashboard.putNumber("green Target", 0);
-
-        SmartDashboard.putBoolean("stop", false);
-
-        SmartDashboard.putBoolean("Green isInverted", true);
-        SmartDashboard.putBoolean("Grey isInverted", false);
-
-        SmartDashboard.putBoolean("individual", false);
-        SmartDashboard.putNumber("RpmsShooter", 0.0);
-
-        setupLoaderDashboardInputs();
-    }
-
-    public void setInvertedMotors() {
-        boolean greenInvert = SmartDashboard.getBoolean("Green isInverted", false);
-        boolean greyInvert = SmartDashboard.getBoolean("Grey isInverted", false);
-
-        m_topTalon.setInverted(greenInvert);
-        m_bottomTalon.setInverted(greyInvert);
-    }
-
     public void setSpeed(double speed) {
         this.m_topTalon.set(speed);
         this.m_bottomTalon.set(speed);
@@ -151,8 +111,11 @@ public class Shooter extends SubsystemBase {
         double error = 0.05;
         t = t - (t * error);
 
-        Logger.recordOutput("RPM2", rpm2);
-        Logger.recordOutput("RPM1", rpm1);
+        Logger.recordOutput("Shooter/Top Desired Velocity", rpm2);
+        Logger.recordOutput("Shooter/Bottom Desired Velocity", rpm1);
+
+        Logger.recordOutput("Shooter/Top Velocity", this.m_topTalon.getVelocity().getValueAsDouble() * 60);
+        Logger.recordOutput("Shooter/Bottom Velocity", this.m_bottomTalon.getVelocity().getValueAsDouble() * 60);
 
         System.out.println("Values: " + rpm1 + ":" + rpm2 + ":" + t);
         if (rpm1 >= t && rpm2 >= t && t > minimumRpm) {
@@ -228,14 +191,6 @@ public class Shooter extends SubsystemBase {
                 this);
     }
 
-    public Command rampUp(double speed) {
-        return runOnce(() -> this.setVelocity(speed));
-    }
-
-    public Command launchNote() {
-        return runOnce(() -> this.launch(1));
-    }
-
     public Command launchNote2() {
         Timer time = new Timer();
         return new FunctionalCommand(() -> {
@@ -251,25 +206,6 @@ public class Shooter extends SubsystemBase {
                 },
                 () -> {
                     return time.hasElapsed(1.5);
-                },
-                this);
-    }
-
-    public Command launchNote3() {
-        Timer time = new Timer();
-        return new FunctionalCommand(() -> {
-            time.reset();
-            time.start();
-        },
-                () -> {
-                    this.launch(1);
-                },
-                (interrupted) -> {
-                    this.setSpeed(0);
-                    this.stop();
-                },
-                () -> {
-                    return time.hasElapsed(1);
                 },
                 this);
     }
@@ -299,9 +235,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Note Loaded", m_noteSwitch.get());
-
-        Logger.recordOutput("Shooter/Top Velocity", this.m_topTalon.getVelocity().getValueAsDouble() * 60);
-        Logger.recordOutput("Shooter/Bottom Velocity", this.m_bottomTalon.getVelocity().getValueAsDouble() * 60);
+        SmartDashboard.putBoolean("Note Loaded", noteFound());
     }
 }

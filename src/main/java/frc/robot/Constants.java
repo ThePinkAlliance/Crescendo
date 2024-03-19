@@ -43,8 +43,8 @@ public class Constants {
     }
 
     public static final class TurretConstants {
-        public static final double REVERSE_STARTING_POS = 62.71;
-        // public static final double REVERSE_STARTING_POS = 0;
+        // public static final double REVERSE_STARTING_POS = 62.71;
+        public static final double REVERSE_STARTING_POS = 0;
         public static final double REVERSE_SHOOTING_POS = 44.76;
     }
 
@@ -132,7 +132,7 @@ public class Constants {
         public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1; // 0.96
         public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond;
         public static double kTeleDriveSpeedReduction = 1;
-        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 1;
+        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = kPhysicalMaxSpeedMetersPerSecond * 0.85;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3.5;
     }
 }

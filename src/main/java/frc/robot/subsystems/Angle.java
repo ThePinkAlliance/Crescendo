@@ -59,6 +59,7 @@ public class Angle extends SubsystemBase {
     @Override
     public void periodic() {
         var fowardSwitch = m_motor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
+        var reverseSwitch = m_motor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
         double relativeEncoderPosition = m_relEncoder.getPosition();
 
@@ -69,16 +70,11 @@ public class Angle extends SubsystemBase {
                 getCancoderAngle());
 
         Logger.recordOutput("Shooter/Foward Switch", fowardSwitch.isPressed());
+        Logger.recordOutput("Shooter/Reverse Switch", reverseSwitch.isPressed());
     }
 
     public void disable() {
         this.m_motor.set(0);
-    }
-
-    public void updateTuneAnglePID() {
-        double targetRotation = SmartDashboard.getNumber("Angle Target", 0);
-
-        this.setAngle(targetRotation);
     }
 
     public double getCancoderAngle() {
@@ -92,8 +88,6 @@ public class Angle extends SubsystemBase {
     public void setAngleNew(double angle) {
         double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
-        // boolean hasSpace = getCancoderAngle() - (desired_rotations / 1.0069619029) >
-        // 0;
 
         if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 52) {
             this.m_motor.getPIDController().setReference(desired_rotations,
@@ -105,13 +99,6 @@ public class Angle extends SubsystemBase {
         Logger.recordOutput("Shooter/Angle Ref", angle);
         Logger.recordOutput("Shooter/rotationDiff", rotationDiff);
         Logger.recordOutput("Shooter/diff", angle - getCancoderAngle());
-        // Logger.recordOutput("Shooter/hasSpace", hasSpace);
-    }
-
-    public void setAngle(double angle) {
-        double targetRotations = angle * (51.71 / 52.07);
-
-        this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
     }
 
     public void resetAngle() {

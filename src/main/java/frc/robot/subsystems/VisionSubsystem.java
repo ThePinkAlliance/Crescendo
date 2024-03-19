@@ -49,8 +49,8 @@ public class VisionSubsystem extends SubsystemBase {
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
 
-        // Limelight mounted at 0 but equations use 22.5 so its fine just dont change
-        // it. or things will break
+        // Limelight mounted at 0 but equations use 22.5. its fine just dont change
+        // it. or everything will break
         this.mounted_angle = 22.5;
     }
 
