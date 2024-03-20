@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -35,9 +34,8 @@ import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.climber.ClimbSequence;
-import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
-import frc.robot.commands.turret.TurretVectoring;
+import frc.robot.commands.shooter.ShootNoteTargetVisible;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Shooter;
@@ -49,6 +47,7 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.commands.shooter.ShootNoteTargetVisible;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -202,15 +201,23 @@ public class RobotContainer {
         //Climber Sequence - assumes driver has already extended the climber and position the hooks over the chain
         new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
                 .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
-                
+
         // Tower
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-                .onTrue(new ParallelCommandGroup(
-                        new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
-                        new ShootNote(m_shooter, m_angle, m_turret,
-                                () -> m_visionSubsystem.UncorrectedDistance()))
-                        .andThen(
-                                m_turret.setTargetPositionRaw(0)));
+        //A BUTTON without the conditional check on a visible apriltag
+        // new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
+        //         .onTrue(new ParallelCommandGroup(
+        //                 new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
+        //                 new ShootNote(m_shooter, m_angle, m_turret,
+        //                         () -> m_visionSubsystem.UncorrectedDistance()))
+        //                 .andThen(
+        //                         m_turret.setTargetPositionRaw(0)
+        //                 ));
+        
+        //Alternative to non-target visible method
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_A).onTrue(new ShootNoteTargetVisible(
+                m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem, 
+                () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
+
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
