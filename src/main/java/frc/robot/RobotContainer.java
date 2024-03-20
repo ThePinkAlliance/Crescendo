@@ -15,10 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -38,10 +34,8 @@ import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.climber.ClimbSequence;
-import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShootNoteTargetVisible;
-import frc.robot.commands.turret.TurretVectoring;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Shooter;
@@ -218,14 +212,12 @@ public class RobotContainer {
         //                 .andThen(
         //                         m_turret.setTargetPositionRaw(0)
         //                 ));
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new ShootNoteTargetVisible(
-                m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
+        
+        //Alternative to non-target visible method
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_A).onTrue(new ShootNoteTargetVisible(
+                m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem, 
                 () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
 
-
-
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-                .onTrue(new ShootNoteTargetVisible(m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem, () -> m_visionSubsystem.UncorrectedDistance()));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
