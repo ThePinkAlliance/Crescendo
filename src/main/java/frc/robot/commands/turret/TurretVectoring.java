@@ -18,7 +18,7 @@ public class TurretVectoring extends Command {
     public TurretVectoring(TurretSubsystem turret, VisionSubsystem vision, DoubleSupplier angleSupplier) {
         this.turret = turret;
         this.vision = vision;
-        this.pidController = new PIDController(.35, 0.035, 0.0);
+        this.pidController = new PIDController(.40, 0.045, 0.0);
         this.timer = new Timer();
         this.pidController.setTolerance(.5);
 
@@ -37,7 +37,7 @@ public class TurretVectoring extends Command {
         double turret_angle = turret.getPositionDeg();
         double distance = vision.UncorrectedDistance();
         double target_pos = turret_angle - tag_angle;
-        double angle_compensation = distance * 5 / 91;
+        double angle_compensation = distance * 5.01 / 91;
 
         double effort = pidController.calculate(tag_angle, 0) * -1;
         double power2 = (effort / 15) + kF;

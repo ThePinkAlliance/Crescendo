@@ -201,9 +201,11 @@ public class RobotContainer {
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
                 .onTrue(new ParallelCommandGroup(
+                        new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
                         new ShootNote(m_shooter, m_angle, m_turret,
-                                () -> m_visionSubsystem.UncorrectedDistance()),
-                        new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading())));
+                                () -> m_visionSubsystem.UncorrectedDistance()))
+                        .andThen(
+                                m_turret.setTargetPositionRaw(0)));
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
@@ -234,6 +236,9 @@ public class RobotContainer {
 
     public void onDisabled() {
         this.m_turret.setBrakeMode(IdleMode.kCoast);
+        m_shooter.stop();
+        m_intake.stop();
+        m_shooter.stopShooter().initialize();
     }
 
     public void setupTeleop() {

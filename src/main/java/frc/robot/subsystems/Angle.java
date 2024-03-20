@@ -64,7 +64,7 @@ public class Angle extends SubsystemBase {
         double relativeEncoderPosition = m_relEncoder.getPosition();
 
         Logger.recordOutput("Shooter/Angle Position", relativeEncoderPosition);
-        Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (52.2 / 53.95));
+        Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (54 / 54.07));
         Logger.recordOutput("Shooter/CANCoder Angle", this.m_angleCancoder.getAbsolutePosition().getValueAsDouble());
         Logger.recordOutput("Shooter/CANcoder Angle Real",
                 getCancoderAngle());
@@ -78,7 +78,7 @@ public class Angle extends SubsystemBase {
     }
 
     public double getCancoderAngle() {
-        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360);
+        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360) - 4.7;
     }
 
     public void setPower(double power) {
@@ -86,10 +86,10 @@ public class Angle extends SubsystemBase {
     }
 
     public void setAngleNew(double angle) {
-        double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
+        double rotationDiff = (angle - getCancoderAngle()) * (54 / 54.07);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
 
-        if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 52) {
+        if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 54) {
             this.m_motor.getPIDController().setReference(desired_rotations,
                     ControlType.kPosition);
 

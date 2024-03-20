@@ -8,6 +8,7 @@ import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.intake.Intake;
+import org.littletonrobotics.junction.Logger;
 
 public class CollectNoteV2 extends SequentialCommandGroup {
     public CollectNoteV2(Intake intake, Shooter shooter, Angle angle, TurretSubsystem turretSubsystem) {

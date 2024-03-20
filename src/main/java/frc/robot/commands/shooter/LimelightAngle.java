@@ -28,7 +28,9 @@ public class LimelightAngle extends Command {
     @Override
     public void initialize() {
         double distance = supplier.getAsDouble();
-        double target_angle = (0.0016 * 1.05 * Math.pow(distance, 2) - 0.8857 * 0.95 * distance + 84.774 + 2.5);
+        double target_angle = (0.0016 * 1.05 * Math.pow(distance, 2) - 0.8857 * 1 * distance + 84.774 + 4.5);
+        // double target_angle = (0.0016 * 1.05 * Math.pow(distance, 2) - 0.8857 * 0.95
+        // * distance + 84.774 + 2.5);
         double target_angle_far = (0.0016 * 1.05 * Math.pow(distance, 2) - 0.8857 * 0.93 * distance + 84.774 + 2.5);
 
         if (distance <= 100 && distance >= 0) {
