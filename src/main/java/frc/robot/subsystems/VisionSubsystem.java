@@ -88,7 +88,7 @@ public class VisionSubsystem extends SubsystemBase {
             return Optional.of(distance);
         }
 
-        SmartDashboard.putBoolean("Target Visible", true);
+        SmartDashboard.putBoolean("Target Visible", false);
         return Optional.empty();
     }
 
