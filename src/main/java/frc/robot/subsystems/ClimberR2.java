@@ -44,8 +44,6 @@ public class ClimberR2 extends SubsystemBase {
 
         leftClimber = new TalonFX(leftClimberID, "base");
         rightClimber = new TalonFX(rightClimberID, "rio");
-        leftClimber.setNeutralMode(NeutralModeValue.Brake);
-        rightClimber.setNeutralMode(NeutralModeValue.Brake);
         leftClimber.setInverted(true);
 
         var rightConfigs = new Slot0Configs();
@@ -56,6 +54,8 @@ public class ClimberR2 extends SubsystemBase {
 
         leftClimber.getConfigurator().apply(leftConfigs);
         rightClimber.getConfigurator().apply(rightConfigs);
+        leftClimber.setNeutralMode(NeutralModeValue.Brake);
+        rightClimber.setNeutralMode(NeutralModeValue.Brake);
 
         // Innitial positions (Used for deltas)
         leftEncoder0 = leftClimber.getPosition().getValueAsDouble();
@@ -85,7 +85,10 @@ public class ClimberR2 extends SubsystemBase {
 
     public Command setTarget(double leftT, double rightT) {
         Timer w = new Timer();
-        double posTolerance = 1, timeToleranceSec = 1.5;
+        double posTolerance = 1; //NO LONGER used in isFinished() to allow power to 
+        //be applied longer otherwise we do not stay in a climb position after end of game
+        double timeToleranceSec = 12;//Changed to 12 secs from 1.5 to keep applying power (thus holding)
+        //Climb needs to start no earlier than 12 secs and no later than 5 secs before end of time.
 
         double leftTarget = SmartDashboard.getBoolean("Climber use Shuffleboard", false)
                 ? SmartDashboard.getNumber("Left Target", 0)
@@ -94,7 +97,7 @@ public class ClimberR2 extends SubsystemBase {
                 ? SmartDashboard.getNumber("Right Target", 0)
                 : rightT;
         return new FunctionalCommand(
-                () -> { // Innit
+                () -> { // Init
                     w.start();
                     this.leftController.setSetpoint(leftTarget);
                     this.rightController.setSetpoint(rightTarget);
@@ -124,7 +127,8 @@ public class ClimberR2 extends SubsystemBase {
                     this.leftClimber.set(0);
                     this.rightClimber.set(0);
                 },
-                () -> (/* Is it done? */ (this.leftArrived && this.rightArrived) || w.get() >= timeToleranceSec),
+                //Commented out the use of leftArrived and rightArrived - see comment above
+                () -> (/* Is it done? */ /* (this.leftArrived && this.rightArrived) || */ w.get() >= timeToleranceSec),
                 this);
     }
 
