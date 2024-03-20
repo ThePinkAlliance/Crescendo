@@ -85,10 +85,12 @@ public class ClimberR2 extends SubsystemBase {
 
     public Command setTarget(double leftT, double rightT) {
         Timer w = new Timer();
-        double posTolerance = 1; //NO LONGER used in isFinished() to allow power to 
-        //be applied longer otherwise we do not stay in a climb position after end of game
-        double timeToleranceSec = 12;//Changed to 12 secs from 1.5 to keep applying power (thus holding)
-        //Climb needs to start no earlier than 12 secs and no later than 5 secs before end of time.
+        double posTolerance = 1; // NO LONGER used in isFinished() to allow power to
+        // be applied longer otherwise we do not stay in a climb position after end of
+        // game
+        double timeToleranceSec = 12;// Changed to 12 secs from 1.5 to keep applying power (thus holding)
+        // Climb needs to start no earlier than 12 secs and no later than 5 secs before
+        // end of time.
 
         double leftTarget = SmartDashboard.getBoolean("Climber use Shuffleboard", false)
                 ? SmartDashboard.getNumber("Left Target", 0)
@@ -126,8 +128,10 @@ public class ClimberR2 extends SubsystemBase {
                 (i) -> { // On End
                     this.leftClimber.set(0);
                     this.rightClimber.set(0);
+                    w.stop();
+                    w.reset();
                 },
-                //Commented out the use of leftArrived and rightArrived - see comment above
+                // Commented out the use of leftArrived and rightArrived - see comment above
                 () -> (/* Is it done? */ /* (this.leftArrived && this.rightArrived) || */ w.get() >= timeToleranceSec),
                 this);
     }
