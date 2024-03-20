@@ -34,6 +34,7 @@ import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
+import frc.robot.commands.climber.ClimbSequence;
 import frc.robot.commands.shooter.ShootNote;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.turret.TurretVectoring;
@@ -198,6 +199,10 @@ public class RobotContainer {
         new POVButton(baseJoystick, JoystickMap.POV_DOWN)
                 .onTrue(climber_r2.travelToClimberPos(0, 0));
 
+        //Climber Sequence - assumes driver has already extended the climber and position the hooks over the chain
+        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
+                .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
+                
         // Tower
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
                 .onTrue(new ParallelCommandGroup(
@@ -229,9 +234,10 @@ public class RobotContainer {
 
             this.climber_r2.testPower(right, left);
         }, climber_r2));
-
+        
         new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
         new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
+        
     }
 
     public void onDisabled() {
