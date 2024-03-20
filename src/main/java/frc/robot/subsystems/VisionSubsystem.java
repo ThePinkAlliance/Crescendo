@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -32,6 +33,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
+    private final IntegerSubscriber target_tv_subscriber;
     private Matrix<N3, N1> correction_matrix;
 
     private final double mounted_angle;
@@ -46,6 +48,8 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
+        this.target_tv_subscriber = table.getIntegerTopic("tv").subscribe(0);
+    
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
 
@@ -80,10 +84,11 @@ public class VisionSubsystem extends SubsystemBase {
             Pose3d pose3d = pose.get();
             double height = Units.metersToInches(pose3d.getZ());
             double distance = height / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
-
+            SmartDashboard.putBoolean("Target Visible", true);
             return Optional.of(distance);
         }
 
+        SmartDashboard.putBoolean("Target Visible", true);
         return Optional.empty();
     }
 
@@ -98,6 +103,18 @@ public class VisionSubsystem extends SubsystemBase {
 
     public double getTargetX() {
         return this.target_x_subscriber.get();
+    }
+
+    public boolean getTargetVisible() {
+        long tv = this.target_tv_subscriber.get();
+        long id = this.target_id_subscriber.get();
+        boolean value = false;
+        if ((tv > 0) && (id == 4 || id == 7)) {
+            //Limelight claims Target Visible
+            //Limelight claims Target Id is either 4 or 7 (Red or Blue speaker)
+            value = true;
+        }
+        return value;
     }
 
     @Override
@@ -115,7 +132,8 @@ public class VisionSubsystem extends SubsystemBase {
             Logger.recordOutput("Robot-Pose",
                     new Pose2d(translation2d, Rotation2d.fromDegrees(0)));
         }
-
+        Logger.recordOutput("Target Visible", getTargetVisible());
         Logger.recordOutput("Uncorrected Distance", UncorrectedDistance());
+        SmartDashboard.putBoolean("AprilTag Visible", getTargetVisible());
     }
 }

@@ -94,6 +94,8 @@ public class Angle extends SubsystemBase {
                     ControlType.kPosition);
 
             this.target_rotations = desired_rotations;
+        } else {
+            System.out.println("INVALID ANGLE");
         }
         Logger.recordOutput("Shooter/Angle Setpoint", desired_rotations);
         Logger.recordOutput("Shooter/Angle Ref", angle);
@@ -116,7 +118,10 @@ public class Angle extends SubsystemBase {
     }
 
     public double getControlError() {
-        return Math.abs(this.target_rotations - this.m_relEncoder.getPosition());
+       
+        double value = this.target_rotations - this.m_relEncoder.getPosition();
+        System.out.println("Controller Error: " + value);
+        return Math.abs(value);
     }
 
     public void stop() {
@@ -135,11 +140,14 @@ public class Angle extends SubsystemBase {
         Timer timer = new Timer();
         return new FunctionalCommand(() -> {
             this.setAngleNew(setpoint);
+            //timer.reset();  //reset clock to 0, regardless
             timer.start();
+            System.out.println("ELAPSED TIME: " + timer.hasElapsed(1));
         }, () -> {
         }, (i) -> {
             timer.stop();
             timer.reset();
-        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);
+            System.out.println("GotoAngle End() called");
+        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);             
     }
 }

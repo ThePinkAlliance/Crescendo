@@ -35,6 +35,7 @@ public class ShootNoteAuto extends SequentialCommandGroup {
         return this.handleInterrupt(() -> {
             shooter.stop();
             shooter.setSpeed(0);
+            System.out.println("COMPOSE INTERRUPT CALLED");
         });
     }
 }
