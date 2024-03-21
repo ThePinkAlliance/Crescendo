@@ -27,26 +27,23 @@ public class ShootNoteTargetVisible extends SequentialCommandGroup {
     double target_angle = 5;
 
     /** Creates a new ShootNote. */
-    public ShootNoteTargetVisible(Shooter shooter, Angle angle, TurretSubsystem m_turret, VisionSubsystem m_visionSubsystem,
+    public ShootNoteTargetVisible(Shooter shooter, Angle angle, TurretSubsystem m_turret,
+            VisionSubsystem m_visionSubsystem,
             SwerveSubsystem swerveSubsystem,
             DoubleSupplier angleSupplier) {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
 
         var pg1 = new ParallelCommandGroup(
-            new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
-            new LimelightAngle(angle, angleSupplier),
-            shooter.rampUp2(-4800));
+                new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
+                new LimelightAngle(angle, angleSupplier),
+                shooter.rampUp2(-4800));
         var sg1 = new SequentialCommandGroup(shooter.launchNote2(),
-                                            angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));
+                angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));
 
         var sg0 = new SequentialCommandGroup(pg1, sg1);
         addCommands(
-            new ConditionalCommand(sg0, Commands.none(), () -> m_visionSubsystem.getTargetVisible()));
-                
-    }
+                new ConditionalCommand(sg0, Commands.none(), () -> m_visionSubsystem.getTargetVisible()));
 
-    public static Command End(Shooter shooter, Angle angle, VisionSubsystem visionSubsystem) {
-        return new SequentialCommandGroup();
     }
 }

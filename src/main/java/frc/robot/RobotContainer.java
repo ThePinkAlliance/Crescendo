@@ -193,29 +193,21 @@ public class RobotContainer {
                         -0.95))
                 .onFalse(m_intake.setCollectorPower(0));
 
-        new POVButton(baseJoystick, JoystickMap.POV_UP)
-                .onTrue(climber_r2.travelToClimberPos(49, 49));
-        new POVButton(baseJoystick, JoystickMap.POV_DOWN)
-                .onTrue(climber_r2.travelToClimberPos(0, 0));
-
-        //Climber Sequence - assumes driver has already extended the climber and position the hooks over the chain
-        new JoystickButton(baseJoystick, JoystickMap.BUTTON_A)
-                .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
-
         // Tower
-        //A BUTTON without the conditional check on a visible apriltag
+        // A BUTTON without the conditional check on a visible apriltag
         // new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
-        //         .onTrue(new ParallelCommandGroup(
-        //                 new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
-        //                 new ShootNote(m_shooter, m_angle, m_turret,
-        //                         () -> m_visionSubsystem.UncorrectedDistance()))
-        //                 .andThen(
-        //                         m_turret.setTargetPositionRaw(0)
-        //                 ));
-        
-        //Alternative to non-target visible method
+        // .onTrue(new ParallelCommandGroup(
+        // new TurretVectoring(m_turret, m_visionSubsystem, () ->
+        // swerveSubsystem.getHeading()),
+        // new ShootNote(m_shooter, m_angle, m_turret,
+        // () -> m_visionSubsystem.UncorrectedDistance()))
+        // .andThen(
+        // m_turret.setTargetPositionRaw(0)
+        // ));
+
+        // Alternative to non-target visible method
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_A).onTrue(new ShootNoteTargetVisible(
-                m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem, 
+                m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
                 () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
 
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
@@ -226,6 +218,14 @@ public class RobotContainer {
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
                 .whileTrue(new ShootNoteAuto(48, -3800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
+
+        // Climber Sequence - assumes driver has already extended the climber and
+        // position the hooks over the chain
+        new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
+                .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
+
+        new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
+                .onTrue(climber_r2.travelToClimberPos(49, 49));
 
         climber_r2.setDefaultCommand(Commands.run(() -> {
             double left = towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS) * -1;
@@ -241,10 +241,12 @@ public class RobotContainer {
 
             this.climber_r2.testPower(right, left);
         }, climber_r2));
-        
+
+        new Trigger(() -> towerJoystick.getRawAxis(3) >= 0.05).onTrue(m_angle.setAngleCommandNew(2));
+
         new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
         new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
-        
+
     }
 
     public void onDisabled() {

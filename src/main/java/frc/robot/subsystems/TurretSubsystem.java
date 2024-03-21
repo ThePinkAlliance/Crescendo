@@ -40,7 +40,7 @@ public class TurretSubsystem extends SubsystemBase {
         this.MAX_CW_POS = 200;
         this.CONVERSION_RATIO = 0.35;
 
-        this.m_pidController = new PIDController(.1, 0.0, 0.0);
+        this.m_pidController = new PIDController(.12, 0.01, 0.0);
         this.m_pidController.setTolerance(.5);
 
         m_relEncoder = m_turretMotor.getEncoder();
