@@ -225,7 +225,7 @@ public class RobotContainer {
                 .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
 
         new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
-                .onTrue(climber_r2.travelToClimberPos(49, 49));
+                .onTrue(climber_r2.travelToClimberPos(64, 74));
 
         climber_r2.setDefaultCommand(Commands.run(() -> {
             double left = towerJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS) * -1;

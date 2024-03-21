@@ -61,6 +61,6 @@ public class TurretVectoring extends Command {
 
     @Override
     public boolean isFinished() {
-        return pidController.atSetpoint() || timer.hasElapsed(1);
+        return pidController.atSetpoint() && turret.getPower() <= 0.05 || timer.hasElapsed(1);
     }
 }

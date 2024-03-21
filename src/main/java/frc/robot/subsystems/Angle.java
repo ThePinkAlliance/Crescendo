@@ -78,7 +78,7 @@ public class Angle extends SubsystemBase {
     }
 
     public double getCancoderAngle() {
-        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360) - 4.7;
+        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360) - 1.6; // 4.7
     }
 
     public void setPower(double power) {
@@ -118,7 +118,7 @@ public class Angle extends SubsystemBase {
     }
 
     public double getControlError() {
-       
+
         double value = this.target_rotations - this.m_relEncoder.getPosition();
         System.out.println("Controller Error: " + value);
         return Math.abs(value);
@@ -140,7 +140,7 @@ public class Angle extends SubsystemBase {
         Timer timer = new Timer();
         return new FunctionalCommand(() -> {
             this.setAngleNew(setpoint);
-            //timer.reset();  //reset clock to 0, regardless
+            // timer.reset(); //reset clock to 0, regardless
             timer.start();
             System.out.println("ELAPSED TIME: " + timer.hasElapsed(1));
         }, () -> {
@@ -148,6 +148,21 @@ public class Angle extends SubsystemBase {
             timer.stop();
             timer.reset();
             System.out.println("GotoAngle End() called");
-        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);             
+        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);
+    }
+
+    public Command GotoAngleTele(double setpoint) {
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {
+            this.setAngleNew(setpoint);
+            // timer.reset(); //reset clock to 0, regardless
+            timer.start();
+            System.out.println("ELAPSED TIME: " + timer.hasElapsed(1));
+        }, () -> {
+        }, (i) -> {
+            timer.stop();
+            timer.reset();
+            System.out.println("GotoAngle End() called");
+        }, () -> timer.hasElapsed(1), this);
     }
 }
