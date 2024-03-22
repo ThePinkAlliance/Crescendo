@@ -211,7 +211,9 @@ public class RobotContainer {
                 () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
 
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-                .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
+                .whileTrue(new ShootNoteAuto(
+                        31.5, -4100, m_shooter, m_angle,
+                        m_visionSubsystem).compose());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
                 .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
@@ -242,7 +244,11 @@ public class RobotContainer {
             this.climber_r2.testPower(right, left);
         }, climber_r2));
 
-        new Trigger(() -> towerJoystick.getRawAxis(3) >= 0.05).onTrue(m_angle.setAngleCommandNew(2));
+        new Trigger(() -> towerJoystick.getRawAxis(
+                JoystickMap.RIGHT_TRIGGER) >= 0.05).onTrue(m_angle.setAngleCommandNew(2));
+        new Trigger(() -> towerJoystick.getRawAxis(
+                JoystickMap.LEFT_TRIGGER) >= 0.05)
+                .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
 
         new POVButton(towerJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
         new POVButton(towerJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
