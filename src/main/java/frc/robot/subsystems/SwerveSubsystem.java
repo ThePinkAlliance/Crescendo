@@ -205,6 +205,15 @@ public class SwerveSubsystem extends SubsystemBase {
         field2d.setRobotPose(getCurrentPose());
     }
 
+    public void setSpeedModules(double speed) {
+        SwerveModuleState state = new SwerveModuleState(speed, new Rotation2d());
+
+        this.frontRightModule.setDesiredState(state);
+        this.frontLeftModule.setDesiredState(state);
+        this.backRightModule.setDesiredState(state);
+        this.backLeftModule.setDesiredState(state);
+    }
+
     public void resetPose(Pose2d pose2d) {
         estimator.resetPosition(getRotation(), getPositions(), pose2d);
     }

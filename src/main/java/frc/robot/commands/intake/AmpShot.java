@@ -25,25 +25,23 @@ public class AmpShot extends SequentialCommandGroup {
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());
         addCommands(intake.setAnglePosition(0).alongWith(
-                driveForSeconds(1, 0, .15, swerveSubsystem)),
+                driveForSeconds(.15, swerveSubsystem)),
                 new WaitCommand(.15),
                 intake.setCollectorPower(-1).alongWith(new WaitCommand(
                         .5)),
                 intake.setCollectorPower(0));
     }
 
-    public Command driveForSeconds(double x, double y, double time, SwerveSubsystem swerveSubsystem) {
+    public Command driveForSeconds(double time, SwerveSubsystem swerveSubsystem) {
         Timer timer = new Timer();
 
         return new FunctionalCommand(() -> {
             timer.reset();
             timer.start();
         }, () -> {
-            swerveSubsystem.setStates(calculatePower(-1, 0,
-                    swerveSubsystem));
+            swerveSubsystem.setSpeedModules(-1);
         }, (i) -> {
-            swerveSubsystem.setStates(calculatePower(0, 0,
-                    swerveSubsystem));
+            swerveSubsystem.setSpeedModules(0);
             timer.stop();
         }, () -> timer.hasElapsed(time), swerveSubsystem);
     }

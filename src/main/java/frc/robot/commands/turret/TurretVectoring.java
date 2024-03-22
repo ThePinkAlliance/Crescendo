@@ -38,7 +38,7 @@ public class TurretVectoring extends Command {
         double distance = vision.UncorrectedDistance();
         double target_pos = turret_angle - tag_angle;
         // 4 or 3.12
-        double angle_compensation = distance * 3.13 / 91;
+        double angle_compensation = distance * -3.13 / 91;
 
         double effort = pidController.calculate(tag_angle, 0) * -1;
         double power2 = (effort / 15) + kF;

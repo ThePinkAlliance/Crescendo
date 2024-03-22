@@ -35,8 +35,8 @@ public class ShootNoteTargetVisible extends SequentialCommandGroup {
         // addCommands(new FooCommand(), new BarCommand());
 
         var pg1 = new ParallelCommandGroup(
-                new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
                 new LimelightAngle(angle, angleSupplier),
+                new TurretVectoring(m_turret, m_visionSubsystem, () -> swerveSubsystem.getHeading()),
                 shooter.rampUp2(-4800));
         var sg1 = new SequentialCommandGroup(shooter.launchNote2(),
                 angle.setAngleCommandNew(5).alongWith(shooter.stopShooter()));
