@@ -210,15 +210,15 @@ public class RobotContainer {
                 m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
                 () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
 
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
                 .whileTrue(new ShootNoteAuto(
                         31.5, -4100, m_shooter, m_angle,
                         m_visionSubsystem).compose());
-        new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
+        new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
                 .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
         new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
-                .whileTrue(new ShootNoteAuto(48, -3800, m_shooter, m_angle,
+                .whileTrue(new ShootNoteAuto(49.5, -3800, m_shooter, m_angle,
                         m_visionSubsystem).compose());
 
         // Climber Sequence - assumes driver has already extended the climber and
