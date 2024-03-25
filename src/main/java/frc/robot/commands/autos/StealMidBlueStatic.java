@@ -89,7 +89,7 @@ public class StealMidBlueStatic {
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
                         m_turret.setTargetPositionRaw(
-                                87.5),
+                                86.625),
                         new ShootNoteAuto(34, -3800, m_shooter, m_angle,
                                 m_visionSubsystem)),
                 built_path_1);
