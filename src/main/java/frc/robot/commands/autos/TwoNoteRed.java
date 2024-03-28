@@ -39,13 +39,13 @@ public class TwoNoteRed {
 
         var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_SHOOTING_POS).alongWith(
-                        new ShootNoteAuto(47.52, -4000, m_shooter, m_angle,
+                        new ShootNoteAuto(41, -4000, m_shooter, m_angle,
                                 m_visionSubsystem)));
 
         var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         52.46).alongWith(
-                                new ShootNoteAuto(41, -4000, m_shooter, m_angle,
+                                new ShootNoteAuto(35.5, -4000, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         return Commands
@@ -87,13 +87,13 @@ public class TwoNoteRed {
         var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         80.66).alongWith(
-                                new ShootNoteAuto(47.52, -4500, m_shooter, m_angle,
+                                new ShootNoteAuto(41, -4500, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         72.96).alongWith(
-                                new ShootNoteAuto(41, -4500, m_shooter, m_angle,
+                                new ShootNoteAuto(35.5, -4500, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         return Commands
@@ -102,7 +102,8 @@ public class TwoNoteRed {
                             swerveSubsystem.resetPose(new Pose2d(path_pose.getX(), path_pose.getY(),
                                     path_pose.getRotation()));
                         }, swerveSubsystem),
-                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS).alongWith(shoot_routine),
+                        m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
+                        shoot_routine,
                         built_path.alongWith(Commands.sequence(
                                 m_intake.collectUntilFound(Constants.IntakeConstants.DEFAULT_COLLECT_DUTY_CYCLE)
                                         .alongWith(prepare_turret),
@@ -133,13 +134,13 @@ public class TwoNoteRed {
 
         var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(Constants.TurretConstants.REVERSE_STARTING_POS).alongWith(
-                        new ShootNoteAuto(47, -4500, m_shooter, m_angle,
+                        new ShootNoteAuto(49, -4500, m_shooter, m_angle,
                                 m_visionSubsystem)));
 
         var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         Constants.TurretConstants.REVERSE_STARTING_POS).alongWith(
-                                new ShootNoteAuto(41, -4500, m_shooter, m_angle,
+                                new ShootNoteAuto(39, -4500, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         return Commands

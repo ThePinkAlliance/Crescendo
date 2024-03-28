@@ -18,7 +18,7 @@ public class TurretVectoring extends Command {
     public TurretVectoring(TurretSubsystem turret, VisionSubsystem vision, DoubleSupplier angleSupplier) {
         this.turret = turret;
         this.vision = vision;
-        this.pidController = new PIDController(.35, 0.035, 0.0);
+        this.pidController = new PIDController(.40, 0.045, 0.0);
         this.timer = new Timer();
         this.pidController.setTolerance(.5);
 
@@ -35,7 +35,10 @@ public class TurretVectoring extends Command {
         double kF = 0.0;
         double tag_angle = vision.getTargetX();
         double turret_angle = turret.getPositionDeg();
+        double distance = vision.UncorrectedDistance();
         double target_pos = turret_angle - tag_angle;
+        // 4 or 3.12
+        double angle_compensation = distance * 3.13 / 91;
 
         double effort = pidController.calculate(tag_angle, 0) * -1;
         double power2 = (effort / 15) + kF;
@@ -44,6 +47,7 @@ public class TurretVectoring extends Command {
         Logger.recordOutput("AutoLock/Pos", target_pos);
         Logger.recordOutput("AutoLock/TagAngle", tag_angle);
         Logger.recordOutput("AutoLock/TurretPos", turret_angle);
+        Logger.recordOutput("AutoLock/angle_compensation", angle_compensation);
 
         this.turret.set(power2);
     }
@@ -57,6 +61,6 @@ public class TurretVectoring extends Command {
 
     @Override
     public boolean isFinished() {
-        return pidController.atSetpoint() || timer.hasElapsed(1);
+        return pidController.atSetpoint() && turret.getPower() <= 0.05 || timer.hasElapsed(1);
     }
 }

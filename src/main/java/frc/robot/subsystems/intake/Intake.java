@@ -7,17 +7,12 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkLimitSwitch;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import java.util.function.BooleanSupplier;
 
@@ -187,7 +182,7 @@ public class Intake extends SubsystemBase {
                 value = true;
             }
         }
-        Logger.recordOutput("Intake/Hex Encoder", m_encoder.getPosition());
+        Logger.recordOutput("Intake/Did Deliver", value);
         return value;
     }
 
@@ -210,6 +205,5 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Angle Position",
                 this.m_encoder.getPosition());
         Logger.recordOutput("Intake/Collect Raw Encoder", this.m_encoder.getRawPosition());
-        Logger.recordOutput("Intake/Collect Velocity", this.collectMotor.getEncoder().getVelocity());
     }
 }

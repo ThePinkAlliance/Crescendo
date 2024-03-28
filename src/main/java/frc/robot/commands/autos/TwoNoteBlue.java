@@ -45,7 +45,7 @@ public class TwoNoteBlue {
         var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPosition(
                         143).alongWith(
-                                new ShootNoteAuto(37, -4000, m_shooter, m_angle,
+                                new ShootNoteAuto(35.5, -4000, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         return Commands
@@ -87,13 +87,14 @@ public class TwoNoteBlue {
         var shoot_routine = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         81).alongWith(
-                                new ShootNoteAuto(45, -4000, m_shooter, m_angle,
+                                new ShootNoteAuto(41, -4000, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         var shoot_routine2 = new SequentialCommandGroup(
                 m_turret.setTargetPositionRaw(
                         -52).alongWith(
-                                new ShootNoteAuto(37, -4000, m_shooter, m_angle,
+                                new ShootNoteAuto(
+                                        35.5, -4000, m_shooter, m_angle,
                                         m_visionSubsystem)));
 
         return Commands

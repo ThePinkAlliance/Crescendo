@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,12 +27,16 @@ public class Angle extends SubsystemBase {
 
     public Angle() {
         this.m_motor = new CANSparkMax(41, MotorType.kBrushless);
+        this.m_motor.setSmartCurrentLimit(40);
+
         this.m_angleCancoder = new CANcoder(20);
         this.target_rotations = 0;
 
         var cancoderConfig = new CANcoderConfiguration();
         cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-        cancoderConfig.MagnetSensor.MagnetOffset = -0.158;
+        // 11:38 AM, 1.55 was reporting -359 position due to system drift. readjust as
+        // needed.
+        cancoderConfig.MagnetSensor.MagnetOffset = -0.138;
 
         this.m_angleCancoder.getConfigurator().apply(cancoderConfig);
 
@@ -54,47 +59,48 @@ public class Angle extends SubsystemBase {
     @Override
     public void periodic() {
         var fowardSwitch = m_motor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
+        var reverseSwitch = m_motor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
         double relativeEncoderPosition = m_relEncoder.getPosition();
 
         Logger.recordOutput("Shooter/Angle Position", relativeEncoderPosition);
-        Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (52.2 / 53.95));
+        Logger.recordOutput("Shooter/Angle Real", (relativeEncoderPosition) * (54 / 54.07));
         Logger.recordOutput("Shooter/CANCoder Angle", this.m_angleCancoder.getAbsolutePosition().getValueAsDouble());
         Logger.recordOutput("Shooter/CANcoder Angle Real",
                 getCancoderAngle());
 
         Logger.recordOutput("Shooter/Foward Switch", fowardSwitch.isPressed());
+        Logger.recordOutput("Shooter/Reverse Switch", reverseSwitch.isPressed());
     }
 
     public void disable() {
         this.m_motor.set(0);
     }
 
-    public void updateTuneAnglePID() {
-        double targetRotation = SmartDashboard.getNumber("Angle Target", 0);
-
-        this.setAngle(targetRotation);
+    public double getCancoderAngle() {
+        return (m_angleCancoder.getAbsolutePosition().getValueAsDouble() * 360) - 1.6; // 4.7
     }
 
-    public double getCancoderAngle() {
-        return ((m_angleCancoder.getAbsolutePosition().getValueAsDouble()) * 360) + 1;
+    public void setPower(double power) {
+        this.m_motor.set(power);
     }
 
     public void setAngleNew(double angle) {
-        double rotationDiff = (angle - getCancoderAngle()) * (52.07 / 51.71);
+        double rotationDiff = (angle - getCancoderAngle()) * (54 / 54.07);
         double desired_rotations = this.m_motor.getEncoder().getPosition() + rotationDiff;
 
-        this.m_motor.getPIDController().setReference(desired_rotations,
-                ControlType.kPosition);
-        this.target_rotations = desired_rotations;
+        if (angle >= Constants.AngleConstants.MIN_ANGLE && angle <= 54) {
+            this.m_motor.getPIDController().setReference(desired_rotations,
+                    ControlType.kPosition);
+
+            this.target_rotations = desired_rotations;
+        } else {
+            System.out.println("INVALID ANGLE");
+        }
         Logger.recordOutput("Shooter/Angle Setpoint", desired_rotations);
         Logger.recordOutput("Shooter/Angle Ref", angle);
-    }
-
-    public void setAngle(double angle) {
-        double targetRotations = angle * (51.71 / 52.07);
-
-        this.m_motor.getPIDController().setReference(targetRotations, ControlType.kPosition);
+        Logger.recordOutput("Shooter/rotationDiff", rotationDiff);
+        Logger.recordOutput("Shooter/diff", angle - getCancoderAngle());
     }
 
     public void resetAngle() {
@@ -112,7 +118,10 @@ public class Angle extends SubsystemBase {
     }
 
     public double getControlError() {
-        return Math.abs(this.target_rotations - this.m_relEncoder.getPosition());
+
+        double value = this.target_rotations - this.m_relEncoder.getPosition();
+        System.out.println("Controller Error: " + value);
+        return Math.abs(value);
     }
 
     public void stop() {
@@ -128,8 +137,32 @@ public class Angle extends SubsystemBase {
     }
 
     public Command GotoAngle(double setpoint) {
-        return new FunctionalCommand(() -> this.setAngleNew(setpoint), () -> {
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {
+            this.setAngleNew(setpoint);
+            // timer.reset(); //reset clock to 0, regardless
+            timer.start();
+            System.out.println("ELAPSED TIME: " + timer.hasElapsed(1));
+        }, () -> {
         }, (i) -> {
-        }, () -> this.getControlError() <= 8 && this.getSpeed() <= 0.05, this);
+            timer.stop();
+            timer.reset();
+            System.out.println("GotoAngle End() called");
+        }, () -> (this.getControlError() <= 8 && this.getSpeed() <= 0.01) || timer.hasElapsed(1), this);
+    }
+
+    public Command GotoAngleTele(double setpoint) {
+        Timer timer = new Timer();
+        return new FunctionalCommand(() -> {
+            this.setAngleNew(setpoint);
+            // timer.reset(); //reset clock to 0, regardless
+            timer.start();
+            System.out.println("ELAPSED TIME: " + timer.hasElapsed(1));
+        }, () -> {
+        }, (i) -> {
+            timer.stop();
+            timer.reset();
+            System.out.println("GotoAngle End() called");
+        }, () -> timer.hasElapsed(1), this);
     }
 }

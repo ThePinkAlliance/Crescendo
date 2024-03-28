@@ -7,6 +7,7 @@ package frc.robot.subsystems.drive.modules;
 import javax.swing.text.html.HTMLDocument.RunElement;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.Gains;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Swerve module based off of the swerve drive specialties pod. A Falcon 500 is
@@ -41,6 +43,21 @@ public class WPI_SwerveModule implements SwerveModule {
         this.canCoder = new CANcoder(canCoderId, network);
         this.steerMotor = new TalonFX(steerId, network);
         this.driveMotor = new TalonFX(driveId, network);
+
+        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+        CurrentLimitsConfigs driveCurrentLimit = new CurrentLimitsConfigs();
+        OpenLoopRampsConfigs driveOpenloopConfig = new OpenLoopRampsConfigs();
+
+        // This could be increased to 60 probably
+        driveCurrentLimit.SupplyCurrentLimit = 45;
+        driveCurrentLimit.SupplyCurrentLimitEnable = true;
+
+        driveOpenloopConfig.DutyCycleOpenLoopRampPeriod = 0.5;
+
+        driveConfig.OpenLoopRamps = driveOpenloopConfig;
+        driveConfig.CurrentLimits = driveCurrentLimit;
+
+        this.driveMotor.getConfigurator().apply(driveConfig);
 
         this.absoluteEncoderOffsetRad = absoluteEncoderOffsetRad;
 
@@ -148,7 +165,7 @@ public class WPI_SwerveModule implements SwerveModule {
 
     public boolean isMotorOverheated() {
         boolean result = false;
-        
+
         if (getMotorTemp() > WARNINGTEMP) {
             result = true;
         }
@@ -169,7 +186,8 @@ public class WPI_SwerveModule implements SwerveModule {
                         (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
         double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
-        SmartDashboard.putNumber("steer: " + this.steerMotor.getDeviceID(), output);
+        Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
+                this.driveMotor.getRotorVelocity().getValueAsDouble());
         steerMotor.set(output);
     }
 

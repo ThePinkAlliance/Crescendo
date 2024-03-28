@@ -4,21 +4,15 @@
 
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -27,6 +21,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -38,7 +33,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final DoubleSubscriber target_latency_subscriber;
     private final DoubleSubscriber capture_latency_subscriber;
     private final DoubleSubscriber target_y_subscriber;
-    private final DoubleSubscriber target_area_subscriber;
+    private final IntegerSubscriber target_tv_subscriber;
     private Matrix<N3, N1> correction_matrix;
 
     private final double mounted_angle;
@@ -53,9 +48,13 @@ public class VisionSubsystem extends SubsystemBase {
         this.target_y_subscriber = table.getDoubleTopic("ty").subscribe(0);
         this.capture_latency_subscriber = table.getDoubleTopic("tc").subscribe(0);
         this.target_latency_subscriber = table.getDoubleTopic("tl").subscribe(0);
-        this.target_area_subscriber = table.getDoubleTopic("ta").subscribe(0);
+        this.target_tv_subscriber = table.getIntegerTopic("tv").subscribe(0);
+    
 
         this.correction_matrix = VecBuilder.fill(0, 0, 0);
+
+        // Limelight mounted at 0 but equations use 22.5. its fine just dont change
+        // it. or everything will break
         this.mounted_angle = 22.5;
     }
 
@@ -77,27 +76,6 @@ public class VisionSubsystem extends SubsystemBase {
         return Optional.empty();
     }
 
-    private double correctLimelightDistance(double uncorrected_distance) {
-        return (1.0002 * uncorrected_distance) - 38.217;
-    }
-
-    public double getClosestTargetDistance() {
-        // Using tag 4 height (56)
-        double distance = 56 / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
-
-        return correctLimelightDistance(distance);
-    }
-
-    public Optional<Double> getTagDistance(int id) {
-        Optional<Double> distance = getUncorrectedTagDistance(id);
-
-        if (distance.isPresent()) {
-            return Optional.of(correctLimelightDistance(distance.get()));
-        }
-
-        return Optional.empty();
-    }
-
     public Optional<Double> getUncorrectedTagDistance(int id) {
         Optional<Pose3d> pose = Constants.FieldConstants.layout.getTagPose(id);
         double visible_tag_id = this.target_id_subscriber.get();
@@ -106,10 +84,11 @@ public class VisionSubsystem extends SubsystemBase {
             Pose3d pose3d = pose.get();
             double height = Units.metersToInches(pose3d.getZ());
             double distance = height / Math.tan((mounted_angle + this.target_y_subscriber.get()) * (3.14 / 180));
-
+            SmartDashboard.putBoolean("Target Visible", true);
             return Optional.of(distance);
         }
 
+        SmartDashboard.putBoolean("Target Visible", false);
         return Optional.empty();
     }
 
@@ -126,6 +105,18 @@ public class VisionSubsystem extends SubsystemBase {
         return this.target_x_subscriber.get();
     }
 
+    public boolean getTargetVisible() {
+        long tv = this.target_tv_subscriber.get();
+        long id = this.target_id_subscriber.get();
+        boolean value = false;
+        if ((tv > 0) && (id == 4 || id == 7)) {
+            //Limelight claims Target Visible
+            //Limelight claims Target Id is either 4 or 7 (Red or Blue speaker)
+            value = true;
+        }
+        return value;
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
@@ -139,10 +130,10 @@ public class VisionSubsystem extends SubsystemBase {
             Logger.recordOutput("Robot-Translation", translation2d);
             Logger.recordOutput("Speaker-Red-Tag", tag_pose.toPose2d());
             Logger.recordOutput("Robot-Pose",
-                    new Pose2d(getTranslation().get().toTranslation2d(), Rotation2d.fromDegrees(0)));
+                    new Pose2d(translation2d, Rotation2d.fromDegrees(0)));
         }
-
-        Logger.recordOutput("Closest Target Distance", getClosestTargetDistance());
+        Logger.recordOutput("Target Visible", getTargetVisible());
         Logger.recordOutput("Uncorrected Distance", UncorrectedDistance());
+        SmartDashboard.putBoolean("AprilTag Visible", getTargetVisible());
     }
 }

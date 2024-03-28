@@ -87,7 +87,7 @@ public class StealMidRedMoving {
         var path_sequence_1 = new SequentialCommandGroup(
                 m_intake.setAnglePosition(Constants.IntakeConstants.COLLECT_FLOOR_POS),
                 new ParallelCommandGroup(
-                        m_turret.setTargetPosition(122), new ShootNoteAuto(40, -3800, m_shooter, m_angle,
+                        m_turret.setTargetPosition(122), new ShootNoteAuto(40, -3000, m_shooter, m_angle,
                                 m_visionSubsystem)),
                 built_path_1);
 

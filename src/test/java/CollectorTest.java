@@ -54,6 +54,20 @@ public class CollectorTest {
     }
 
     @Test
+    public void yeaaa() {
+        double distance = 90;
+        double target_angle = -8; // (0.0016 * Math.pow(distance, 2) - 0.8857 * distance + 84.774 + 4);
+
+        if (distance <= 100 && distance >= 0) {
+            if (target_angle <= 0) {
+                target_angle = 0;
+            }
+
+            assertEquals(0, target_angle);
+        }
+    }
+
+    @Test
     public void intake() {
         double pos = 0;
         double angleFF = .1;
