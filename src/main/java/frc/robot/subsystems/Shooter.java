@@ -46,8 +46,6 @@ public class Shooter extends SubsystemBase {
         this.bottom_desired_vel = 0;
         this.top_desired_vel = 0;
 
-        // this.m_greenTalon.ramp
-
         // set slot 0 gains
         var slot0Configs_1 = new Slot0Configs();
         slot0Configs_1.kS = 0.05; // Add 0.05 V output to overcome static friction
