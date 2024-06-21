@@ -182,6 +182,9 @@ public class RobotContainer {
                 () -> baseJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
 
     /**
+     * =================
+     * BASE CONTROLS
+     * =================
      * A: Shoot apriltag
      * B: Amp Shot
      * X: Shoot 31deg 4100rpm
@@ -225,7 +228,7 @@ public class RobotContainer {
 
     /**
      * ======================
-     * TOWER
+     * TOWER CONTROLS
      * ======================
      */
     // Alternative to non-target visible method
