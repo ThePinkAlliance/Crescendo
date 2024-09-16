@@ -1,0 +1,138 @@
+Date : 2024-09-16 18:39:29
+Directory : /home/samuel/Documents/code/FRC/Crescendo
+Total : 72 files,  6664 codes, 586 comments, 1204 blanks, all 8454 lines
+
+Languages
++-----------------+------------+------------+------------+------------+------------+
+| language        | files      | code       | comment    | blank      | total      |
++-----------------+------------+------------+------------+------------+------------+
+| Java            |         52 |      5,022 |        537 |      1,147 |      6,706 |
+| JSON            |         13 |      1,298 |          0 |          6 |      1,304 |
+| Excel           |          2 |        174 |          0 |          0 |        174 |
+| Gradle          |          2 |        100 |         19 |         25 |        144 |
+| Batch           |          1 |         41 |         30 |         22 |         93 |
+| Markdown        |          1 |         22 |          0 |          3 |         25 |
+| Java Properties |          1 |          7 |          0 |          1 |          8 |
++-----------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                             | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                |         72 |      6,664 |        586 |      1,204 |      8,454 |
+| . (Files)                                                                                                        |         10 |        620 |         49 |         54 |        723 |
+| .Glass                                                                                                           |          1 |        374 |          0 |          1 |        375 |
+| .wpilib                                                                                                          |          1 |          6 |          0 |          0 |          6 |
+| DriverStation                                                                                                    |          1 |         98 |          0 |          0 |         98 |
+| gradle                                                                                                           |          1 |          7 |          0 |          1 |          8 |
+| gradle/wrapper                                                                                                   |          1 |          7 |          0 |          1 |          8 |
+| src                                                                                                              |         53 |      5,023 |        537 |      1,147 |      6,707 |
+| src/main                                                                                                         |         51 |      4,942 |        512 |      1,112 |      6,566 |
+| src/main/deploy                                                                                                  |          1 |          1 |          0 |          0 |          1 |
+| src/main/deploy/pathplanner                                                                                      |          1 |          1 |          0 |          0 |          1 |
+| src/main/java                                                                                                    |         50 |      4,941 |        512 |      1,112 |      6,565 |
+| src/main/java/frc                                                                                                |         50 |      4,941 |        512 |      1,112 |      6,565 |
+| src/main/java/frc/lib                                                                                            |          6 |        259 |         44 |         66 |        369 |
+| src/main/java/frc/lib (Files)                                                                                    |          3 |         80 |         42 |         34 |        156 |
+| src/main/java/frc/lib/pathing                                                                                    |          3 |        179 |          2 |         32 |        213 |
+| src/main/java/frc/lib/pathing (Files)                                                                            |          1 |        124 |          2 |         13 |        139 |
+| src/main/java/frc/lib/pathing/events                                                                             |          2 |         55 |          0 |         19 |         74 |
+| src/main/java/frc/robot                                                                                          |         44 |      4,682 |        468 |      1,046 |      6,196 |
+| src/main/java/frc/robot (Files)                                                                                  |          4 |        375 |        162 |        103 |        640 |
+| src/main/java/frc/robot/commands                                                                                 |         30 |      3,055 |        190 |        617 |      3,862 |
+| src/main/java/frc/robot/commands (Files)                                                                         |          1 |         27 |         11 |         11 |         49 |
+| src/main/java/frc/robot/commands/autos                                                                           |         12 |      2,373 |         53 |        426 |      2,852 |
+| src/main/java/frc/robot/commands/climber                                                                         |          1 |         15 |          9 |          6 |         30 |
+| src/main/java/frc/robot/commands/drive                                                                           |          1 |         61 |         13 |         23 |         97 |
+| src/main/java/frc/robot/commands/intake                                                                          |          4 |        110 |         19 |         20 |        149 |
+| src/main/java/frc/robot/commands/shooter                                                                         |         10 |        415 |         84 |        119 |        618 |
+| src/main/java/frc/robot/commands/turret                                                                          |          1 |         54 |          1 |         12 |         67 |
+| src/main/java/frc/robot/subsystems                                                                               |         10 |      1,252 |        116 |        326 |      1,694 |
+| src/main/java/frc/robot/subsystems (Files)                                                                       |          6 |        871 |         55 |        210 |      1,136 |
+| src/main/java/frc/robot/subsystems/drive                                                                         |          2 |        148 |         48 |         59 |        255 |
+| src/main/java/frc/robot/subsystems/drive (Files)                                                                 |          1 |         19 |         20 |         16 |         55 |
+| src/main/java/frc/robot/subsystems/drive/modules                                                                 |          1 |        129 |         28 |         43 |        200 |
+| src/main/java/frc/robot/subsystems/intake                                                                        |          2 |        233 |         13 |         57 |        303 |
+| src/test                                                                                                         |          2 |         81 |         25 |         35 |        141 |
+| src/test/java                                                                                                    |          2 |         81 |         25 |         35 |        141 |
+| vendordeps                                                                                                       |          5 |        536 |          0 |          1 |        537 |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------------+-----------------+------------+------------+------------+------------+
+| filename                                                                                                         | language        | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+-----------------+------------+------------+------------+------------+
+| /home/samuel/Documents/code/FRC/Crescendo/.Glass/glass.json                                                      | JSON            |        374 |          0 |          1 |        375 |
+| /home/samuel/Documents/code/FRC/Crescendo/.wpilib/wpilib_preferences.json                                        | JSON            |          6 |          0 |          0 |          6 |
+| /home/samuel/Documents/code/FRC/Crescendo/AdvantageScope Orlando.json                                            | JSON            |        171 |          0 |          1 |        172 |
+| /home/samuel/Documents/code/FRC/Crescendo/DriverStation/shuffleboard.json                                        | JSON            |         98 |          0 |          0 |         98 |
+| /home/samuel/Documents/code/FRC/Crescendo/WPILib-License.md                                                      | Markdown        |         22 |          0 |          3 |         25 |
+| /home/samuel/Documents/code/FRC/Crescendo/build.gradle                                                           | Gradle          |         72 |         19 |         22 |        113 |
+| /home/samuel/Documents/code/FRC/Crescendo/field-readings.xlsx                                                    | Excel           |         86 |          0 |          0 |         86 |
+| /home/samuel/Documents/code/FRC/Crescendo/gradle/wrapper/gradle-wrapper.properties                               | Java Properties |          7 |          0 |          1 |          8 |
+| /home/samuel/Documents/code/FRC/Crescendo/gradlew.bat                                                            | Batch           |         41 |         30 |         22 |         93 |
+| /home/samuel/Documents/code/FRC/Crescendo/networktables.json                                                     | JSON            |          1 |          0 |          1 |          2 |
+| /home/samuel/Documents/code/FRC/Crescendo/orlando-field-calibration.xlsx                                         | Excel           |         88 |          0 |          0 |         88 |
+| /home/samuel/Documents/code/FRC/Crescendo/settings.gradle                                                        | Gradle          |         28 |          0 |          3 |         31 |
+| /home/samuel/Documents/code/FRC/Crescendo/simgui-ds.json                                                         | JSON            |         92 |          0 |          1 |         93 |
+| /home/samuel/Documents/code/FRC/Crescendo/simgui.json                                                            | JSON            |         19 |          0 |          1 |         20 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/deploy/pathplanner/navgrid.json                               | JSON            |          1 |          0 |          0 |          1 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/Gains.java                                       | Java            |         11 |          4 |          5 |         20 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/JoystickMap.java                                 | Java            |         23 |          4 |         11 |         38 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/PinkPIDConstants.java                            | Java            |         46 |         34 |         18 |         98 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/pathing/ChoreoUtil.java                          | Java            |        124 |          2 |         13 |        139 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/pathing/events/ChoreoEvent.java                  | Java            |         23 |          0 |          8 |         31 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/lib/pathing/events/ChoreoEventHandler.java           | Java            |         32 |          0 |         11 |         43 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/Constants.java                                 | Java            |        100 |         10 |         28 |        138 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/Main.java                                      | Java            |          8 |         13 |          5 |         26 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/Robot.java                                     | Java            |         65 |         55 |         24 |        144 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/RobotContainer.java                            | Java            |        202 |         84 |         46 |        332 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/AdjustIntakeAngle.java                | Java            |         27 |         11 |         11 |         49 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/LeaveZone.java                  | Java            |         29 |          0 |          5 |         34 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/ShootCenterClose.java           | Java            |         14 |          8 |          5 |         27 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/StealMidBlueMoving.java         | Java            |        416 |          4 |         85 |        505 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/StealMidBlueStatic.java         | Java            |        416 |          4 |         85 |        505 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/StealMidRedMoving.java          | Java            |        412 |          4 |         85 |        501 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/StealMidRedStatic.java          | Java            |        412 |          4 |         85 |        501 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/SweepNotesBlue.java             | Java            |        104 |          9 |          9 |        122 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/SweepNotesMiniBlue.java         | Java            |         86 |          4 |          8 |         98 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/SweepNotesMiniRed.java          | Java            |         84 |          4 |          8 |         96 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/SweepNotesRed.java              | Java            |        107 |          4 |          9 |        120 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/TwoNoteBlue.java                | Java            |        147 |          4 |         21 |        172 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/autos/TwoNoteRed.java                 | Java            |        146 |          4 |         21 |        171 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/climber/ClimbSequence.java            | Java            |         15 |          9 |          6 |         30 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/drive/JoystickDrive.java              | Java            |         61 |         13 |         23 |         97 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/intake/AmpShot.java                   | Java            |         45 |          9 |          9 |         63 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/intake/CollectNoteAuto.java           | Java            |         18 |         10 |          4 |         32 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/intake/CollectNoteV2.java             | Java            |         26 |          0 |          4 |         30 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/intake/IntakeActions.java             | Java            |         21 |          0 |          3 |         24 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/AlignShoot.java               | Java            |         47 |          9 |         14 |         70 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/AutoShootV2.java              | Java            |         29 |          9 |         12 |         50 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/LimelightAngle.java           | Java            |         50 |         11 |         14 |         75 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/ShootNote.java                | Java            |         30 |          9 |          9 |         48 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/ShootNoteAuto.java            | Java            |         25 |          9 |          8 |         42 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/ShootNoteTargetVisible.java   | Java            |         32 |          9 |          9 |         50 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/ShooterTune.java              | Java            |         46 |          9 |         14 |         69 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/SmartLuanch.java              | Java            |         51 |          0 |         13 |         64 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/SmartShooting.java            | Java            |         69 |         10 |         15 |         94 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/shooter/SmartShootingHorizontal.java  | Java            |         36 |          9 |         11 |         56 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/commands/turret/TurretVectoring.java           | Java            |         54 |          1 |         12 |         67 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/Angle.java                          | Java            |        136 |          4 |         33 |        173 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/ClimberR2.java                      | Java            |        138 |         12 |         27 |        177 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/Shooter.java                        | Java            |        191 |          4 |         44 |        239 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/SwerveSubsystem.java                | Java            |        206 |         17 |         57 |        280 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/TurretSubsystem.java                | Java            |         97 |          7 |         24 |        128 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/VisionSubsystem.java                | Java            |        103 |         11 |         25 |        139 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/drive/SwerveModule.java             | Java            |         19 |         20 |         16 |         55 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/drive/modules/WPI_SwerveModule.java | Java            |        129 |         28 |         43 |        200 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/intake/CollectorEncoderv2.java      | Java            |         74 |          0 |         19 |         93 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/main/java/frc/robot/subsystems/intake/Intake.java                  | Java            |        159 |         13 |         38 |        210 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/test/java/CollectorTest.java                                       | Java            |         55 |         10 |         24 |         89 |
+| /home/samuel/Documents/code/FRC/Crescendo/src/test/java/EventsTest.java                                          | Java            |         26 |         15 |         11 |         52 |
+| /home/samuel/Documents/code/FRC/Crescendo/vendordeps/AdvantageKit.json                                           | JSON            |         42 |          0 |          0 |         42 |
+| /home/samuel/Documents/code/FRC/Crescendo/vendordeps/ChoreoLib.json                                              | JSON            |         43 |          0 |          0 |         43 |
+| /home/samuel/Documents/code/FRC/Crescendo/vendordeps/Phoenix6.json                                               | JSON            |        339 |          0 |          0 |        339 |
+| /home/samuel/Documents/code/FRC/Crescendo/vendordeps/REVLib.json                                                 | JSON            |         74 |          0 |          0 |         74 |
+| /home/samuel/Documents/code/FRC/Crescendo/vendordeps/WPILibNewCommands.json                                      | JSON            |         38 |          0 |          1 |         39 |
+| Total                                                                                                            |                 |      6,664 |        586 |      1,204 |      8,454 |
++------------------------------------------------------------------------------------------------------------------+-----------------+------------+------------+------------+------------+

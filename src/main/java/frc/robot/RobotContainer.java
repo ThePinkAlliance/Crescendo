@@ -71,7 +71,6 @@ public class RobotContainer {
   private Angle m_angle = new Angle();
   private Intake m_intake = new Intake();
   private TurretSubsystem m_turret = new TurretSubsystem();
-  private ClimberR2 climber_r2 = new ClimberR2();
   private SendableChooser<Command> chooser;
 
   /**
@@ -212,24 +211,28 @@ public class RobotContainer {
         .whileTrue(m_intake.setCollectorPower(
             -0.95))
         .onFalse(m_intake.setCollectorPower(0));
-        
-/*
-    new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new ShootNoteTargetVisible(
-        m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
-        () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.setTargetPositionRaw(0)));
-*/
-/* 
-    new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
-        .whileTrue(new ShootNoteAuto(
-            31.5, -4100, m_shooter, m_angle,
-            m_visionSubsystem).compose());
-    new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-        .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
-            m_visionSubsystem).compose());
 
-    new POVButton(baseJoystick, JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
-    new POVButton(baseJoystick, JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
-*/
+    /*
+     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new
+     * ShootNoteTargetVisible(
+     * m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
+     * () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.
+     * setTargetPositionRaw(0)));
+     */
+    /*
+     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
+     * .whileTrue(new ShootNoteAuto(
+     * 31.5, -4100, m_shooter, m_angle,
+     * m_visionSubsystem).compose());
+     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
+     * .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
+     * m_visionSubsystem).compose());
+     * 
+     * new POVButton(baseJoystick,
+     * JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
+     * new POVButton(baseJoystick,
+     * JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
+     */
 
     /**
      * ======================
@@ -240,14 +243,6 @@ public class RobotContainer {
     // new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
     // .whileTrue(new ShootNoteAuto(49.5, -3800, m_shooter, m_angle,
     // m_visionSubsystem).compose());
-
-    // Climber Sequence - assumes driver has already extended the climber and
-    // position the hooks over the chain
-
-    /*
-    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-        .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
-    */
 
     // BUMPER -> SUBWOOFER
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
@@ -264,15 +259,10 @@ public class RobotContainer {
     // LOB/FEED
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
         .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
-            m_visionSubsystem).compose()); 
-
-    /*
-    new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
-        .onTrue(climber_r2.travelToClimberPos(64, 74));
-    */
+            m_visionSubsystem).compose());
 
     new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-        .whileTrue(m_angle.setAngleCommandNew(2)); 
+        .whileTrue(m_angle.setAngleCommandNew(2));
     new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
         .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
 
