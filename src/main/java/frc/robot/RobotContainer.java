@@ -33,6 +33,7 @@ import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
+import frc.robot.commands.climber.ClimbManual;
 import frc.robot.commands.climber.ClimbSequence;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShootNoteTargetVisible;
@@ -72,6 +73,9 @@ public class RobotContainer {
   private Intake m_intake = new Intake();
   private TurretSubsystem m_turret = new TurretSubsystem();
   private ClimberR2 m_climbers = new ClimberR2();
+  private ClimbManual m_climbersUp = new ClimbManual(m_climbers, 0.10, 0.10);
+  private ClimbManual m_climbersDown = new ClimbManual(m_climbers, -0.10, -0.10);
+
   private SendableChooser<Command> chooser;
 
   /**
@@ -265,6 +269,13 @@ public class RobotContainer {
         .whileTrue(m_angle.setAngleCommandNew(2));
     new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
         .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
+    
+    new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersUp);
+    new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersDown);
+
+
+    //new JoystickButton(towerJoystick, )
+    //    .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
 
   }
 
