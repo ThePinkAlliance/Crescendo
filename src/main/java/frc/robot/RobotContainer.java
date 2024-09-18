@@ -245,8 +245,14 @@ public class RobotContainer {
      * ======================
      */
     // Climbing sequence for both climbers.
-    new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-        .whileTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
+    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
+        .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
+
+    /**
+     * This starts the climb. the command registed on right bumper finishes the
+     * climb.
+     */
+    new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER).onTrue(m_climbers.travelToClimberPos(64, 74));
 
     // BUMPER -> SUBWOOFER
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
@@ -265,17 +271,16 @@ public class RobotContainer {
         .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
             m_visionSubsystem).compose());
 
-    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-        .whileTrue(m_angle.setAngleCommandNew(2));
-    new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
-        .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
-    
+    // new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
+    // .whileTrue(m_angle.setAngleCommandNew(2));
+    // new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
+    // .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
+
     new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersUp);
     new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersDown);
 
-
-    //new JoystickButton(towerJoystick, )
-    //    .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
+    // new JoystickButton(towerJoystick, )
+    // .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
 
   }
 
