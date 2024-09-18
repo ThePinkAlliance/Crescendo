@@ -71,6 +71,7 @@ public class RobotContainer {
   private Angle m_angle = new Angle();
   private Intake m_intake = new Intake();
   private TurretSubsystem m_turret = new TurretSubsystem();
+  private ClimberR2 m_climbers = new ClimberR2();
   private SendableChooser<Command> chooser;
 
   /**
@@ -239,10 +240,9 @@ public class RobotContainer {
      * TOWER CONTROLS
      * ======================
      */
-    // Alternative to non-target visible method
-    // new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
-    // .whileTrue(new ShootNoteAuto(49.5, -3800, m_shooter, m_angle,
-    // m_visionSubsystem).compose());
+    // Climbing sequence for both climbers.
+    new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
+        .whileTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
 
     // BUMPER -> SUBWOOFER
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
