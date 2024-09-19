@@ -73,8 +73,8 @@ public class RobotContainer {
   private Intake m_intake = new Intake();
   private TurretSubsystem m_turret = new TurretSubsystem();
   private ClimberR2 m_climbers = new ClimberR2();
-  private ClimbManual m_climbersUp = new ClimbManual(m_climbers, 0.10, 0.10);
-  private ClimbManual m_climbersDown = new ClimbManual(m_climbers, -0.10, -0.10);
+  //private ClimbManual m_climbersUp = new ClimbManual(m_climbers, 0.10, 0.10);
+  //private ClimbManual m_climbersDown = new ClimbManual(m_climbers, -0.10, -0.10);
 
   private SendableChooser<Command> chooser;
 
@@ -189,16 +189,11 @@ public class RobotContainer {
      * =================
      * BASE CONTROLS
      * =================
-     * A: Shoot apriltag
-     * B: Amp Shot
-     * X: Shoot 31deg 4100rpm
-     * Y: Shoot 45deg 2800
-     * Back: resetGyro
-     * Right Bumper: Collect
-     * Left Bumper: Stow Collector
-     * POV Left: turret 0
-     * POV Right: turret 180
-     * Right Trigger: Collector Eject
+     * Back: Reset gyro
+     * B: Amp shot
+     * Right Bumper: Collect note
+     * Left Bumper: Intake up
+     * Right Trigger: Eject
      */
 
     new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
@@ -217,42 +212,18 @@ public class RobotContainer {
             -0.95))
         .onFalse(m_intake.setCollectorPower(0));
 
-    /*
-     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_A).onTrue(new
-     * ShootNoteTargetVisible(
-     * m_shooter, m_angle, m_turret, m_visionSubsystem, swerveSubsystem,
-     * () -> m_visionSubsystem.UncorrectedDistance()).andThen(m_turret.
-     * setTargetPositionRaw(0)));
-     */
-    /*
-     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_X)
-     * .whileTrue(new ShootNoteAuto(
-     * 31.5, -4100, m_shooter, m_angle,
-     * m_visionSubsystem).compose());
-     * new JoystickButton(baseJoystick, JoystickMap.BUTTON_Y)
-     * .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
-     * m_visionSubsystem).compose());
-     * 
-     * new POVButton(baseJoystick,
-     * JoystickMap.POV_LEFT).onTrue(m_turret.setTargetPosition(0));
-     * new POVButton(baseJoystick,
-     * JoystickMap.POV_RIGHT).onTrue(m_turret.setTargetPosition(180));
-     */
-
     /**
      * ======================
      * TOWER CONTROLS
      * ======================
+     * X: Shoot into subwoofer up close
+     * A: Shoot into subwoofer from midrange
+     * Y: Feed from centerfield into wing (untested)
+     * B: Force lower shooter
+     * POV 0: Climbers up
+     * POV 180: Climbers down
+     * POV 270: Climbers mostly down (in case all the way down makes motors beep)
      */
-    // Climbing sequence for both climbers.
-    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-        .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
-
-    /**
-     * This starts the climb. the command registed on right bumper finishes the
-     * climb.
-     */
-    new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER).onTrue(m_climbers.travelToClimberPos(64, 74));
 
     // BUMPER -> SUBWOOFER
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
@@ -271,16 +242,20 @@ public class RobotContainer {
         .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
             m_visionSubsystem).compose());
 
-    // new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-    // .whileTrue(m_angle.setAngleCommandNew(2));
-    // new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
-    // .whileTrue(m_shooter.loadNoteUntilFound2(1000)).onFalse(m_shooter.stopShooter());
+    // SHOOTER DOWN FAILSAFE
+    new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
+        .whileTrue(m_angle.setAngleCommandNew(2));
 
-    new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersUp);
-    new JoystickButton(towerJoystick, JoystickMap.POV_UP).whileTrue(m_climbersDown);
 
-    // new JoystickButton(towerJoystick, )
-    // .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
+    // CLIMBERS
+    new POVButton(towerJoystick, JoystickMap.POV_UP)
+        .onTrue(m_climbers.travelToClimberPos(74, 74));
+
+    new POVButton(towerJoystick, JoystickMap.POV_DOWN)
+        .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
+    
+    new POVButton(towerJoystick, JoystickMap.POV_LEFT)
+        .onTrue(m_climbers.travelToClimberPos(5, 5));
 
   }
 
