@@ -30,4 +30,9 @@ public class ClimbManual extends Command{
     public void end(boolean interrupt) {
         this.climber.testPower(0, 0);
     }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }
