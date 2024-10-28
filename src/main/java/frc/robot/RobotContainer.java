@@ -36,6 +36,7 @@ import frc.robot.commands.autos.TwoNoteRed;
 import frc.robot.commands.climber.ClimbManual;
 import frc.robot.commands.climber.ClimbSequence;
 import frc.robot.commands.shooter.ShootNoteAuto;
+import frc.robot.commands.shooter.ManualIntake;
 import frc.robot.commands.shooter.ShootNoteTargetVisible;
 import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.ClimberR2;
@@ -189,17 +190,15 @@ public class RobotContainer {
      * =================
      * BASE CONTROLS
      * =================
+     * Thumbsticks: swerve drive
      * Back: Reset gyro
-     * B: Amp shot
-     * Right Bumper: Collect note
+     * Right Bumper: Collect note using regular sequence
      * Left Bumper: Intake up
-     * Right Trigger: Eject
+     * Right Trigger: Eject from intake
      */
 
     new JoystickButton(baseJoystick, JoystickMap.BUTTON_BACK)
         .onTrue(Commands.runOnce(() -> swerveSubsystem.resetGyro()));
-
-    new JoystickButton(baseJoystick, JoystickMap.BUTTON_B).onTrue(new AmpShot(m_intake, swerveSubsystem));
 
     new JoystickButton(baseJoystick, JoystickMap.RIGHT_BUMPER)
         .whileTrue(new CollectNoteV2(m_intake, m_shooter, m_angle, m_turret)).onFalse(
@@ -216,46 +215,39 @@ public class RobotContainer {
      * ======================
      * TOWER CONTROLS
      * ======================
-     * X: Shoot into subwoofer up close
-     * A: Shoot into subwoofer from midrange
-     * Y: Feed from centerfield into wing (untested)
+     * Right Bumper: raise shooter and spin until note is loaded, then lower (manual load)
+     * X: close range shot to outer polls (untested)
+     * A: close range shot to center poll (untested)
+     * Y: shoot into polls from farther back (untested)
      * B: Force lower shooter
-     * POV 0: Climbers up
-     * POV 180: Climbers down
-     * POV 270: Climbers mostly down (in case all the way down makes motors beep)
+     * (Note: max shooter angle is 54)
      */
 
-    // BUMPER -> SUBWOOFER
+
+    //MANUAL LOAD
+    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
+        .whileTrue(new ManualIntake(54, 800, m_shooter, m_angle).compose());
+
+    // OUTER POLLS
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_X)
         .whileTrue(new ShootNoteAuto(
-            54, -4200, m_shooter, m_angle,
+            54, -1200, m_shooter, m_angle,
             m_visionSubsystem).compose());
 
-    // MIDRANGE -> SUBWOOFER
+    // CENTER POLL
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_A)
         .whileTrue(new ShootNoteAuto(
-            40.91, -4800, m_shooter, m_angle,
+            54, -1600, m_shooter, m_angle,
             m_visionSubsystem).compose());
 
-    // LOB/FEED
+    // MIDRANGE
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_Y)
-        .whileTrue(new ShootNoteAuto(45, -2800, m_shooter, m_angle,
+        .whileTrue(new ShootNoteAuto(54, -2800, m_shooter, m_angle,
             m_visionSubsystem).compose());
 
-    // SHOOTER DOWN FAILSAFE
+    // FORCE SHOOTER DOWN
     new JoystickButton(towerJoystick, JoystickMap.BUTTON_B)
         .whileTrue(m_angle.setAngleCommandNew(2));
-
-
-    // CLIMBERS
-    new POVButton(towerJoystick, JoystickMap.POV_UP)
-        .onTrue(m_climbers.travelToClimberPos(74, 74));
-
-    new POVButton(towerJoystick, JoystickMap.POV_DOWN)
-        .onTrue(new ClimbSequence(m_intake, m_turret, m_climbers));
-    
-    new POVButton(towerJoystick, JoystickMap.POV_LEFT)
-        .onTrue(m_climbers.travelToClimberPos(5, 5));
 
   }
 
