@@ -33,11 +33,11 @@ import frc.robot.commands.autos.SweepNotesMiniRed;
 import frc.robot.commands.autos.SweepNotesRed;
 import frc.robot.commands.autos.TwoNoteBlue;
 import frc.robot.commands.autos.TwoNoteRed;
-import frc.robot.commands.climber.ClimbSequence;
+// import frc.robot.commands.climber.ClimbSequence;
 import frc.robot.commands.shooter.ShootNoteAuto;
 import frc.robot.commands.shooter.ShootNoteTargetVisible;
 import frc.robot.subsystems.Angle;
-import frc.robot.subsystems.ClimberR2;
+// import frc.robot.subsystems.ClimberR2;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.intake.AmpShot;
@@ -71,7 +71,7 @@ public class RobotContainer {
   private Angle m_angle = new Angle();
   private Intake m_intake = new Intake();
   private TurretSubsystem m_turret = new TurretSubsystem();
-  private ClimberR2 climber_r2 = new ClimberR2();
+//   private ClimberR2 climber_r2 = new ClimberR2();
   private SendableChooser<Command> chooser;
 
   /**
@@ -238,11 +238,12 @@ public class RobotContainer {
 
     // Climber Sequence - assumes driver has already extended the climber and
     // position the hooks over the chain
-    new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
-        .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
 
-    new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
-        .onTrue(climber_r2.travelToClimberPos(64, 74));
+    // new JoystickButton(towerJoystick, JoystickMap.RIGHT_BUMPER)
+    //     .onTrue(new ClimbSequence(m_intake, m_turret, climber_r2));
+
+    // new JoystickButton(towerJoystick, JoystickMap.LEFT_BUMPER)
+    //     .onTrue(climber_r2.travelToClimberPos(64, 74));
 
     new Trigger(() -> towerJoystick.getRawAxis(
         JoystickMap.RIGHT_TRIGGER) >= 0.05).onTrue(m_angle.setAngleCommandNew(2));
