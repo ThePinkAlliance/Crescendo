@@ -121,10 +121,10 @@ public class Constants {
          * These values where determined by lining up all the wheels and recording the
          * outputed positions with the turning gears facing Right when viewing from the back.
          */
-        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 0.170;
-        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = 0.750;
-        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 0.985;
-        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 1.980;
+        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 0.185;
+        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = 0.667;
+        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 1.011;
+        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 1.967;
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 4.437;// 2.91;
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 18; // 18 rad/sec

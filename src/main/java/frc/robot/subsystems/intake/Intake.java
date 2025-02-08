@@ -86,6 +86,7 @@ public class Intake extends SubsystemBase {
                             pos);
 
                     Logger.recordOutput("Intake/Control Effort 2", effort);
+                    Logger.recordOutput("Intake/Note Found", noteFound());
 
                     // scale control effort to a ratio to make it useable with voltage control.
                     effort = (effort * CANCODER_ROTATIONS_TO_MOTOR_TICKS) + applied_ff;
